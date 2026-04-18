@@ -1,428 +1,403 @@
 ---
 name: story-done
-description: "End-of-story completion review. Reads the story file, verifies each acceptance criterion against the implementation, checks for GDD/ADR deviations, prompts code review, updates story status to Complete, and surfaces the next ready story from the sprint."
+description: "Story 结束时的完成审查。读取 Story 文件，对照实现验证每个验收标准，检查 GDD/ADR 偏差，提示代码审查，将 Story 状态更新为 Complete，并从 Sprint 中呈现下一个就绪 Story。"
 argument-hint: "[story-file-path] [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Bash, Edit, AskUserQuestion, Task
 ---
 
-# Story Done
+# Story 完成
 
-This skill closes the loop between design and implementation. Run it at the end
-of implementing any story. It ensures every acceptance criterion is verified
-before the story is marked done, GDD and ADR deviations are explicitly
-documented rather than silently introduced, code review is prompted rather than
-forgotten, and the story file reflects actual completion status.
+此技能闭合设计与实现之间的环路。在实现任何 Story 结束时运行。
+它确保每个验收标准在 Story 标记为完成之前经过验证，
+GDD 和 ADR 偏差被明确记录而不是悄悄引入，
+代码审查被提示而不是被遗忘，Story 文件反映实际完成状态。
 
-**Output:** Updated story file (Status: Complete) + surfaced next story.
-
----
-
-## Phase 1: Find the Story
-
-Resolve the review mode (once, store for all gate spawns this run):
-1. If `--review [full|lean|solo]` was passed → use that
-2. Else read `production/review-mode.txt` → use that value
-3. Else → default to `lean`
-
-See `.claude/docs/director-gates.md` for the full check pattern.
-
-**If a file path is provided** (e.g., `/story-done production/epics/core/story-damage-calculator.md`):
-read that file directly.
-
-**If no argument is provided:**
-
-1. Check `production/session-state/active.md` for the currently active story.
-2. If not found there, read the most recent file in `production/sprints/` and
-   look for stories marked IN PROGRESS.
-3. If multiple in-progress stories are found, use `AskUserQuestion`:
-   - "Which story are we completing?"
-   - Options: list the in-progress story file names.
-4. If no story can be found, ask the user to provide the path.
+**输出：** 更新的 Story 文件（Status: Complete）+ 呈现下一个 Story。
 
 ---
 
-## Phase 2: Read the Story
+## 阶段1：找到 Story
 
-Read the full story file. Extract and hold in context:
+解析审查模式（一次，存储供本次运行所有关卡生成使用）：
+1. 如果传入了 `--review [full|lean|solo]` → 使用该值
+2. 否则读取 `production/review-mode.txt` → 使用该值
+3. 否则 → 默认为 `lean`
 
-- **Story name and ID**
-- **GDD Requirement TR-ID(s)** referenced (e.g., `TR-combat-001`)
-- **Manifest Version** embedded in the story header (e.g., `2026-03-10`)
-- **ADR reference(s)** referenced
-- **Acceptance Criteria** — the complete list (every checkbox item)
-- **Implementation files** — files listed under "files to create/modify"
-- **Story Type** — the `Type:` field from the story header (Logic / Integration / Visual/Feel / UI / Config/Data)
-- **Engine notes** — any engine-specific constraints noted
-- **Definition of Done** — if present, the story-level DoD
-- **Estimated vs actual scope** — if an estimate was noted
+完整检查模式详见 `.claude/docs/director-gates.md`。
 
-Also read:
-- `docs/architecture/tr-registry.yaml` — look up each TR-ID in the story.
-  Read the *current* `requirement` text from the registry entry. This is the
-  source of truth for what the GDD required — do not use any requirement text
-  that may be quoted inline in the story (it may be stale).
-- The referenced GDD section — just the acceptance criteria and key rules, not
-  the full document. Use this to cross-check the registry text is still accurate.
-- The referenced ADR(s) — just the Decision and Consequences sections
-- `docs/architecture/control-manifest.md` header — extract the current
-  `Manifest Version:` date (used in Phase 4 staleness check)
+**如果提供了文件路径**（例如 `/story-done production/epics/core/story-damage-calculator.md`）：
+直接读取该文件。
+
+**如果未提供参数：**
+
+1. 在 `production/session-state/active.md` 中检查当前活跃的 Story。
+2. 如果未找到，读取 `production/sprints/` 中最新的文件并
+   查找标记为 IN PROGRESS 的 Story。
+3. 如果找到多个进行中的 Story，使用 `AskUserQuestion`：
+   - "我们正在完成哪个 Story？"
+   - 选项：列出进行中的 Story 文件名。
+4. 如果找不到任何 Story，要求用户提供路径。
 
 ---
 
-## Phase 3: Verify Acceptance Criteria
+## 阶段2：读取 Story
 
-For each acceptance criterion in the story, attempt verification using one of
-three methods:
+完整读取 Story 文件。提取并保存在上下文中：
 
-### Automatic verification (run without asking)
+- **Story 名称和 ID**
+- **GDD 需求 TR-ID** 引用（例如 `TR-combat-001`）
+- **嵌入在 Story 头部的清单版本**（例如 `2026-03-10`）
+- **ADR 引用**
+- **验收标准** — 完整列表（每个复选框项目）
+- **实现文件** — "要创建/修改的文件"下列出的文件
+- **Story 类型** — Story 头部的 `Type:` 字段（Logic / Integration / Visual/Feel / UI / Config/Data）
+- **引擎说明** — 任何引擎专属约束
+- **完成定义** — 如果存在，Story 级别的 DoD
+- **估算与实际范围** — 如果注明了估算
 
-- **File existence check**: `Glob` for files the story said would be created.
-- **Test pass check**: if a test file path is mentioned, run it via `Bash`.
-- **No hardcoded values check**: `Grep` for numeric literals in gameplay code
-  paths that should be in config files.
-- **No hardcoded strings check**: `Grep` for player-facing strings in `src/`
-  that should be in localization files.
-- **Dependency check**: if a criterion says "depends on X", check that X exists.
+同时读取：
+- `docs/architecture/tr-registry.yaml` — 查找 Story 中的每个 TR-ID。
+  从注册表条目读取*当前* `requirement` 文本。这是 GDD 要求内容的权威来源 —
+  不要使用可能在 Story 中内联引用的任何需求文本（可能已过时）。
+- 引用的 GDD 部分 — 仅验收标准和关键规则，而非完整文档。用于交叉验证注册表文本是否仍然准确。
+- 引用的 ADR — 仅决策和结果部分
+- `docs/architecture/control-manifest.md` 头部 — 提取当前
+  `Manifest Version:` 日期（用于阶段4的过时检查）
 
-### Manual verification with confirmation (use `AskUserQuestion`)
+---
 
-- Criteria about subjective qualities ("feels responsive", "animations play correctly")
-- Criteria about gameplay behaviour ("player takes damage when...", "enemy responds to...")
-- Performance criteria ("completes within Xms") — ask if profiled or accept as assumed
+## 阶段3：验证验收标准
 
-Batch up to 4 manual verification questions into a single `AskUserQuestion` call:
+对于 Story 中的每个验收标准，使用以下三种方法之一尝试验证：
 
-```
-question: "Does [criterion]?"
-options: "Yes — passes", "No — fails", "Not tested yet"
-```
+### 自动验证（无需询问即可运行）
 
-### Unverifiable (flag without blocking)
+- **文件存在检查**：`Glob` 查找 Story 说将要创建的文件。
+- **测试通过检查**：如果提到了测试文件路径，通过 `Bash` 运行它。
+- **无硬编码值检查**：`Grep` 查找游戏玩法代码路径中应该在配置文件中的数字字面量。
+- **无硬编码字符串检查**：`Grep` 查找 `src/` 中应该在本地化文件中的面向玩家的字符串。
+- **依赖检查**：如果标准说"依赖于 X"，检查 X 是否存在。
 
-- Criteria that require a full game build to test (end-to-end gameplay scenarios)
-- Mark as: `DEFERRED — requires playtest session`
+### 手动验证并确认（使用 `AskUserQuestion`）
 
-### Test-Criterion Traceability
+- 关于主观品质的标准（"感觉响应灵敏"、"动画正确播放"）
+- 关于游戏行为的标准（"玩家受到伤害时..."、"敌人响应..."）
+- 性能标准（"在 X 毫秒内完成"）— 询问是否已分析或接受为假设
 
-After completing the pass/fail/deferred check above, map each acceptance
-criterion to the test that covers it:
-
-For each acceptance criterion in the story:
-
-1. Ask: is there a test — unit, integration, or confirmed manual playtest — that
-   directly verifies this criterion?
-   - **Unit test**: check `tests/unit/` for a test file or function name that
-     matches the criterion's subject (use `Glob` and `Grep`)
-   - **Integration test**: check `tests/integration/` similarly
-   - **Manual confirmation**: if the criterion was verified via `AskUserQuestion`
-     above with a "Yes — passes" answer, count that as a manual test
-
-2. Produce a traceability table:
+将最多 4 个手动验证问题批量放入一个 `AskUserQuestion` 调用中：
 
 ```
-| Criterion | Test | Status |
-|-----------|------|--------|
-| AC-1: [criterion text] | tests/unit/test_foo.gd::test_bar | COVERED |
-| AC-2: [criterion text] | Manual playtest confirmation | COVERED |
-| AC-3: [criterion text] | — | UNTESTED |
+question: "[标准] 是否满足？"
+options: "是 — 通过", "否 — 失败", "尚未测试"
 ```
 
-3. Apply these escalation rules:
+### 无法验证（标记但不阻塞）
 
-   - If **>50% of criteria are UNTESTED**: escalate to **BLOCKING** — test
-     coverage is insufficient to confirm the story is actually done. The verdict
-     in Phase 6 cannot be COMPLETE until coverage improves.
-   - If **some (≤50%) criteria are UNTESTED**: remain ADVISORY — does not block
-     completion, but must appear in Completion Notes.
-   - If **all criteria are COVERED**: no action needed beyond including the
-     table in the report.
+- 需要完整游戏构建才能测试的标准（端到端游戏场景）
+- 标记为：`DEFERRED — 需要游戏测试会话`
 
-4. For any ADVISORY untested criteria, add to the Completion Notes in Phase 7:
-   `"Untested criteria: [AC-N list]. Recommend adding tests in a follow-up story."`
+### 测试-标准可追溯性
 
-### Test Evidence Requirement
+完成上方的通过/失败/延迟检查后，将每个验收标准映射到覆盖它的测试：
 
-Based on the Story Type extracted in Phase 2, check for required evidence:
+对于 Story 中的每个验收标准：
 
-| Story Type | Required Evidence | Gate Level |
+1. 询问：是否有测试 — 单元测试、集成测试或已确认的手动游戏测试 —
+   直接验证此标准？
+   - **单元测试**：在 `tests/unit/` 中检查与标准主题匹配的测试文件或函数名称
+     （使用 `Glob` 和 `Grep`）
+   - **集成测试**：类似地检查 `tests/integration/`
+   - **手动确认**：如果上方通过 `AskUserQuestion` 以"是 — 通过"答案验证了标准，
+     则将其计为手动测试
+
+2. 生成可追溯性表格：
+
+```
+| 标准 | 测试 | 状态 |
+|------|------|------|
+| AC-1：[标准文本] | tests/unit/test_foo.gd::test_bar | COVERED |
+| AC-2：[标准文本] | 手动游戏测试确认 | COVERED |
+| AC-3：[标准文本] | — | UNTESTED |
+```
+
+3. 应用以下升级规则：
+
+   - 如果**超过 50% 的标准是 UNTESTED**：升级为**阻塞** —
+     测试覆盖率不足以确认 Story 实际完成。在覆盖率提高之前，阶段6的裁决不能为 COMPLETE。
+   - 如果**部分（≤50%）标准是 UNTESTED**：保持**建议性** — 不阻塞完成，
+     但必须出现在完成说明中。
+   - 如果**所有标准都是 COVERED**：除在报告中包含表格外无需额外操作。
+
+4. 对于任何建议性的未测试标准，在阶段7的完成说明中添加：
+   `"未测试的标准：[AC-N 列表]。建议在后续 Story 中添加测试。"`
+
+### 测试证据要求
+
+根据阶段2中提取的 Story 类型，检查所需证据：
+
+| Story 类型 | 必需证据 | 关卡级别 |
 |---|---|---|
-| **Logic** | Automated unit test in `tests/unit/[system]/` — must exist and pass | BLOCKING |
-| **Integration** | Integration test in `tests/integration/[system]/` OR playtest doc | BLOCKING |
-| **Visual/Feel** | Screenshot + sign-off in `production/qa/evidence/` | ADVISORY |
-| **UI** | Manual walkthrough doc OR interaction test in `production/qa/evidence/` | ADVISORY |
-| **Config/Data** | Smoke check pass report in `production/qa/smoke-*.md` | ADVISORY |
+| **Logic** | `tests/unit/[system]/` 中的自动化单元测试 — 必须存在并通过 | 阻塞 |
+| **Integration** | `tests/integration/[system]/` 中的集成测试或游戏测试文档 | 阻塞 |
+| **Visual/Feel** | `production/qa/evidence/` 中的截图 + 签署 | 建议性 |
+| **UI** | `production/qa/evidence/` 中的手动走查文档或交互测试 | 建议性 |
+| **Config/Data** | `production/qa/smoke-*.md` 中的冒烟测试通过报告 | 建议性 |
 
-**For Logic stories**: first read the story's **Test Evidence** section to extract the
-exact required file path. Use `Glob` to check that exact path. If the exact path is not
-found, also search `tests/unit/[system]/` broadly (the file may have been placed at a
-slightly different location). If no test file is found at either location:
-- Flag as **BLOCKING**: "Logic story has no unit test file. Story requires it at
-  `[exact-path-from-Test-Evidence-section]`. Create and run the test before marking
-  this story Complete."
+**对于 Logic Story**：首先读取 Story 的 **Test Evidence** 部分以提取
+确切的所需文件路径。使用 `Glob` 检查该确切路径。如果在该确切路径找不到，
+也在 `tests/unit/[system]/` 范围内广泛搜索（文件可能在略有不同的位置）。
+如果在任何位置都找不到测试文件：
+- 标记为**阻塞**："Logic Story 没有单元测试文件。Story 要求它在
+  `[Test Evidence 部分的确切路径]`。在将此 Story 标记为 Complete 之前创建并运行测试。"
 
-**For Integration stories**: read the story's **Test Evidence** section for the exact
-required path. Use `Glob` to check that exact path first, then search
-`tests/integration/[system]/` broadly, then check `production/session-logs/` for a
-playtest record referencing this story.
-If none found: flag as **BLOCKING** (same rule as Logic).
+**对于 Integration Story**：读取 Story 的 **Test Evidence** 部分获取确切的
+所需路径。首先使用 `Glob` 检查该确切路径，然后在 `tests/integration/[system]/` 中
+广泛搜索，然后检查 `production/session-logs/` 中引用此 Story 的游戏测试记录。
+如果未找到：标记为**阻塞**（与 Logic 相同的规则）。
 
-**For Visual/Feel and UI stories**: glob `production/qa/evidence/` for a file
-referencing this story. If none: flag as **ADVISORY** —
-"No manual test evidence found. Create `production/qa/evidence/[story-slug]-evidence.md`
-using the test-evidence template and obtain sign-off before final closure."
+**对于 Visual/Feel 和 UI Story**：glob `production/qa/evidence/` 查找
+引用此 Story 的文件。如果未找到：标记为**建议性** —
+"未找到手动测试证据。在最终关闭之前，使用测试证据模板创建
+`production/qa/evidence/[story-slug]-evidence.md` 并获取签署。"
 
-**For Config/Data stories**: check for any `production/qa/smoke-*.md` file.
-If none: flag as **ADVISORY** — "No smoke check report found. Run `/smoke-check`."
+**对于 Config/Data Story**：检查是否存在任何 `production/qa/smoke-*.md` 文件。
+如果未找到：标记为**建议性** — "未找到冒烟测试报告。运行 `/smoke-check`。"
 
-**If no Story Type is set**: flag as **ADVISORY** —
-"Story Type not declared. Add `Type: [Logic|Integration|Visual/Feel|UI|Config/Data]`
-to the story header to enable test evidence gate enforcement in future stories."
+**如果未设置 Story 类型**：标记为**建议性** —
+"未声明 Story 类型。在 Story 头部添加 `Type: [Logic|Integration|Visual/Feel|UI|Config/Data]`
+以在未来 Story 中启用测试证据关卡执行。"
 
-Any BLOCKING test evidence gap prevents the COMPLETE verdict in Phase 6.
+任何阻塞性测试证据差距都会阻止阶段6中的 COMPLETE 裁决。
 
 ---
 
-## Phase 4: Check for Deviations
+## 阶段4：检查偏差
 
-Compare the implementation against the design documents.
+将实现与设计文档进行比较。
 
-Run these checks automatically:
+自动运行这些检查：
 
-1. **GDD rules check**: Using the current requirement text from `tr-registry.yaml`
-   (looked up by the story's TR-ID), check that the implementation reflects what
-   the GDD actually requires now — not what it required when the story was written.
-   `Grep` the implemented files for key function names, data structures, or class
-   names mentioned in the current GDD section.
+1. **GDD 规则检查**：使用 `tr-registry.yaml` 中的当前需求文本
+   （按 Story 的 TR-ID 查找），检查实现是否反映了 GDD 现在实际要求的内容 —
+   而不是写 Story 时要求的内容。
+   `Grep` 实现文件中当前 GDD 部分提到的关键函数名、数据结构或类名。
 
-2. **Manifest version staleness check**: Compare the `Manifest Version:` date
-   embedded in the story header against the `Manifest Version:` date in the
-   current `docs/architecture/control-manifest.md` header.
-   - If they match → pass silently.
-   - If the story's version is older → flag as ADVISORY:
-     `ADVISORY: Story was written against manifest v[story-date]; current manifest
-     is v[current-date]. New rules may apply. Run /story-readiness to check.`
-   - If control-manifest.md does not exist → skip this check.
+2. **清单版本过时检查**：将 Story 头部中嵌入的 `Manifest Version:` 日期
+   与当前 `docs/architecture/control-manifest.md` 头部中的 `Manifest Version:` 日期进行比较。
+   - 如果匹配 → 静默通过。
+   - 如果 Story 版本更旧 → 标记为建议性：
+     `建议性：Story 根据清单 v[story-date] 编写；当前清单为 v[current-date]。可能适用新规则。运行 /story-readiness 检查。`
+   - 如果 control-manifest.md 不存在 → 跳过此检查。
 
-3. **ADR constraints check**: Read the referenced ADR's Decision section. Check
-   for forbidden patterns from `docs/architecture/control-manifest.md` (if it
-   exists). `Grep` for patterns explicitly forbidden in the ADR.
+3. **ADR 约束检查**：读取引用的 ADR 的决策部分。如果存在 `docs/architecture/control-manifest.md`，
+   检查禁止的模式。`Grep` ADR 中明确禁止的模式。
 
-4. **Hardcoded values check**: `Grep` the implemented files for numeric literals
-   in gameplay logic that should be in data files.
+4. **硬编码值检查**：`Grep` 实现文件中游戏逻辑中应该在数据文件中的数字字面量。
 
-5. **Scope check**: Did the implementation touch files outside the story's stated
-   scope? (files not listed in "files to create/modify")
+5. **范围检查**：实现是否触及了 Story 规定范围之外的文件？
+   （"要创建/修改的文件"中未列出的文件）
 
-For each deviation found, categorize:
+对于每个发现的偏差，分类：
 
-- **BLOCKING** — implementation contradicts the GDD or ADR (must fix before
-  marking complete)
-- **ADVISORY** — implementation drifts slightly from spec but is functionally
-  equivalent (document, user decides)
-- **OUT OF SCOPE** — additional files were touched beyond the story's stated
-  boundary (flag for awareness — may be valid or scope creep)
+- **阻塞** — 实现与 GDD 或 ADR 矛盾（标记为完成前必须修复）
+- **建议性** — 实现与规范略有偏差但功能等效（记录，用户决定）
+- **超出范围** — 触及了 Story 规定边界之外的额外文件（标记提示 — 可能有效或可能是范围蔓延）
 
 ---
 
-## Phase 4b: QA Coverage Gate
+## 阶段4b：QA 覆盖率关卡
 
-**Review mode check** — apply before spawning QL-TEST-COVERAGE:
-- `solo` → skip. Note: "QL-TEST-COVERAGE skipped — Solo mode." Proceed to Phase 5.
-- `lean` → skip (not a PHASE-GATE). Note: "QL-TEST-COVERAGE skipped — Lean mode." Proceed to Phase 5.
-- `full` → spawn as normal.
+**审查模式检查** — 在生成 QL-TEST-COVERAGE 之前应用：
+- `solo` → 跳过。注明："QL-TEST-COVERAGE 已跳过 — Solo 模式。"继续阶段5。
+- `lean` → 跳过（非 PHASE-GATE）。注明："QL-TEST-COVERAGE 已跳过 — Lean 模式。"继续阶段5。
+- `full` → 正常生成。
 
-After completing the deviation checks in Phase 4, spawn `qa-lead` via Task using gate **QL-TEST-COVERAGE** (`.claude/docs/director-gates.md`).
+完成阶段4的偏差检查后，通过 Task 生成 `qa-lead`，使用关卡 **QL-TEST-COVERAGE**（`.claude/docs/director-gates.md`）。
 
-Pass:
-- The story file path and story type
-- Test file paths found during Phase 3 (exact paths, or "none found")
-- The story's `## QA Test Cases` section (the pre-written test specs from story creation)
-- The story's `## Acceptance Criteria` list
+传递：
+- Story 文件路径和 Story 类型
+- 阶段3中找到的测试文件路径（确切路径，或"未找到"）
+- Story 的 `## QA Test Cases` 部分（Story 创建时预先编写的测试规范）
+- Story 的 `## Acceptance Criteria` 列表
 
-The qa-lead reviews whether the tests actually cover what was specified — not just whether files exist.
+qa-lead 检查测试是否真正覆盖了规定的内容 — 不仅仅是文件是否存在。
 
-Apply the verdict:
-- **ADEQUATE** → proceed to Phase 5
-- **GAPS** → flag as **ADVISORY**: "QA lead identified coverage gaps: [list]. Story can complete but gaps should be addressed in a follow-up story."
-- **INADEQUATE** → flag as **BLOCKING**: "QA lead: critical logic is untested. Verdict cannot be COMPLETE until coverage improves. Specific gaps: [list]."
+应用裁决：
+- **ADEQUATE** → 继续阶段5
+- **GAPS** → 标记为**建议性**："QA 主管发现覆盖差距：[列表]。Story 可以完成，但应在后续 Story 中解决差距。"
+- **INADEQUATE** → 标记为**阻塞**："QA 主管：关键逻辑未测试。在覆盖率提高之前裁决不能为 COMPLETE。具体差距：[列表]。"
 
-Skip this phase for Config/Data stories (no code tests required).
-
----
-
-## Phase 5: Lead Programmer Code Review Gate
-
-**Review mode check** — apply before spawning LP-CODE-REVIEW:
-- `solo` → skip. Note: "LP-CODE-REVIEW skipped — Solo mode." Proceed to Phase 6 (completion report).
-- `lean` → skip (not a PHASE-GATE). Note: "LP-CODE-REVIEW skipped — Lean mode." Proceed to Phase 6 (completion report).
-- `full` → spawn as normal.
-
-Spawn `lead-programmer` via Task using gate **LP-CODE-REVIEW** (`.claude/docs/director-gates.md`).
-
-Pass: implementation file paths, story file path, relevant GDD section, governing ADR.
-
-Present the verdict to the user. If CONCERNS, surface them via `AskUserQuestion`:
-- Options: `Revise flagged issues` / `Accept and proceed` / `Discuss further`
-If REJECT, do not proceed to Phase 6 verdict until the issues are resolved.
-
-If the story has no implementation files yet (verdict is being run before coding is done), skip this phase and note: "LP-CODE-REVIEW skipped — no implementation files found. Run after implementation is complete."
+对于 Config/Data Story 跳过此阶段（不需要代码测试）。
 
 ---
 
-## Phase 6: Present the Completion Report
+## 阶段5：首席程序员代码审查关卡
 
-Before updating any files, present the full report:
+**审查模式检查** — 在生成 LP-CODE-REVIEW 之前应用：
+- `solo` → 跳过。注明："LP-CODE-REVIEW 已跳过 — Solo 模式。"继续阶段6（完成报告）。
+- `lean` → 跳过（非 PHASE-GATE）。注明："LP-CODE-REVIEW 已跳过 — Lean 模式。"继续阶段6（完成报告）。
+- `full` → 正常生成。
+
+通过 Task 生成 `lead-programmer`，使用关卡 **LP-CODE-REVIEW**（`.claude/docs/director-gates.md`）。
+
+传递：实现文件路径、Story 文件路径、相关 GDD 部分、管理 ADR。
+
+向用户呈现裁决。如果 CONCERNS，通过 `AskUserQuestion` 呈现：
+- 选项：`修改标记的问题` / `接受并继续` / `进一步讨论`
+如果 REJECT，在问题解决之前不继续阶段6裁决。
+
+如果 Story 还没有实现文件（裁决在编码完成前运行），跳过此阶段并注明："LP-CODE-REVIEW 已跳过 — 未找到实现文件。在实现完成后运行。"
+
+---
+
+## 阶段6：呈现完成报告
+
+在更新任何文件之前，呈现完整报告：
 
 ```markdown
-## Story Done: [Story Name]
-**Story**: [file path]
-**Date**: [today]
+## Story 完成：[Story 名称]
+**Story**：[文件路径]
+**日期**：[今天]
 
-### Acceptance Criteria: [X/Y passing]
-- [x] [Criterion 1] — auto-verified (test passes)
-- [x] [Criterion 2] — confirmed
-- [ ] [Criterion 3] — FAILS: [reason]
-- [?] [Criterion 4] — DEFERRED: requires playtest
+### 验收标准：[X/Y 通过]
+- [x] [标准1] — 自动验证（测试通过）
+- [x] [标准2] — 已确认
+- [ ] [标准3] — 失败：[原因]
+- [?] [标准4] — DEFERRED：需要游戏测试
 
-### Test-Criterion Traceability
-| Criterion | Test | Status |
-|-----------|------|--------|
-| AC-1: [text] | [test file::test name] | COVERED |
-| AC-2: [text] | Manual confirmation | COVERED |
-| AC-3: [text] | — | UNTESTED |
+### 测试-标准可追溯性
+| 标准 | 测试 | 状态 |
+|------|------|------|
+| AC-1：[文本] | [测试文件::测试名称] | COVERED |
+| AC-2：[文本] | 手动确认 | COVERED |
+| AC-3：[文本] | — | UNTESTED |
 
-### Test Evidence
-**Story Type**: [Logic | Integration | Visual/Feel | UI | Config/Data | Not declared]
-**Required evidence**: [unit test file | integration test or playtest | screenshot + sign-off | walkthrough doc | smoke check pass]
-**Evidence found**: [YES — `[path]` | NO — BLOCKING | NO — ADVISORY]
+### 测试证据
+**Story 类型**：[Logic | Integration | Visual/Feel | UI | Config/Data | 未声明]
+**必需证据**：[单元测试文件 | 集成测试或游戏测试 | 截图 + 签署 | 走查文档 | 冒烟测试通过]
+**找到的证据**：[是 — `[路径]` | 否 — 阻塞 | 否 — 建议性]
 
-### Deviations
-[NONE] OR:
-- BLOCKING: [description] — [GDD/ADR reference]
-- ADVISORY: [description] — user accepted / flagged for tech debt
+### 偏差
+[无] 或：
+- 阻塞：[描述] — [GDD/ADR 引用]
+- 建议性：[描述] — 用户接受 / 标记为技术债务
 
-### Scope
-[All changes within stated scope] OR:
-- Extra files touched: [list] — [note whether valid or scope creep]
+### 范围
+[所有变更在规定范围内] 或：
+- 触及的额外文件：[列表] — [注明是否有效或范围蔓延]
 
-### Verdict: COMPLETE / COMPLETE WITH NOTES / BLOCKED
+### 裁决：COMPLETE / COMPLETE WITH NOTES / BLOCKED
 ```
 
-**Verdict definitions:**
-- **COMPLETE**: all criteria pass, no blocking deviations
-- **COMPLETE WITH NOTES**: all criteria pass, advisory deviations documented
-- **BLOCKED**: failing criteria or blocking deviations must be resolved first
+**裁决定义：**
+- **COMPLETE**：所有标准通过，无阻塞性偏差
+- **COMPLETE WITH NOTES**：所有标准通过，已记录建议性偏差
+- **BLOCKED**：失败的标准或阻塞性偏差必须先解决
 
-If the verdict is **BLOCKED**: do not proceed to Phase 7. List what must be
-fixed. Offer to help fix the blocking items.
+如果裁决是 **BLOCKED**：不继续阶段7。列出必须修复的内容。提供帮助修复阻塞项。
 
 ---
 
-## Phase 7: Update Story Status
+## 阶段7：更新 Story 状态
 
-Ask before writing: "May I update the story file to mark it Complete and log
-the completion notes?"
+写入前询问："我可以更新 Story 文件将其标记为 Complete 并记录完成说明吗？"
 
-If yes, edit the story file:
+如果是，编辑 Story 文件：
 
-1. Update the status field: `Status: Complete`
-2. Add a `## Completion Notes` section at the bottom:
+1. 更新状态字段：`Status: Complete`
+2. 在底部添加 `## Completion Notes` 部分：
 
 ```markdown
-## Completion Notes
-**Completed**: [date]
-**Criteria**: [X/Y passing] ([any deferred items listed])
-**Deviations**: [None] or [list of advisory deviations]
-**Test Evidence**: [Logic: test file at path | Visual/Feel: evidence doc at path | None required (Config/Data)]
-**Code Review**: [Pending / Complete / Skipped]
+## 完成说明
+**完成日期**：[日期]
+**标准**：[X/Y 通过]（[任何延迟的项目列出]）
+**偏差**：[无] 或 [建议性偏差列表]
+**测试证据**：[Logic：路径处的测试文件 | Visual/Feel：路径处的证据文档 | 无需（Config/Data）]
+**代码审查**：[待定 / 完成 / 已跳过]
 ```
 
-3. If advisory deviations exist, ask: "Should I log these as tech debt in
-   `docs/tech-debt-register.md`?"
+3. 如果存在建议性偏差，询问："是否应将这些记录为 `docs/tech-debt-register.md` 中的技术债务？"
 
-4. **Update `production/sprint-status.yaml`** (if it exists):
-   - Find the entry matching this story's file path or ID
-   - Set `status: done` and `completed: [today's date]`
-   - Update the top-level `updated` field
-   - This is a silent update — no extra approval needed (already approved in step above)
+4. **更新 `production/sprint-status.yaml`**（如果存在）：
+   - 找到与此 Story 文件路径或 ID 匹配的条目
+   - 设置 `status: done` 和 `completed: [今天的日期]`
+   - 更新顶级 `updated` 字段
+   - 这是静默更新 — 不需要额外批准（上方步骤已批准）
 
-### Session State Update
+### 会话状态更新
 
-After updating the story file, silently append to
-`production/session-state/active.md`:
+更新 Story 文件后，静默追加到 `production/session-state/active.md`：
 
-    ## Session Extract — /story-done [date]
-    - Verdict: [COMPLETE / COMPLETE WITH NOTES / BLOCKED]
-    - Story: [story file path] — [story title]
-    - Tech debt logged: [N items, or "None"]
-    - Next recommended: [next ready story title and path, or "None identified"]
+    ## 会话提取 — /story-done [日期]
+    - 裁决：[COMPLETE / COMPLETE WITH NOTES / BLOCKED]
+    - Story：[Story 文件路径] — [Story 标题]
+    - 记录的技术债务：[N 项，或"无"]
+    - 下一步推荐：[下一个就绪 Story 标题和路径，或"未识别"]
 
-If `active.md` does not exist, create it with this block as the initial content.
-Confirm in conversation: "Session state updated."
+如果 `active.md` 不存在，以此块为初始内容创建它。
+在对话中确认："会话状态已更新。"
 
 ---
 
-## Phase 8: Surface the Next Story
+## 阶段8：呈现下一个 Story
 
-After completion, help the developer keep momentum:
+完成后，帮助开发人员保持动力：
 
-1. Read the current sprint plan from `production/sprints/`.
-2. Find stories that are:
-   - Status: READY or NOT STARTED
-   - Not blocked by other incomplete stories
-   - In the Must Have or Should Have tier
+1. 从 `production/sprints/` 读取当前 Sprint 计划。
+2. 找到满足以下条件的 Story：
+   - 状态：READY 或 NOT STARTED
+   - 未被其他未完成的 Story 阻塞
+   - 处于 Must Have 或 Should Have 层级
 
-Present:
-
-```
-### Next Up
-The following stories are ready to pick up:
-1. [Story name] — [1-line description] — Est: [X hrs]
-2. [Story name] — [1-line description] — Est: [X hrs]
-
-Run `/story-readiness [path]` to confirm a story is implementation-ready
-before starting.
-```
-
-If no more Must Have stories remain in this sprint (all are Complete or Blocked):
+呈现：
 
 ```
-### Sprint Close-Out Sequence
+### 下一步
+以下 Story 准备好可以开始：
+1. [Story 名称] — [1行描述] — 估算：[X 小时]
+2. [Story 名称] — [1行描述] — 估算：[X 小时]
 
-All Must Have stories are complete. QA sign-off is required before advancing.
-Run these in order:
-
-1. `/smoke-check sprint` — verify the critical path still works end-to-end
-2. `/team-qa sprint` — full QA cycle: test case execution, bug triage, sign-off report
-3. `/gate-check` — advance to the next phase once QA approves
-
-Do not run `/gate-check` until `/team-qa` returns APPROVED or APPROVED WITH CONDITIONS.
+在开始之前运行 `/story-readiness [路径]` 确认 Story 准备好实现。
 ```
 
-If there are Should Have stories still unstarted, surface them alongside the close-out sequence so the user can choose: close the sprint now, or pull in more work first.
+如果此 Sprint 中没有更多 Must Have Story（全部为 Complete 或 Blocked）：
 
-If no more stories are ready but Must Have stories are still In Progress (not Complete):
-"No more stories ready to start — [N] Must Have stories still in progress. Continue implementing those before sprint close-out."
+```
+### Sprint 收尾流程
+
+所有 Must Have Story 已完成。在推进之前需要 QA 签署。
+按顺序运行：
+
+1. `/smoke-check sprint` — 验证关键路径仍然端到端工作
+2. `/team-qa sprint` — 完整 QA 周期：测试用例执行、Bug 分类、签署报告
+3. `/gate-check` — QA 批准后推进到下一阶段
+
+在 `/team-qa` 返回 APPROVED 或 APPROVED WITH CONDITIONS 之前不要运行 `/gate-check`。
+```
+
+如果仍有 Should Have Story 未开始，在收尾流程旁呈现它们，让用户选择：
+现在关闭 Sprint，还是先拉入更多工作。
+
+如果没有更多 Story 就绪但 Must Have Story 仍在进行中（未 Complete）：
+"没有更多 Story 准备好开始 — [N] 个 Must Have Story 仍在进行中。在 Sprint 收尾前继续实现这些。"
 
 ---
 
-## Collaborative Protocol
+## 协作协议
 
-- **Never mark a story complete without user approval** — Phase 7 requires an
-  explicit "yes" before any file is edited.
-- **Never auto-fix failing criteria** — report them and ask what to do.
-- **Deviations are facts, not judgments** — present them neutrally; the user
-  decides if they are acceptable.
-- **BLOCKED verdict is advisory** — the user can override and mark complete
-  anyway; document the risk explicitly if they do.
-- Use `AskUserQuestion` for the code review prompt and for batching manual
-  criteria confirmations.
+- **未经用户批准永不将 Story 标记为完成** — 阶段7需要
+  明确的"是"才能编辑任何文件。
+- **永不自动修复失败的标准** — 报告它们并询问该怎么做。
+- **偏差是事实，不是判断** — 中立地呈现；用户决定是否可接受。
+- **BLOCKED 裁决是建议性的** — 用户可以覆盖并无论如何标记为完成；
+  如果用户这样做，明确记录风险。
+- 对代码审查提示和批量手动标准确认使用 `AskUserQuestion`。
 
 ---
 
-## Recommended Next Steps
+## 推荐的后续步骤
 
-- Run `/story-readiness [next-story-path]` to validate the next story before starting implementation
-- If all Must Have stories are complete: run `/smoke-check sprint` → `/team-qa sprint` → `/gate-check`
-- If tech debt was logged: track it via `/tech-debt` to keep the register current
+- 运行 `/story-readiness [next-story-path]` 在开始实现之前验证下一个 Story
+- 如果所有 Must Have Story 已完成：运行 `/smoke-check sprint` → `/team-qa sprint` → `/gate-check`
+- 如果记录了技术债务：通过 `/tech-debt` 跟踪以保持注册表最新

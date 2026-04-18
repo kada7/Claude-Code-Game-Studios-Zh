@@ -1,80 +1,80 @@
-# Agent Test Spec: devops-engineer
+# Agent 测试规范: devops-engineer
 
-## Agent Summary
-- **Domain**: CI/CD pipeline configuration, build scripts, version control workflow enforcement, deployment infrastructure, branching strategy, environment management, automated test integration in CI
-- **Does NOT own**: Game logic or gameplay systems, security audits (security-engineer), QA test strategy (qa-lead), game networking logic (network-programmer)
-- **Model tier**: Sonnet
-- **Gate IDs**: None; escalates deployment blockers to producer
-
----
-
-## Static Assertions (Structural)
-
-- [ ] `description:` field is present and domain-specific (references CI/CD, build, deployment, version control)
-- [ ] `allowed-tools:` list matches the agent's role (Read/Write for pipeline config files, shell scripts, YAML; no game source editing tools)
-- [ ] Model tier is Sonnet (default for operations specialists)
-- [ ] Agent definition does not claim authority over game logic, security audits, or QA test design
+## Agent 概述
+- **领域**: CI/CD 流水线配置、构建脚本、版本控制工作流实施、部署基础设施、分支策略、环境管理、自动化测试集成到 CI 中
+- **不负责**: 游戏逻辑或游戏系统、安全审计（security-engineer）、QA 测试策略（qa-lead）、游戏网络逻辑（network-programmer）
+- **模型层级**: Sonnet
+- **Gate IDs**: 无；将部署阻塞问题上报给 producer
 
 ---
 
-## Test Cases
+## 静态断言（结构）
 
-### Case 1: In-domain request — CI setup for a Godot project
-**Input**: "Set up a CI pipeline for our Godot 4 project. It should run tests on every push to main and every pull request, and fail the build if tests fail."
-**Expected behavior**:
-- Produces a GitHub Actions workflow YAML (`.github/workflows/ci.yml` or equivalent)
-- Uses the Godot headless test runner command from `coding-standards.md`: `godot --headless --script tests/gdunit4_runner.gd`
-- Configures trigger on `push` to main and `pull_request`
-- Sets the job to fail (`exit 1` or non-zero exit) when tests fail — does NOT configure the pipeline to continue on test failure
-- References the project's coding standards CI rules in the output or comments
-
-### Case 2: Out-of-domain request — game networking implementation
-**Input**: "Implement the server-authoritative movement system for our multiplayer game."
-**Expected behavior**:
-- Does not produce game networking or movement code
-- States clearly: "Game networking implementation is owned by network-programmer; I handle the infrastructure that builds, tests, and deploys the game"
-- Does not conflate CI pipeline configuration with in-game network architecture
-
-### Case 3: Build failure diagnosis
-**Input**: "Our CI pipeline is failing on the merge step. The error is: 'Asset import failed: texture compression format unsupported in headless mode.'"
-**Expected behavior**:
-- Diagnoses the root cause: headless CI environment does not support GPU-dependent texture compression
-- Proposes a concrete fix: either pre-import assets locally before CI runs (commit .import files to VCS), configure Godot's import settings to use a CPU-compatible compression format in CI, or use a Docker image with GPU simulation if available
-- Does NOT declare the pipeline unfixable — provides at least one actionable path
-- Notes any tradeoffs (committing .import files increases repo size; CPU compression may differ from GPU output)
-
-### Case 4: Branching strategy conflict
-**Input**: "Half the team wants to use GitFlow with long-lived feature branches. The other half wants trunk-based development. How should we set this up?"
-**Expected behavior**:
-- Recommends trunk-based development per project conventions (CLAUDE.md / coordination-rules.md specify Git with trunk-based development)
-- Provides concrete rationale for the recommendation in this project's context: smaller team, fewer integration conflicts, faster CI feedback
-- Does NOT present this as a 50/50 choice if the project has an established convention
-- Explains how to implement trunk-based development with short-lived feature branches and feature flags if needed
-- Does NOT override the project convention without flagging that doing so requires updating CLAUDE.md
-
-### Case 5: Context pass — platform-specific build matrix
-**Input context**: Project targets PC (Windows, Linux), Nintendo Switch, and PlayStation 5.
-**Input**: "Set up our CI build matrix so we get a build artifact for each target platform on every release branch push."
-**Expected behavior**:
-- Produces a build matrix configuration with three platform entries: Windows, Linux, Switch, PS5
-- Applies platform-appropriate build steps: PC uses standard Godot export templates; Switch and PS5 require platform-specific export templates (notes that console templates require licensed SDK access and are not publicly distributed)
-- Does NOT assume all platforms can use the same build runner — flags that console builds may require self-hosted runners with licensed SDKs
-- Organizes artifacts by platform name in the pipeline output
+- [ ] `description:` 字段存在且具有领域特定性（引用 CI/CD、构建、部署、版本控制）
+- [ ] `allowed-tools:` 列表与 agent 角色匹配（用于流水线配置文件、shell 脚本、YAML 的读/写权限；无游戏源代码编辑工具）
+- [ ] 模型层级为 Sonnet（操作专家的默认设置）
+- [ ] Agent 定义不声称对游戏逻辑、安全审计或 QA 测试设计拥有权限
 
 ---
 
-## Protocol Compliance
+## 测试用例
 
-- [ ] Stays within declared domain (CI/CD, build scripts, version control, deployment)
-- [ ] Redirects game logic and networking requests to appropriate programmers
-- [ ] Recommends trunk-based development when branching strategy is contested, per project conventions
-- [ ] Returns structured pipeline configurations (YAML, scripts) not freeform advice
-- [ ] Flags platform SDK licensing constraints for console builds rather than silently producing incorrect configs
+### 用例 1: 领域内请求 — Godot 项目的 CI 设置
+**输入**: "为我们的 Godot 4 项目设置 CI 流水线。它应该在每次推送到 main 分支和每个 pull request 时运行测试，如果测试失败则构建失败。"
+**预期行为**:
+- 生成 GitHub Actions 工作流 YAML 文件（`.github/workflows/ci.yml` 或等效文件）
+- 使用 `coding-standards.md` 中的 Godot 无头测试运行器命令：`godot --headless --script tests/gdunit4_runner.gd`
+- 配置在推送到 main 分支和 pull_request 时触发
+- 设置任务在测试失败时失败（`exit 1` 或非零退出）— 不配置流水线在测试失败时继续运行
+- 在输出或注释中引用项目的编码标准 CI 规则
+
+### 用例 2: 领域外请求 — 游戏网络实现
+**输入**: "为我们的多人游戏实现服务器权威移动系统。"
+**预期行为**:
+- 不生成游戏网络或移动代码
+- 明确声明："游戏网络实现由 network-programmer 负责；我处理构建、测试和部署游戏的基础设施"
+- 不混淆 CI 流水线配置与游戏内网络架构
+
+### 用例 3: 构建失败诊断
+**输入**: "我们的 CI 流水线在合并步骤失败。错误信息是：'Asset import failed: texture compression format unsupported in headless mode.'"
+**预期行为**:
+- 诊断根本原因：无头 CI 环境不支持 GPU 依赖的纹理压缩
+- 提出具体修复方案：要么在 CI 运行前本地预导入资源（将 .import 文件提交到版本控制系统），在 CI 中配置 Godot 的导入设置以使用 CPU 兼容的压缩格式，或者如果可用则使用带有 GPU 模拟的 Docker 镜像
+- 不声明流水线无法修复 — 提供至少一个可行的解决方案
+- 注意任何权衡（提交 .import 文件会增加仓库大小；CPU 压缩可能与 GPU 输出不同）
+
+### 用例 4: 分支策略冲突
+**输入**: "一半团队希望使用具有长期功能分支的 GitFlow。另一半希望使用主干开发。我们应该如何设置？"
+**预期行为**:
+- 根据项目约定推荐主干开发（CLAUDE.md / coordination-rules.md 指定使用主干开发的 Git）
+- 在此项目上下文中提供具体的推荐理由：团队规模较小、集成冲突较少、CI 反馈更快
+- 如果项目有既定约定，不将此视为 50/50 的选择
+- 解释如何实现带有短期功能分支和功能标志（如果需要）的主干开发
+- 不覆盖项目约定，除非标记这样做需要更新 CLAUDE.md
+
+### 用例 5: 上下文传递 — 平台特定构建矩阵
+**输入上下文**: 项目目标平台为 PC（Windows、Linux）、Nintendo Switch 和 PlayStation 5。
+**输入**: "设置我们的 CI 构建矩阵，以便在每个发布分支推送时为每个目标平台获取构建产物。"
+**预期行为**:
+- 生成具有三个平台条目的构建矩阵配置：Windows、Linux、Switch、PS5
+- 应用平台适当的构建步骤：PC 使用标准 Godot 导出模板；Switch 和 PS5 需要平台特定的导出模板（注意控制台模板需要许可的 SDK 访问权限且不公开分发）
+- 不假设所有平台可以使用相同的构建运行器 — 标记控制台构建可能需要带有许可 SDK 的自托管运行器
+- 在流水线输出中按平台名称组织产物
 
 ---
 
-## Coverage Notes
-- Case 1 (Godot CI) references `coding-standards.md` CI rules — verify this file is present and current before running this test
-- Case 4 (branching strategy) is a convention-enforcement test — agent must know the project convention, not just give neutral advice
-- Case 5 requires that project's target platforms are documented (in `technical-preferences.md` or equivalent)
-- No automated runner; review manually or via `/skill-test`
+## 协议合规性
+
+- [ ] 保持在声明的领域内（CI/CD、构建脚本、版本控制、部署）
+- [ ] 将游戏逻辑和网络请求重定向到适当的程序员
+- [ ] 根据项目约定，在分支策略有争议时推荐主干开发
+- [ ] 返回结构化的流水线配置（YAML、脚本），而非自由形式的建议
+- [ ] 标记控制台构建的平台 SDK 许可限制，而不是静默生成错误的配置
+
+---
+
+## 覆盖范围说明
+- 用例 1（Godot CI）引用 `coding-standards.md` 中的 CI 规则 — 在运行此测试前验证此文件存在且最新
+- 用例 4（分支策略）是一个约定执行测试 — agent 必须知道项目约定，而不仅仅是给出中性建议
+- 用例 5 要求项目的目标平台已记录（在 `technical-preferences.md` 或等效文件中）
+- 无自动化运行器；手动或通过 `/skill-test` 进行审查

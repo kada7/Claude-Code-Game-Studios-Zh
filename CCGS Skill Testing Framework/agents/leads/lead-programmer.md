@@ -1,85 +1,85 @@
 # Agent Test Spec: lead-programmer
 
-## Agent Summary
-**Domain owned:** Code architecture decisions, LP-FEASIBILITY gate, LP-CODE-REVIEW gate, coding standards enforcement, tech stack decisions within the approved engine.
-**Does NOT own:** Game design decisions (game-designer), creative direction (creative-director), production scheduling (producer), visual art direction (art-director).
-**Model tier:** Sonnet (implementation-level analysis of individual systems).
-**Gate IDs handled:** LP-FEASIBILITY, LP-CODE-REVIEW.
+## 代理摘要
+**拥有领域:** 代码架构决策、LP-FEASIBILITY 关卡、LP-CODE-REVIEW 关卡、编码标准执行、已批准引擎内的技术栈决策。
+**不拥有:** 游戏设计决策（game-designer）、创意指导（creative-director）、制作调度（producer）、视觉美术指导（art-director）。
+**模型层级:** Sonnet（单个系统的实施级分析）。
+**处理的关卡 ID:** LP-FEASIBILITY、LP-CODE-REVIEW。
 
 ---
 
-## Static Assertions (Structural)
+## 静态断言（结构）
 
-Verified by reading the agent's `.claude/agents/lead-programmer.md` frontmatter:
+通过读取代理的 `.claude/agents/lead-programmer.md` 前言验证：
 
-- [ ] `description:` field is present and domain-specific (references code architecture, feasibility, code review, coding standards — not generic)
-- [ ] `allowed-tools:` list includes Read for source files; Bash may be included for static analysis or test runs; no write access outside `src/` without explicit delegation
-- [ ] Model tier is `claude-sonnet-4-6` per coordination-rules.md
-- [ ] Agent definition does not claim authority over game design, creative direction, or production scheduling
-
----
-
-## Test Cases
-
-### Case 1: In-domain request — appropriate output format
-**Scenario:** A new `CombatSystem` implementation is submitted for code review. The system uses dependency injection for all external references, has doc comments on all public APIs, follows the project's naming conventions, and includes unit tests for all public methods. Request is tagged LP-CODE-REVIEW.
-**Expected:** Returns `LP-CODE-REVIEW: APPROVED` with rationale confirming dependency injection usage, doc comment coverage, naming convention compliance, and test coverage.
-**Assertions:**
-- [ ] Verdict is exactly one of APPROVED / NEEDS CHANGES
-- [ ] Verdict token is formatted as `LP-CODE-REVIEW: APPROVED`
-- [ ] Rationale references specific coding standards criteria (DI, doc comments, naming, tests)
-- [ ] Output stays within code quality scope — does not comment on whether the mechanic is fun or fits creative vision
-
-### Case 2: Out-of-domain request — redirects or escalates
-**Scenario:** Team member asks lead-programmer to review and approve the balance formula for player damage scaling across levels, checking whether the numbers "feel right."
-**Expected:** Agent declines to evaluate design balance and redirects to systems-designer.
-**Assertions:**
-- [ ] Does not make any binding assessment of formula balance or game feel
-- [ ] Explicitly names `systems-designer` as the correct handler
-- [ ] May note code implementation concerns about the formula (e.g., integer overflow risk at max level), but defers all balance evaluation to systems-designer
-
-### Case 3: Gate verdict — correct vocabulary
-**Scenario:** A proposed pathfinding approach for enemy AI uses a brute-force nearest-neighbor search against all other entities every frame. With expected enemy counts of 200+, this is O(n²) per frame at 60fps. Request is tagged LP-FEASIBILITY.
-**Expected:** Returns `LP-FEASIBILITY: INFEASIBLE` with specific citation of the O(n²) complexity, the entity count threshold, and the resulting per-frame cost against the target frame budget.
-**Assertions:**
-- [ ] Verdict is exactly one of FEASIBLE / CONCERNS / INFEASIBLE — not freeform text
-- [ ] Verdict token is formatted as `LP-FEASIBILITY: INFEASIBLE`
-- [ ] Rationale includes the specific algorithmic complexity and entity count numbers
-- [ ] Suggests at least one alternative approach (e.g., spatial hashing, KD-tree) without mandating a choice
-
-### Case 4: Conflict escalation — correct parent
-**Scenario:** game-designer wants a mechanic where every NPC maintains a full simulation of needs, schedule, and memory (similar to a full life-sim AI). lead-programmer calculates this will exceed the frame budget by 3x at target NPC counts. game-designer insists the mechanic is core to the game vision.
-**Expected:** lead-programmer states the specific frame budget violation with numbers, proposes alternative approaches (e.g., LOD-based simulation, simplified need model), but explicitly defers the "is this worth the cost or should the design change" decision to creative-director as the creative arbiter.
-**Assertions:**
-- [ ] States the specific frame budget violation (e.g., 3x over budget at N entities)
-- [ ] Proposes at least one technically viable alternative
-- [ ] Explicitly defers the design priority decision to `creative-director`
-- [ ] Does not unilaterally cut or modify the mechanic design
-
-### Case 5: Context pass — uses provided context
-**Scenario:** Agent receives a gate context block that includes the project's frame budget: 16.67ms total per frame, with 4ms allocated to AI systems. A new AI behavior system is submitted that profiling estimates will consume 7ms per frame under normal conditions.
-**Expected:** Assessment references the specific frame budget allocation from context (4ms AI budget), identifies the 7ms estimate as exceeding the allocation by 3ms, and returns CONCERNS or INFEASIBLE with those specific numbers cited.
-**Assertions:**
-- [ ] References the specific frame budget figures from the provided context (16.67ms total, 4ms AI allocation)
-- [ ] Uses the specific 7ms estimate from the submission in the comparison
-- [ ] Does not give generic "this might be slow" advice — cites concrete numbers
-- [ ] Verdict rationale is traceable to the provided budget constraints
+- [ ] `description:` 字段存在且领域特定（提及代码架构、可行性、代码评审、编码标准——非通用）
+- [ ] `allowed-tools:` 列表包含用于源文件的 Read；可能包含 Bash 用于静态分析或测试运行；未经明确委托，不允许对 `src/` 外部进行写入访问
+- [ ] 模型层级为 `claude-sonnet-4-6`，根据 coordination-rules.md
+- [ ] 代理定义不声称拥有游戏设计、创意指导或制作调度的权限
 
 ---
 
-## Protocol Compliance
+## 测试用例
 
-- [ ] Returns LP-CODE-REVIEW verdicts using APPROVED / NEEDS CHANGES vocabulary only
-- [ ] Returns LP-FEASIBILITY verdicts using FEASIBLE / CONCERNS / INFEASIBLE vocabulary only
-- [ ] Stays within declared code architecture domain
-- [ ] Defers design priority conflicts to creative-director
-- [ ] Uses gate IDs in output (e.g., `LP-FEASIBILITY: INFEASIBLE`) not inline prose verdicts
-- [ ] Does not make binding game design or creative direction decisions
+### 用例 1：领域内请求 —— 适当的输出格式
+**场景:** 一个新的 `CombatSystem` 实施提交进行代码评审。该系统对所有外部引用使用依赖注入，在所有公共 API 上有文档注释，遵循项目的命名约定，并包含所有公共方法的单元测试。请求标记为 LP-CODE-REVIEW。
+**预期:** 返回 `LP-CODE-REVIEW: APPROVED`，并附上确认使用依赖注入、文档注释覆盖、命名约定合规性和测试覆盖率的理由。
+**断言:**
+- [ ] 判定恰好为 APPROVED / NEEDS CHANGES 之一
+- [ ] 判定令牌格式为 `LP-CODE-REVIEW: APPROVED`
+- [ ] 理由提及特定的编码标准标准（依赖注入、文档注释、命名、测试）
+- [ ] 输出保持在代码质量范围内——不评论机制是否有趣或是否符合创意愿景
+
+### 用例 2：领域外请求 —— 重定向或上报
+**场景:** 团队成员要求 lead-programmer 评审并批准玩家伤害随等级变化的平衡公式，检查数值是否"感觉正确"。
+**预期:** 代理拒绝评估设计平衡，并重定向到 systems-designer。
+**断言:**
+- [ ] 不对公式平衡或游戏感觉做出任何具有约束力的评估
+- [ ] 明确命名 `systems-designer` 为正确的处理者
+- [ ] 可能指出公式的代码实施问题（例如，最大等级时的整数溢出风险），但将所有平衡评估推迟给 systems-designer
+
+### 用例 3：关卡判定 —— 正确的词汇
+**场景:** 为敌人 AI 提出的寻路方法使用暴力最近邻搜索，针对每帧的所有其他实体。预计敌人数量为 200+，这导致每帧 O(n²) 的复杂度，在 60fps 下运行。请求标记为 LP-FEASIBILITY。
+**预期:** 返回 `LP-FEASIBILITY: INFEASIBLE`，并具体引用 O(n²) 复杂度、实体数量阈值以及相对于目标帧预算的每帧成本。
+**断言:**
+- [ ] 判定恰好为 FEASIBLE / CONCERNS / INFEASIBLE 之一——非自由文本
+- [ ] 判定令牌格式为 `LP-FEASIBILITY: INFEASIBLE`
+- [ ] 理由包括特定的算法复杂度和实体数量
+- [ ] 建议至少一种替代方法（例如，空间哈希、KD 树）而不强制选择
+
+### 用例 4：冲突上报 —— 正确的上级
+**场景:** game-designer 想要一个机制，让每个 NPC 维持需求、日程和记忆的完整模拟（类似于完整的生活模拟 AI）。lead-programmer 计算出在目标 NPC 数量下，这将超出帧预算 3 倍。game-designer 坚持该机制是游戏愿景的核心。
+**预期:** lead-programmer 陈述具体的帧预算违规情况并附上数字，提出替代方法（例如，基于 LOD 的模拟、简化的需求模型），但明确将"这值得花费成本，还是设计应该改变"的决策推迟给创意总监，作为创意仲裁者。
+**断言:**
+- [ ] 陈述具体的帧预算违规情况（例如，在 N 个实体下超出预算 3 倍）
+- [ ] 提出至少一种技术上可行的替代方案
+- [ ] 明确将设计优先级决策推迟给 `creative-director`
+- [ ] 不单方面削减或修改机制设计
+
+### 用例 5：上下文传递 —— 使用提供的上下文
+**场景:** 代理接收到一个关卡上下文块，其中包含项目的帧预算：每帧总计 16.67ms，其中 4ms 分配给 AI 系统。提交了一个新的 AI 行为系统，分析估计在正常情况下每帧将消耗 7ms。
+**预期:** 评估引用上下文中的特定帧预算分配（4ms AI 预算），将 7ms 估计值识别为超出分配 3ms，并返回 CONCERNS 或 INFEASIBLE，并引用这些具体数字。
+**断言:**
+- [ ] 引用所提供上下文中的特定帧预算数字（总计 16.67ms，AI 分配 4ms）
+- [ ] 在比较中使用提交中的具体 7ms 估计值
+- [ ] 不给出通用的"这可能很慢"建议——引用具体数字
+- [ ] 判定理由可追溯到所提供的预算约束
 
 ---
 
-## Coverage Notes
-- Multi-file code review spanning several interdependent systems is not covered — deferred to integration tests.
-- Tech debt assessment and prioritization are not covered here — deferred to /tech-debt skill integration.
-- Coding standards document updates (adding a new forbidden pattern) are not covered.
-- Interaction with qa-lead on what constitutes a testable unit (LP vs QL boundary) is not covered.
+## 协议合规性
+
+- [ ] 仅使用 APPROVED / NEEDS CHANGES 词汇返回 LP-CODE-REVIEW 判定
+- [ ] 仅使用 FEASIBLE / CONCERNS / INFEASIBLE 词汇返回 LP-FEASIBILITY 判定
+- [ ] 保持在声明的代码架构领域内
+- [ ] 将设计优先级冲突推迟给 creative-director
+- [ ] 在输出中使用关卡 ID（例如，`LP-FEASIBILITY: INFEASIBLE`）而非内联散文判定
+- [ ] 不做具有约束力的游戏设计或创意指导决策
+
+---
+
+## 覆盖范围说明
+- 跨多个相互依赖系统的多文件代码评审未覆盖——推迟到集成测试。
+- 技术债务评估和优先级划分在此未覆盖——推迟到与 /tech-debt 技能的集成。
+- 编码标准文档更新（添加新的禁止模式）未覆盖。
+- 与 qa-lead 在什么构成可测试单元上的交互（LP 与 QL 边界）未覆盖。

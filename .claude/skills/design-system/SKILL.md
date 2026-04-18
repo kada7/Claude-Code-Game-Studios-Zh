@@ -1,150 +1,137 @@
 ---
 name: design-system
-description: "Guided, section-by-section GDD authoring for a single game system. Gathers context from existing docs, walks through each required section collaboratively, cross-references dependencies, and writes incrementally to file."
+description: "引导式、逐节编写单个游戏系统的GDD。从现有文档收集上下文，协作完成每个必需章节，交叉引用依赖关系，并增量写入文件。"
 argument-hint: "<system-name> [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Task, AskUserQuestion, TodoWrite
 ---
 
-When this skill is invoked:
+当此 Skill 被调用时：
 
-## 1. Parse Arguments & Validate
+## 1. 解析参数并验证
 
-Resolve the review mode (once, store for all gate spawns this run):
-1. If `--review [full|lean|solo]` was passed → use that
-2. Else read `production/review-mode.txt` → use that value
-3. Else → default to `lean`
+解析审查模式（一次性解析，存储以供本次运行中所有 gate 调用使用）：
+1. 如果传入了 `--review [full|lean|solo]` → 使用该值
+2. 否则读取 `production/review-mode.txt` → 使用该值
+3. 否则 → 默认为 `lean`
 
-See `.claude/docs/director-gates.md` for the full check pattern.
+完整的检查模式请参阅 `.claude/docs/director-gates.md`。
 
-A system name or retrofit path is **required**. If missing:
+系统名称或 retrofit 路径是**必需的**。如果缺失：
 
-1. Check if `design/gdd/systems-index.md` exists.
-2. If it exists: read it, find the highest-priority system with status "Not Started" or equivalent, and use `AskUserQuestion`:
-   - Prompt: "The next system in your design order is **[system-name]** ([priority] | [layer]). Start designing it?"
-   - Options: `[A] Yes — design [system-name]` / `[B] Pick a different system` / `[C] Stop here`
-   - If [A]: proceed with that system name. If [B]: ask which system to design (plain text). If [C]: exit.
-3. If no systems index exists, fail with:
-   > "Usage: `/design-system <system-name>` — e.g., `/design-system movement`
-   > Or to fill gaps in an existing GDD: `/design-system retrofit design/gdd/[system-name].md`
-   > No systems index found. Run `/map-systems` first to map your systems and get the design order."
+1. 检查 `design/gdd/systems-index.md` 是否存在。
+2. 如果存在：读取它，找到状态为 "Not Started" 或同等状态的最高优先级系统，并使用 `AskUserQuestion`：
+   - 提示："设计顺序中的下一个系统是 **[system-name]** ([priority] | [layer])。开始设计它吗？"
+   - 选项：`[A] 是 — 设计 [system-name]` / `[B] 选择另一个系统` / `[C] 在此停止`
+   - 如果选 [A]：继续使用该系统名称。如果选 [B]：询问要设计哪个系统（纯文本）。如果选 [C]：退出。
+3. 如果不存在系统索引，则失败并提示：
+   > "用法：`/design-system <system-name>` — 例如，`/design-system movement`
+   > 或者要填补现有 GDD 的空白：`/design-system retrofit design/gdd/[system-name].md`
+   > 未找到系统索引。请先运行 `/map-systems` 来映射您的系统并获取设计顺序。"
 
-**Detect retrofit mode:**
-If the argument starts with `retrofit` or the argument is a file path to an
-existing `.md` file in `design/gdd/`, enter **retrofit mode**:
+**检测 retrofit 模式：**
+如果参数以 `retrofit` 开头，或者参数是 `design/gdd/` 下现有 `.md` 文件的路径，则进入 **retrofit 模式**：
 
-1. Read the existing GDD file.
-2. Identify which of the 8 required sections are present (scan for section headings).
-   Required sections: Overview, Player Fantasy, Detailed Design/Rules, Formulas,
-   Edge Cases, Dependencies, Tuning Knobs, Acceptance Criteria.
-3. Identify which sections contain only placeholder text (`[To be designed]` or
-   equivalent — blank, a single line, or obviously incomplete).
-4. Present to the user before doing anything:
+1. 读取现有 GDD 文件。
+2. 识别 8 个必需章节中哪些已存在（扫描章节标题）。
+   必需章节：Overview, Player Fantasy, Detailed Design/Rules, Formulas,
+   Edge Cases, Dependencies, Tuning Knobs, Acceptance Criteria。
+3. 识别哪些章节仅包含占位文本（`[To be designed]` 或
+   同等内容 — 空白、单行或明显不完整）。
+4. 在执行任何操作之前向用户展示：
    ```
    ## Retrofit: [System Name]
    File: design/gdd/[filename].md
 
-   Sections already written (will not be touched):
+   已完成的章节（不会被修改）：
    ✓ [section name]
    ✓ [section name]
 
-   Missing or incomplete sections (will be authored):
-   ✗ [section name] — missing
-   ✗ [section name] — placeholder only
+   缺失或不完整的章节（将被编写）：
+   ✗ [section name] — 缺失
+   ✗ [section name] — 仅占位符
    ```
-5. Ask: "Shall I fill the [N] missing sections? I will not modify any existing content."
-6. If yes: proceed to **Phase 2 (Gather Context)** as normal, but in **Phase 3**
-   skip creating the skeleton (file already exists) and in **Phase 4** skip
-   sections that are already complete. Only run the section cycle for missing/
-   incomplete sections.
-7. **Never overwrite existing section content.** Use Edit tool to replace only
-   `[To be designed]` placeholders or empty section bodies.
+5. 询问："是否要我填充这 [N] 个缺失的章节？我不会修改任何现有内容。"
+6. 如果同意：正常进入 **Phase 2（收集上下文）**，但在 **Phase 3**
+   中跳过创建骨架（文件已存在），在 **Phase 4** 中跳过
+   已完成的章节。仅对缺失/不完整的章节运行章节循环。
+7. **永远不要覆盖现有章节内容。** 使用 Edit 工具仅替换
+   `[To be designed]` 占位符或空章节主体。
 
-If NOT in retrofit mode, normalize the system name to kebab-case for the
-filename (e.g., "combat system" becomes `combat-system`).
+如果**不在** retrofit 模式，将系统名称规范化为 kebab-case 作为
+文件名（例如，"combat system" 变为 `combat-system`）。
 
 ---
 
-## 2. Gather Context (Read Phase)
+## 2. 收集上下文（读取阶段）
 
-Read all relevant context **before** asking the user anything. This is the skill's
-primary advantage over ad-hoc design — it arrives informed.
+在询问用户任何问题之前，先读取所有相关上下文。这是本 Skill 相对于
+即兴设计的主要优势 —— 它能够做到有备而来。
 
-### 2a: Required Reads
+### 2a: 必需读取
 
-- **Game concept**: Read `design/gdd/game-concept.md` — fail if missing:
-  > "No game concept found. Run `/brainstorm` first."
-- **Systems index**: Read `design/gdd/systems-index.md` — fail if missing:
-  > "No systems index found. Run `/map-systems` first to map your systems."
-- **Target system**: Find the system in the index. If not listed, warn:
-  > "[system-name] is not in the systems index. Would you like to add it, or
-  > design it as an off-index system?"
-- **Entity registry**: Read `design/registry/entities.yaml` if it exists.
-  Extract all entries referenced by or relevant to this system (grep
-  `referenced_by.*[system-name]` and `source.*[system-name]`). Hold these
-  in context as **known facts** — values that other GDDs have already
-  established and this GDD must not contradict.
-- **Reflexion log**: Read `docs/consistency-failures.md` if it exists.
-  Extract entries whose Domain matches this system's category. These are
-  recurring conflict patterns — present them under "Past failure patterns"
-  in the Phase 2d context summary so the user knows where mistakes have
-  occurred before in this domain.
+- **游戏概念**：读取 `design/gdd/game-concept.md` — 如果缺失则失败：
+  > "未找到游戏概念。请先运行 `/brainstorm`。"
+- **系统索引**：读取 `design/gdd/systems-index.md` — 如果缺失则失败：
+  > "未找到系统索引。请先运行 `/map-systems` 来映射您的系统。"
+- **目标系统**：在索引中找到该系统。如果未列出，则警告：
+  > "[system-name] 不在系统索引中。您想添加它，还是将其作为索引外系统来设计？"
+- **实体注册表**：如果存在，读取 `design/registry/entities.yaml`。
+  提取所有被该系统引用或与之相关的条目（grep
+  `referenced_by.*[system-name]` 和 `source.*[system-name]`）。将这些作为**已知事实**保留在上下文中 —— 这些是其他 GDD 已经确立的值，本 GDD 不得与之矛盾。
+- **反思日志**：如果存在，读取 `docs/consistency-failures.md`。
+  提取 Domain 匹配该系统类别的条目。这些是反复出现的冲突模式 —— 在 Phase 2d 的上下文摘要中以 "Past failure patterns" 呈现给用户，让他们知道该领域以前在哪里出过问题。
 
-### 2b: Dependency Reads
+### 2b: 依赖读取
 
-From the systems index, identify:
-- **Upstream dependencies**: Systems this one depends on. Read their GDDs if they
-  exist (these contain decisions this system must respect).
-- **Downstream dependents**: Systems that depend on this one. Read their GDDs if
-  they exist (these contain expectations this system must satisfy).
+从系统索引中识别：
+- **上游依赖**：该系统所依赖的系统。如果它们的 GDD 存在，则读取它们
+  （这些包含该系统必须遵守的决策）。
+- **下游依赖者**：依赖于该系统的系统。如果它们的 GDD 存在，则读取它们
+  （这些包含该系统必须满足的期望）。
 
-For each dependency GDD that exists, extract and hold in context:
-- Key interfaces (what data flows between the systems)
-- Formulas that reference this system's outputs
-- Edge cases that assume this system's behavior
-- Tuning knobs that feed into this system
+对于每个存在的依赖 GDD，提取并保留在上下文中：
+- 关键接口（系统之间流动的数据）
+- 引用该系统输出的公式
+- 假设该系统行为的边界情况
+- 输入该系统的调节参数
 
-### 2c: Optional Reads
+### 2c: 可选读取
 
-- **Game pillars**: Read `design/gdd/game-pillars.md` if it exists
-- **Existing GDD**: Read `design/gdd/[system-name].md` if it exists (resume, don't
-  restart from scratch)
-- **Related GDDs**: Glob `design/gdd/*.md` and read any that are thematically related
-  (e.g., if designing a system that overlaps with another in scope, read the related GDD
-  even if it's not a formal dependency)
+- **游戏支柱**：如果存在，读取 `design/gdd/game-pillars.md`
+- **现有 GDD**：如果存在，读取 `design/gdd/[system-name].md`（继续，不要
+  从头开始）
+- **相关 GDD**：Glob `design/gdd/*.md` 并读取任何主题相关的
+  （例如，如果设计的系统在范围上与另一个重叠，即使它不是正式的依赖关系，也要读取相关 GDD）
 
-### 2d: Present Context Summary
+### 2d: 呈现上下文摘要
 
-Before starting design work, present a brief summary to the user:
+在开始设计工作之前，向用户呈现一份简要摘要：
 
-> **Designing: [System Name]**
-> - Priority: [from index] | Layer: [from index]
-> - Depends on: [list, noting which have GDDs vs. undesigned]
-> - Depended on by: [list, noting which have GDDs vs. undesigned]
-> - Existing decisions to respect: [key constraints from dependency GDDs]
-> - Pillar alignment: [which pillar(s) this system primarily serves]
-> - **Known cross-system facts (from registry):**
->   - [entity_name]: [attribute]=[value], [attribute]=[value] (owned by [source GDD])
->   - [item_name]: [attribute]=[value], [attribute]=[value] (owned by [source GDD])
->   - [formula_name]: variables=[list], output=[min–max] (owned by [source GDD])
->   - [constant_name]: [value] [unit] (owned by [source GDD])
->   *(These values are locked — if this GDD needs different values, surface
->   the conflict before writing. Do not silently use different numbers.)*
+> **正在设计：[System Name]**
+> - 优先级：[来自索引] | 层级：[来自索引]
+> - 依赖于：[列表，注明哪些有 GDD，哪些尚未设计]
+> - 被依赖者：[列表，注明哪些有 GDD，哪些尚未设计]
+> - 需要遵守的现有决策：[来自依赖 GDD 的关键约束]
+> - 支柱对齐：[该系统主要服务的支柱]
+> - **已知跨系统事实（来自注册表）：**
+>   - [entity_name]: [attribute]=[value], [attribute]=[value]（由 [source GDD] 拥有）
+>   - [item_name]: [attribute]=[value], [attribute]=[value]（由 [source GDD] 拥有）
+>   - [formula_name]: variables=[list], output=[min–max]（由 [source GDD] 拥有）
+>   - [constant_name]: [value] [unit]（由 [source GDD] 拥有）
+>   *（这些值已锁定 —— 如果此 GDD 需要不同的值，请在写入前提出冲突。不要默默使用不同的数字。）*
 >
-> If no registry entries are relevant: omit the "Known cross-system facts" section.
+> 如果没有相关的注册表条目：省略 "Known cross-system facts" 部分。
 
-If any upstream dependencies are undesigned, warn:
-> "[dependency] doesn't have a GDD yet. We'll need to make assumptions about
-> its interface. Consider designing it first, or we can define the expected
-> contract and flag it as provisional."
+如果有任何上游依赖尚未设计，则警告：
+> "[dependency] 还没有 GDD。我们需要对其接口做出假设。建议先设计它，或者我们可以定义预期的契约并将其标记为临时的。"
 
-### 2e: Technical Feasibility Pre-Check
+### 2e: 技术可行性预检
 
-Before asking the user to begin designing, load engine context and surface any
-constraints or knowledge gaps that will shape the design.
+在要求用户开始设计之前，加载引擎上下文并提出任何将塑造设计的约束或知识差距。
 
-**Step 1 — Determine the engine domain for this system:**
-Map the system's category (from systems-index.md) to an engine domain:
+**步骤 1 — 确定该系统的引擎域：**
+将系统类别（来自 systems-index.md）映射到引擎域：
 
 | System Category | Engine Domain |
 |----------------|--------------|
@@ -159,17 +146,17 @@ Map the system's category (from systems-index.md) to an engine domain:
 | Save/load, persistence, data | Core |
 | Dialogue, quests, narrative | Scripting |
 
-**Step 2 — Read engine context (if available):**
-- Read `.claude/docs/technical-preferences.md` to identify the engine and version
-- If engine is configured, read `docs/engine-reference/[engine]/VERSION.md`
-- Read `docs/engine-reference/[engine]/modules/[domain].md` if it exists
-- Read `docs/engine-reference/[engine]/breaking-changes.md` for domain-relevant entries
-- Glob `docs/architecture/adr-*.md` and read any ADRs whose domain matches
-  (check the Engine Compatibility table's "Domain" field)
+**步骤 2 — 读取引擎上下文（如果可用）：**
+- 读取 `.claude/docs/technical-preferences.md` 以识别引擎和版本
+- 如果引擎已配置，读取 `docs/engine-reference/[engine]/VERSION.md`
+- 如果存在，读取 `docs/engine-reference/[engine]/modules/[domain].md`
+- 读取 `docs/engine-reference/[engine]/breaking-changes.md` 中与域相关的条目
+- Glob `docs/architecture/adr-*.md` 并读取任何域匹配的 ADR
+  （检查 Engine Compatibility 表的 "Domain" 字段）
 
-**Step 3 — Present the Feasibility Brief:**
+**步骤 3 — 呈现可行性简报：**
 
-If engine reference docs exist, present before starting design:
+如果引擎参考文档存在，则在开始设计前呈现：
 
 ```
 ## Technical Feasibility Brief: [System Name]
@@ -191,30 +178,28 @@ Domain: [domain]
   (or "None yet")
 ```
 
-If no engine reference docs exist (engine not yet configured), show a short note:
-> "No engine configured yet — skipping technical feasibility check. Run
-> `/setup-engine` before moving to architecture if you haven't already."
+如果引擎参考文档不存在（引擎尚未配置），则显示简短说明：
+> "尚未配置引擎 —— 跳过技术可行性检查。如果尚未配置，请在进入架构阶段之前运行 `/setup-engine`。"
 
-**Step 4 — Ask before proceeding:**
+**步骤 4 — 在继续之前询问：**
 
-Use `AskUserQuestion`:
-- "Any constraints to add before we begin, or shall we proceed with these noted?"
-  - Options: "Proceed with these noted", "Add a constraint first", "I need to check the engine docs — pause here"
-
----
-
-Use `AskUserQuestion`:
-- "Ready to start designing [system-name]?"
-  - Options: "Yes, let's go", "Show me more context first", "Design a dependency first"
+使用 `AskUserQuestion`：
+- "在开始之前有什么要补充的约束吗，还是按照这些已记录的约束继续？"
+  - 选项："按照这些已记录的继续", "先添加一个约束", "我需要检查引擎文档 —— 在此暂停"
 
 ---
 
-## 3. Create File Skeleton
+使用 `AskUserQuestion`：
+- "准备好开始设计 [system-name] 了吗？"
+  - 选项："是的，开始吧", "先给我展示更多上下文", "先设计一个依赖项"
 
-Once the user confirms, **immediately** create the GDD file with empty section
-headers. This ensures incremental writes have a target.
+---
 
-Use the template structure from `.claude/docs/templates/game-design-document.md`:
+## 3. 创建文件骨架
+
+用户确认后，**立即**创建带有空章节标题的 GDD 文件。这确保增量写入有目标。
+
+使用 `.claude/docs/templates/game-design-document.md` 的模板结构：
 
 ```markdown
 # [System Name]
@@ -279,198 +264,174 @@ Use the template structure from `.claude/docs/templates/game-design-document.md`
 [To be designed]
 ```
 
-Ask: "May I create the skeleton file at `design/gdd/[system-name].md`?"
+询问："我可以在 `design/gdd/[system-name].md` 创建骨架文件吗？"
 
-After writing, update `production/session-state/active.md`:
-- Use Glob to check if the file exists.
-- If it **does not exist**: use the **Write** tool to create it. Never attempt Edit on a file that may not exist.
-- If it **already exists**: use the **Edit** tool to update the relevant fields.
+写入后，更新 `production/session-state/active.md`：
+- 使用 Glob 检查文件是否存在。
+- 如果**不存在**：使用 **Write** 工具创建它。永远不要对可能不存在的文件尝试 Edit。
+- 如果**已存在**：使用 **Edit** 工具更新相关字段。
 
-File content:
-- Task: Designing [system-name] GDD
-- Current section: Starting (skeleton created)
-- File: design/gdd/[system-name].md
+文件内容：
+- 任务：Designing [system-name] GDD
+- 当前章节：Starting (skeleton created)
+- 文件：design/gdd/[system-name].md
 
 ---
 
-## 4. Section-by-Section Design
+## 4. 逐节设计
 
-Walk through each section in order. For **each section**, follow this cycle:
+按顺序遍历每个章节。对于**每个章节**，遵循以下循环：
 
-### The Section Cycle
+### 章节循环
 
 ```
 Context  ->  Questions  ->  Options  ->  Decision  ->  Draft  ->  Approval  ->  Write
 ```
 
-1. **Context**: State what this section needs to contain, and surface any relevant
-   decisions from dependency GDDs that constrain it.
+1. **上下文**：说明该章节需要包含什么内容，并提出来自依赖 GDD 的任何相关决策约束。
 
-2. **Questions**: Ask clarifying questions specific to this section. Use
-   `AskUserQuestion` for constrained questions, conversational text for open-ended
-   exploration.
+2. **问题**：提出针对该章节的澄清问题。使用
+   `AskUserQuestion` 提出受约束的问题，使用对话文本进行开放式探索。
 
-3. **Options**: Where the section involves design choices (not just documentation),
-   present 2-4 approaches with pros/cons. Explain reasoning in conversation text,
-   then use `AskUserQuestion` to capture the decision.
+3. **选项**：如果该章节涉及设计选择（不仅仅是文档记录），
+   提出 2-4 种方案及其优缺点。在对话文本中解释推理，
+   然后使用 `AskUserQuestion` 捕获决策。
 
-4. **Decision**: User picks an approach or provides custom direction.
+4. **决策**：用户选择一种方案或提供自定义方向。
 
-5. **Draft**: Write the section content in conversation text for review. Flag any
-   provisional assumptions about undesigned dependencies.
+5. **草稿**：在对话文本中写入章节内容以供审阅。标记任何关于未设计依赖项的临时假设。
 
-6. **Approval**: Immediately after the draft — in the SAME response — use
-   `AskUserQuestion`. **NEVER use plain text. NEVER skip this step.**
-   - Prompt: "Approve the [Section Name] section?"
-   - Options: `[A] Approve — write it to file` / `[B] Make changes — describe what to fix` / `[C] Start over`
+6. **批准**：草稿之后立即 —— 在**同一回复**中 —— 使用
+   `AskUserQuestion`。**永远不要使用纯文本。永远不要跳过此步骤。**
+   - 提示："批准 [Section Name] 章节吗？"
+   - 选项：`[A] 批准 — 写入文件` / `[B] 修改 — 描述要修复的内容` / `[C] 重新开始`
 
-   **The draft and the approval widget MUST appear together in one response.
-   If the draft appears without the widget, the user is left at a blank prompt
-   with no path forward — this is a protocol violation.**
+   **草稿和批准控件必须一起出现在一个回复中。
+   如果草稿出现但没有控件，用户将面对空白提示
+   无路可走 —— 这是协议违规。**
 
-7. **Write**: Use the Edit tool to replace the placeholder with the approved content.
-   **CRITICAL**: Always include the section heading in the `old_string` to ensure
-   uniqueness — never match `[To be designed]` alone, as multiple sections use the
-   same placeholder and the Edit tool requires a unique match. Use this pattern:
+7. **写入**：使用 Edit 工具将占位符替换为批准的内容。
+   **关键**：始终在 `old_string` 中包含章节标题以确保唯一性 —— 永远不要单独匹配 `[To be designed]`，因为多个章节使用相同的占位符，而 Edit 工具需要唯一匹配。使用此模式：
    ```
    old_string: "## [Section Name]\n\n[To be designed]"
    new_string: "## [Section Name]\n\n[approved content]"
    ```
-   Confirm the write.
+   确认写入。
 
-8. **Registry conflict check** (Sections C and D only — Detailed Design and Formulas):
-   After writing, scan the section content for entity names, item names, formula
-   names, and numeric constants that appear in the registry. For each match:
-   - Compare the value just written against the registry entry.
-   - If they differ: **surface the conflict immediately** before starting the next
-     section. Do not continue silently.
-     > "Registry conflict: [name] is registered in [source GDD] as [registry_value].
-     > This section just wrote [new_value]. Which is correct?"
-   - If new (not in registry): flag it as a candidate for registry registration
-     (will be handled in Phase 5).
+8. **注册表冲突检查**（仅适用于 C 和 D 章节 —— Detailed Design 和 Formulas）：
+   写入后，扫描章节内容中出现在注册表中的实体名称、物品名称、公式
+   名称和数值常量。对于每个匹配项：
+   - 将刚刚写入的值与注册表条目进行比较。
+   - 如果不同：**立即提出冲突**，然后再开始下一个章节。不要默默继续。
+     > "注册表冲突：[name] 在 [source GDD] 中注册为 [registry_value]。
+     > 本章节刚刚写入了 [new_value]。哪个是正确的？"
+   - 如果是新的（不在注册表中）：将其标记为注册表注册的候选
+     （将在 Phase 5 中处理）。
 
-After writing each section, update `production/session-state/active.md` with the
-completed section name. Use Glob to check if the file exists — use Write to create
-it if absent, Edit to update it if present.
+每写完一个章节后，使用已完成的章节名称更新 `production/session-state/active.md`。使用 Glob 检查文件是否存在 —— 如果不存在则使用 Write 创建，如果存在则使用 Edit 更新。
 
-### Section-Specific Guidance
+### 章节特定指导
 
-Each section has unique design considerations and may benefit from specialist agents:
+每个章节都有独特的设计考虑，可能会受益于专家 Agent：
 
 ---
 
 ### Section A: Overview
 
-**Goal**: One paragraph a stranger could read and understand.
+**目标**：一个陌生人读了就能理解的段落。
 
-**Derive recommended options before building the widget**: Read the system's category and layer from the systems index (already in context from Phase 2), then determine the recommended option for each tab:
-- **Framing tab**: Foundation/Infrastructure layer → `[A]` recommended. Player-facing categories (Combat, UI, Dialogue, Character, Animation, Visual Effects, Audio) → `[C] Both` recommended.
-- **ADR ref tab**: Glob `docs/architecture/adr-*.md` and grep for the system name in the GDD Requirements section of any ADR. If a matching ADR is found → `[A] Yes — cite the ADR` recommended. If none found → `[B] No` recommended.
-- **Fantasy tab**: Foundation/Infrastructure layer → `[B] No` recommended. All other categories → `[A] Yes` recommended.
+**在构建控件之前推导推荐选项**：从系统索引中读取系统类别和层级（已在 Phase 2 的上下文中），然后确定每个标签的推荐选项：
+- **Framing 标签**：Foundation/Infrastructure 层级 → `[A]` 推荐。面向玩家的类别（Combat, UI, Dialogue, Character, Animation, Visual Effects, Audio）→ `[C] Both` 推荐。
+- **ADR ref 标签**：Glob `docs/architecture/adr-*.md` 并在任何 ADR 的 GDD Requirements 部分中 grep 系统名称。如果找到匹配的 ADR → `[A] Yes — cite the ADR` 推荐。如果未找到 → `[B] No` 推荐。
+- **Fantasy 标签**：Foundation/Infrastructure 层级 → `[B] No` 推荐。所有其他类别 → `[A] Yes` 推荐。
 
-Append `(Recommended)` to the appropriate option text in each tab.
+在每个标签的适当选项文本后附加 `(Recommended)`。
 
-**Framing questions (ask BEFORE drafting)**: Use `AskUserQuestion` with a multi-tab widget:
-- Tab "Framing" — "How should the overview frame this system?" Options: `[A] As a data/infrastructure layer (technical framing)` / `[B] Through its player-facing effect (design framing)` / `[C] Both — describe the data layer and its player impact`
-- Tab "ADR ref" — "Should the overview reference the existing ADR for this system?" Options: `[A] Yes — cite the ADR for implementation details` / `[B] No — keep the GDD at pure design level`
-- Tab "Fantasy" — "Does this system have a player fantasy worth stating?" Options: `[A] Yes — players feel it directly` / `[B] No — pure infrastructure, players feel what it enables`
+**框架问题（在起草前询问）**：使用 `AskUserQuestion` 和多标签控件：
+- 标签 "Framing" — "概述应该如何框架这个系统？" 选项：`[A] 作为数据/基础设施层（技术框架）` / `[B] 通过其面向玩家的效果（设计框架）` / `[C] 两者 —— 描述数据层及其对玩家的影响`
+- 标签 "ADR ref" — "概述是否应该引用该系统现有的 ADR？" 选项：`[A] 是 —— 引用 ADR 以获取实现细节` / `[B] 否 —— 保持 GDD 处于纯粹的设计层面`
+- 标签 "Fantasy" — "这个系统是否有值得陈述的玩家幻想？" 选项：`[A] 是 —— 玩家直接感受到它` / `[B] 否 —— 纯基础设施，玩家感受到它所能实现的东西`
 
-Use the user's answers to shape the draft. Do NOT answer these questions yourself and auto-draft.
+使用用户的答案来塑造草稿。不要自己回答这些问题并自动起草。
 
-**Questions to ask**:
-- What is this system in one sentence?
-- How does a player interact with it? (active/passive/automatic)
-- Why does this system exist — what would the game lose without it?
+**要问的问题**：
+- 这个系统一句话是什么？
+- 玩家如何与之交互？（主动/被动/自动）
+- 这个系统为什么存在 —— 没有它游戏会失去什么？
 
-**Cross-reference**: Check that the description aligns with how the systems index
-describes it. Flag discrepancies.
+**交叉引用**：检查描述是否与系统索引中的描述一致。标记差异。
 
-**Design vs. implementation boundary**: Overview questions must stay at the behavior
-level — what the system *does*, not *how it is built*. If implementation questions
-arise during the Overview (e.g., "Should this use an Autoload singleton or a signal
-bus?"), note them as "→ becomes an ADR" and move on. Implementation patterns belong
-in `/architecture-decision`, not the GDD. The GDD describes behavior; the ADR
-describes the technical approach used to achieve it.
+**设计与实现边界**：概述问题必须停留在行为层面 —— 系统*做什么*，而不是*如何构建*。如果在概述期间出现实现问题（例如，"这应该使用 Autoload 单例还是信号总线？"），将其标记为 "→ 成为 ADR" 并继续。实现模式属于 `/architecture-decision`，不属于 GDD。GDD 描述行为；ADR 描述用于实现它的技术方法。
 
 ---
 
 ### Section B: Player Fantasy
 
-**Goal**: The emotional target — what the player should *feel*.
+**目标**：情感目标 —— 玩家应该*感受到*什么。
 
-**Derive recommended option before building the widget**: Read the system's category and layer from Phase 2 context:
-- Player-facing categories (Combat, UI, Dialogue, Character, Animation, Audio, Level/World) → `[A] Direct` recommended
-- Foundation/Infrastructure layer → `[B] Indirect` recommended
-- Mixed categories (Camera/input, Economy, AI with visible player effects) → `[C] Both` recommended
+**在构建控件之前推导推荐选项**：从 Phase 2 上下文中读取系统类别和层级：
+- 面向玩家的类别（Combat, UI, Dialogue, Character, Animation, Audio, Level/World）→ `[A] Direct` 推荐
+- Foundation/Infrastructure 层级 → `[B] Indirect` 推荐
+- 混合类别（Camera/input, Economy, AI with visible player effects）→ `[C] Both` 推荐
 
-Append `(Recommended)` to the appropriate option text.
+在适当的选项文本后附加 `(Recommended)`。
 
-**Framing question (ask BEFORE drafting)**: Use `AskUserQuestion`:
-- Prompt: "Is this system something the player engages with directly, or infrastructure they experience indirectly?"
-- Options: `[A] Direct — player actively uses or feels this system` / `[B] Indirect — player experiences the effects, not the system` / `[C] Both — has a direct interaction layer and infrastructure beneath it`
+**框架问题（在起草前询问）**：使用 `AskUserQuestion`：
+- 提示："这个系统是玩家直接参与的，还是他们间接体验的基础设施？"
+- 选项：`[A] Direct —— 玩家主动使用或感受这个系统` / `[B] Indirect —— 玩家感受效果，而非系统本身` / `[C] Both —— 有直接交互层和其下的基础设施`
 
-Use the answer to frame the Player Fantasy section appropriately. Do NOT assume the answer.
+使用答案来适当地框架 Player Fantasy 章节。不要假设答案。
 
-**Questions to ask**:
-- What emotion or power fantasy does this serve?
-- What reference games nail this feeling? What specifically creates it?
-- Is this a "system you love engaging with" or "infrastructure you don't notice"?
+**要问的问题**：
+- 这服务于什么情感或力量幻想？
+- 哪些参考游戏精准把握了这种感觉？具体是什么创造了它？
+- 这是一个"你喜欢与之交互的系统"还是"你不会注意到的基础设施"？
 
-**Cross-reference**: Must align with the game pillars. If the system serves a pillar,
-quote the relevant pillar text.
+**交叉引用**：必须与游戏支柱对齐。如果该系统服务于某个支柱，引用相关支柱文本。
 
-**Agent delegation (MANDATORY)**: After the framing answer is given but before drafting,
-spawn `creative-director` via Task:
-- Provide: system name, framing answer (direct/indirect/both), game pillars, any reference games the user mentioned, the game concept summary
-- Ask: "Shape the Player Fantasy for this system. What emotion or power fantasy should it serve? What player moment should we anchor to? What tone and language fits the game's established feeling? Be specific — give me 2-3 candidate framings."
-- Collect the creative-director's framings and present them to the user alongside the draft.
+**Agent 委派（强制）**：在给出框架答案后但在起草前，通过 Task 生成 `creative-director`：
+- 提供：系统名称、框架答案（direct/indirect/both）、游戏支柱、用户提到的任何参考游戏、游戏概念摘要
+- 询问："塑造该系统的 Player Fantasy。它应该服务于什么情感或力量幻想？我们应该锚定到哪个玩家时刻？什么语调和语言适合游戏已确立的感觉？要具体 —— 给我 2-3 个候选框架。"
+- 收集 creative-director 的框架并连同草稿一起呈现给用户。
 
-**Do NOT draft Section B without first consulting `creative-director`.** The framing
-answer tells us *what kind* of fantasy it is; the creative-director shapes *how it's
-described* — tone, language, the specific player moment to anchor to.
+**在咨询 `creative-director` 之前不要起草 Section B。** 框架答案告诉我们它是*哪种*幻想；creative-director 塑造*如何描述*它 —— 语调、语言、要锚定的具体玩家时刻。
 
 ---
 
 ### Section C: Detailed Design (Core Rules, States, Interactions)
 
-**Goal**: Unambiguous specification a programmer could implement without questions.
+**目标**：程序员可以在没有问题的情况下实现的无歧义规范。
 
-This is usually the largest section. Break it into sub-sections:
+这通常是最长的章节。将其分解为子章节：
 
-1. **Core Rules**: The fundamental mechanics. Use numbered rules for sequential
-   processes, bullets for properties.
-2. **States and Transitions**: If the system has states, map every state and
-   every valid transition. Use a table.
-3. **Interactions with Other Systems**: For each dependency (upstream and downstream),
-   specify what data flows in, what flows out, and who owns the interface.
+1. **Core Rules**：基本机制。对顺序过程使用编号规则，对属性使用项目符号。
+2. **States and Transitions**：如果系统有状态，映射每个状态和每个有效转换。使用表格。
+3. **Interactions with Other Systems**：对于每个依赖（上游和下游），指定什么数据流入、什么数据流出，以及谁拥有接口。
 
-**Questions to ask**:
-- Walk me through a typical use of this system, step by step
-- What are the decision points the player faces?
-- What can the player NOT do? (Constraints are as important as capabilities)
+**要问的问题**：
+- 带我逐步了解该系统的典型使用
+- 玩家面临的决策点是什么？
+- 玩家不能做什么？（约束与能力同等重要）
 
-**Agent delegation (MANDATORY)**: Before drafting Section C, spawn specialist agents via Task in parallel:
-- Look up the system category in the routing table (Section 6 of this skill)
-- Spawn the Primary Agent AND Supporting Agent(s) listed for this category
-- Provide each agent: system name, game concept summary, pillar set, dependency GDD excerpts, the specific section being worked on
-- Collect their findings before drafting
-- Surface any disagreements between agents to the user via `AskUserQuestion`
-- Draft only after receiving specialist input
+**Agent 委派（强制）**：在起草 Section C 之前，通过 Task 并行生成专家 Agent：
+- 在路由表中查找系统类别（本 Skill 的第 6 节）
+- 生成 Primary Agent 和 Supporting Agent(s)
+- 向每个 Agent 提供：系统名称、游戏概念摘要、支柱集、依赖 GDD 摘录、正在处理的特定章节
+- 在起草前收集他们的发现
+- 通过 `AskUserQuestion` 向用户展示 Agent 之间的任何分歧
+- 仅在收到专家输入后才起草
 
-**Do NOT draft Section C without first consulting the appropriate specialists.** A `systems-designer` reviewing rules and mechanics will catch design gaps the main session cannot.
+**在咨询适当的专家之前不要起草 Section C。** `systems-designer` 审查规则和机制会发现主会话无法发现的设计缺口。
 
-**Cross-reference**: For each interaction listed, verify it matches what the
-dependency GDD specifies. If a dependency defines a value or formula and this
-system expects something different, flag the conflict.
+**交叉引用**：对于列出的每个交互，验证它是否与依赖 GDD 指定的内容匹配。如果依赖定义了一个值或公式，而该系统期望不同的内容，则标记冲突。
 
 ---
 
 ### Section D: Formulas
 
-**Goal**: Every mathematical formula, with variables defined, ranges specified,
-and edge cases noted.
+**目标**：每个数学公式，变量已定义，范围已指定，边界情况已注明。
 
-**Completion Steering — always begin each formula with this exact structure:**
+**完成引导 —— 始终以这个精确结构开始每个公式：**
 
 ```
 The [formula_name] formula is defined as:
@@ -486,119 +447,106 @@ The [formula_name] formula is defined as:
 **Example:** [worked example with real numbers]
 ```
 
-Do NOT write `[Formula TBD]` or describe a formula in prose without the variable
-table. A formula without defined variables cannot be implemented without guesswork.
+不要写 `[Formula TBD]` 或在没有变量表的情况下用散文描述公式。没有定义变量的公式无法在没有猜测的情况下实现。
 
-**Questions to ask**:
-- What are the core calculations this system performs?
-- Should scaling be linear, logarithmic, or stepped?
-- What should the output ranges be at early/mid/late game?
+**要问的问题**：
+- 该系统执行哪些核心计算？
+- 缩放应该是线性的、对数的还是阶梯式的？
+- 早期/中期/晚期游戏的输出范围应该是什么？
 
-**Agent delegation (MANDATORY)**: Before proposing any formulas or balance values, spawn specialist agents via Task in parallel:
-- **Always spawn `systems-designer`**: provide Core Rules from Section C, tuning goals from user, balance context from dependency GDDs. Ask them to propose formulas with variable tables and output ranges.
-- **For economy/cost systems, also spawn `economy-designer`**: provide placement costs, upgrade cost intent, and progression goals. Ask them to validate cost curves and ratios.
-- Present the specialists' proposals to the user for review via `AskUserQuestion`
-- The user decides; the main session writes to file
-- **Do NOT invent formula values or balance numbers without specialist input.** A user without balance design expertise cannot evaluate raw numbers — they need the specialists' reasoning.
+**Agent 委派（强制）**：在提出任何公式或平衡值之前，通过 Task 并行生成专家 Agent：
+- **始终生成 `systems-designer`**：提供 Section C 的 Core Rules、用户的调节目标、依赖 GDD 的平衡上下文。要求他们提出带有变量表和输出范围的公式。
+- **对于经济/成本系统，还要生成 `economy-designer`**：提供放置成本、升级成本意图和进度目标。要求他们验证成本曲线和比率。
+- 通过 `AskUserQuestion` 向用户展示专家的提案以供审阅
+- 由用户决定；主会话写入文件
+- **在没有专家输入的情况下不要发明公式值或平衡数字。** 没有平衡设计专业知识的用户无法评估原始数字 —— 他们需要专家的推理。
 
-**Cross-reference**: If a dependency GDD defines a formula whose output feeds into
-this system, reference it explicitly. Don't reinvent — connect.
+**交叉引用**：如果依赖 GDD 定义了一个输出流入该系统的公式，请明确引用它。不要重新发明 —— 连接。
 
 ---
 
 ### Section E: Edge Cases
 
-**Goal**: Explicitly handle unusual situations so they don't become bugs.
+**目标**：明确处理异常情况，使它们不会成为 Bug。
 
-**Completion Steering — format each edge case as:**
+**完成引导 —— 将每个边界情况格式化为：**
 - **If [condition]**: [exact outcome]. [rationale if non-obvious]
 
-Example (adapt terminology to the game's domain):
+示例（根据游戏领域调整术语）：
 - **If [resource] reaches 0 while [protective condition] is active**: hold at minimum until condition ends, then apply consequence.
 - **If two [triggers/events] fire simultaneously**: resolve in [defined priority order]; ties use [defined tiebreak rule].
 
-Do NOT write vague entries like "handle appropriately" — each must name the exact
-condition and the exact resolution. An edge case without a resolution is an open
-design question, not a specification.
+不要写模糊的条目，如 "handle appropriately" —— 每个条目必须命名确切的条件和确切的解决方案。没有解决方案的边界情况是一个开放的设计问题，而不是规范。
 
-**Questions to ask**:
-- What happens at zero? At maximum? At out-of-range values?
-- What happens when two rules apply at the same time?
-- What happens if a player finds an unintended interaction? (Identify degenerate strategies)
+**要问的问题**：
+- 在零时会发生什么？在最大值时？在超出范围的值时？
+- 当两条规则同时适用时会发生什么？
+- 如果玩家发现非预期的交互会发生什么？（识别退化策略）
 
-**Agent delegation (MANDATORY)**: Spawn `systems-designer` via Task before finalising edge cases. Provide: the completed Sections C and D, and ask them to identify edge cases from the formula and rule space that the main session may have missed. For narrative systems, also spawn `narrative-director`. Present their findings and ask the user which to include.
+**Agent 委派（强制）**：在最终确定边界情况之前，通过 Task 生成 `systems-designer`。提供：已完成的 C 和 D 章节，并要求他们从公式和规则空间中识别主会话可能遗漏的边界情况。对于叙事系统，还要生成 `narrative-director`。展示他们的发现并询问用户要包含哪些。
 
-**Cross-reference**: Check edge cases against dependency GDDs. If a dependency
-defines a floor, cap, or resolution rule that this system could violate, flag it.
+**交叉引用**：对照依赖 GDD 检查边界情况。如果依赖定义了该系统可能违反的下限、上限或解决规则，则标记它。
 
 ---
 
 ### Section F: Dependencies
 
-**Goal**: Map every system connection with direction and nature.
+**目标**：映射每个系统连接的方向和性质。
 
-This section is partially pre-filled from the context gathering phase. Present the
-known dependencies from the systems index and ask:
-- Are there dependencies I'm missing?
-- For each dependency, what's the specific data interface?
-- Which dependencies are hard (system cannot function without it) vs. soft
-  (enhanced by it but works without it)?
+该章节部分从上下文收集阶段预填充。呈现来自系统索引的已知依赖并询问：
+- 我遗漏了什么依赖吗？
+- 对于每个依赖，具体的数据接口是什么？
+- 哪些依赖是硬性的（系统没有它就无法运行）vs. 软性的（有它会增强，但没有它也能工作）？
 
-**Cross-reference**: This section must be bidirectionally consistent. If this system
-lists "depends on Combat", then the Combat GDD should list "depended on by [this
-system]". Flag any one-directional dependencies for correction.
+**交叉引用**：该章节必须是双向一致的。如果该系统列出 "depends on Combat"，那么 Combat GDD 应该列出 "depended on by [this system]"。标记任何单向依赖以供纠正。
 
 ---
 
 ### Section G: Tuning Knobs
 
-**Goal**: Every designer-adjustable value, with safe ranges and extreme behaviors.
+**目标**：每个设计师可调整的值，带有安全范围和极端行为。
 
-**Questions to ask**:
-- What values should designers be able to tweak without code changes?
-- For each knob, what breaks if it's set too high? Too low?
-- Which knobs interact with each other? (Changing A makes B irrelevant)
+**要问的问题**：
+- 设计师应该能够在不修改代码的情况下调整哪些值？
+- 对于每个参数，设置得太高会崩溃什么？太低呢？
+- 哪些参数相互交互？（改变 A 会使 B 无关紧要）
 
-**Agent delegation**: If formulas are complex, delegate to `systems-designer`
-to derive tuning knobs from the formula variables.
+**Agent 委派**：如果公式复杂，委派给 `systems-designer`
+以从公式变量中推导调节参数。
 
-**Cross-reference**: If a dependency GDD lists tuning knobs that affect this system,
-reference them here. Don't create duplicate knobs — point to the source of truth.
+**交叉引用**：如果依赖 GDD 列出了影响该系统的调节参数，在这里引用它们。不要创建重复参数 —— 指向真相来源。
 
 ---
 
 ### Section H: Acceptance Criteria
 
-**Goal**: Testable conditions that prove the system works as designed.
+**目标**：可测试的条件，证明系统按设计工作。
 
-**Completion Steering — format each criterion as Given-When-Then:**
+**完成引导 —— 将每个标准格式化为 Given-When-Then：**
 - **GIVEN** [initial state], **WHEN** [action or trigger], **THEN** [measurable outcome]
 
-Example (adapt terminology to the game's domain):
+示例（根据游戏领域调整术语）：
 - **GIVEN** [initial state], **WHEN** [player action or system trigger], **THEN** [specific measurable outcome].
 - **GIVEN** [a constraint is active], **WHEN** [player attempts an action], **THEN** [feedback shown and action result].
 
-Include at least: one criterion per core rule from Section C, and one per formula
-from Section D. Do NOT write "the system works as designed" — every criterion must
-be independently verifiable by a QA tester without reading the GDD.
+至少包含：Section C 中每条核心规则一个标准，Section D 中每个公式一个标准。不要写 "the system works as designed" —— 每个标准必须能够被 QA 测试员在不阅读 GDD 的情况下独立验证。
 
-**Agent delegation (MANDATORY)**: Spawn `qa-lead` via Task before finalising acceptance criteria. Provide: the completed GDD sections C, D, E, and ask them to validate that the criteria are independently testable and cover all core rules and formulas. Surface any gaps or untestable criteria to the user.
+**Agent 委派（强制）**：在最终确定验收标准之前，通过 Task 生成 `qa-lead`。提供：已完成的 GDD 章节 C、D、E，并要求他们验证标准是否可独立测试并涵盖所有核心规则和公式。向用户展示任何缺口或不可测试的标准。
 
-**Questions to ask**:
-- What's the minimum set of tests that prove this works?
-- What performance budget does this system get? (frame time, memory)
-- What would a QA tester check first?
+**要问的问题**：
+- 证明其有效的最小测试集是什么？
+- 该系统获得什么性能预算？（帧时间、内存）
+- QA 测试员首先会检查什么？
 
-**Cross-reference**: Include criteria that verify cross-system interactions work,
-not just this system in isolation.
+**交叉引用**：包含验证跨系统交互有效的标准，而不仅仅是该系统本身。
 
 ---
 
-### Optional Sections: Visual/Audio, UI Requirements, Open Questions
+### 可选章节：Visual/Audio, UI Requirements, Open Questions
 
-These sections are included in the template. Visual/Audio is **REQUIRED** for visual system categories — not optional. Determine the requirement level before asking:
+这些章节包含在模板中。对于视觉系统类别，Visual/Audio 是**必需**的 —— 不是可选的。在询问之前确定需求级别：
 
-**Visual/Audio is REQUIRED (mandatory — do not offer to skip) for these system categories:**
+**Visual/Audio 是必需（强制 —— 不要提供跳过选项）的系统类别：**
 - Combat, damage, health
 - UI systems (HUD, menus)
 - Animation, character movement
@@ -607,81 +555,79 @@ These sections are included in the template. Visual/Audio is **REQUIRED** for vi
 - Dialogue, quests, lore
 - Level/world systems
 
-For required systems: **spawn `art-director` via Task** before drafting this section. Provide: system name, game concept, game pillars, art bible sections 1–4 if they exist. Ask them to specify: (1) VFX and visual feedback requirements for this system's events, (2) any animation or visual style constraints, (3) which art bible principles most directly apply to this system. Present their output; do NOT leave this section as `[To be designed]` for visual systems.
+对于必需系统：**在起草此章节之前，通过 Task 生成 `art-director`**。提供：系统名称、游戏概念、游戏支柱、art bible 第 1–4 节（如果存在）。要求他们指定：(1) 该系统事件的 VFX 和视觉反馈需求，(2) 任何动画或视觉风格约束，(3) 哪些 art bible 原则最直接适用于该系统。展示他们的输出；对于视觉系统，不要将此章节留为 `[To be designed]`。
 
-For **all other system categories** (Foundation/Infrastructure, Economy, AI/pathfinding, Camera/input), offer the optional sections after the required sections:
+对于**所有其他系统类别**（Foundation/Infrastructure, Economy, AI/pathfinding, Camera/input），在必需章节之后提供可选章节：
 
-Use `AskUserQuestion`:
-- "The 8 required sections are complete. Do you want to also define Visual/Audio
-  requirements, UI requirements, or capture open questions?"
-  - Options: "Yes, all three", "Just open questions", "Skip — I'll add these later"
+使用 `AskUserQuestion`：
+- "8 个必需章节已完成。您是否还想定义 Visual/Audio
+  需求、UI 需求，或记录开放问题？"
+  - 选项："是的，全部三个", "只要开放问题", "跳过 —— 我稍后会添加这些"
 
-For **Visual/Audio** (non-required systems): Coordinate with `art-director` and `audio-director` if detail is needed. Often a brief note suffices at the GDD stage.
+对于**Visual/Audio**（非必需系统）：如果需要细节，与 `art-director` 和 `audio-director` 协调。通常在 GDD 阶段一个简短的说明就足够了。
 
-> **Asset Spec Flag**: After the Visual/Audio section is written with real content, output this notice:
-> "📌 **Asset Spec** — Visual/Audio requirements are defined. After the art bible is approved, run `/asset-spec system:[system-name]` to produce per-asset visual descriptions, dimensions, and generation prompts from this section."
+> **Asset Spec Flag**：在 Visual/Audio 章节写入真实内容后，输出此通知：
+> "📌 **Asset Spec** —— Visual/Audio 需求已定义。在 art bible 获得批准后，运行 `/asset-spec system:[system-name]` 以从本章节生成每项资产的视觉描述、尺寸和生成提示。"
 
-For **UI Requirements**: Coordinate with `ux-designer` for complex UI systems.
-After writing this section, check whether it contains real content (not just
-`[To be designed]` or a note that this system has no UI). If it does have real
-UI requirements, output this flag immediately:
+对于**UI Requirements**：对于复杂的 UI 系统，与 `ux-designer` 协调。
+写入此章节后，检查它是否包含真实内容（不仅仅是
+`[To be designed]` 或说明该系统没有 UI 的注释）。如果它确实有真实的
+UI 需求，则立即输出此标志：
 
-> **📌 UX Flag — [System Name]**: This system has UI requirements. In Phase 4
-> (Pre-Production), run `/ux-design` to create a UX spec for each screen or
-> HUD element this system contributes to **before** writing epics. Stories that
-> reference UI should cite `design/ux/[screen].md`, not the GDD directly.
+> **📌 UX Flag —— [System Name]**：该系统有 UI 需求。在 Phase 4
+> (Pre-Production) 中，在编写 epics 之前，运行 `/ux-design` 为该系统贡献的每个屏幕或
+> HUD 元素创建 UX 规范。引用 UI 的 Stories 应该引用 `design/ux/[screen].md`，而不是直接引用 GDD。
 >
-> Note this in the systems index for this system if you update it.
+> 如果更新系统索引，请在其中记录这一点。
 
-For **Open Questions**: Capture anything that came up during design that wasn't
-fully resolved. Each question should have an owner and target resolution date.
+对于**Open Questions**：记录设计过程中出现但未完全解决的任何问题。每个问题都应该有一个负责人和目标解决日期。
 
 ---
 
-## 5. Post-Design Validation
+## 5. 设计后验证
 
-After all sections are written:
+所有章节写入后：
 
-### 5a: Self-Check
+### 5a: 自检
 
-Read back the complete GDD from file (not from conversation memory — the file is
-the source of truth). Verify:
-- All 8 required sections have real content (not placeholders)
-- Formulas reference defined variables
-- Edge cases have resolutions
-- Dependencies are listed with interfaces
-- Acceptance criteria are testable
+从文件中读回完整的 GDD（不要从对话记忆中读取 —— 文件是
+真相来源）。验证：
+- 所有 8 个必需章节都有真实内容（不是占位符）
+- 公式引用已定义的变量
+- 边界情况有解决方案
+- 依赖项已列出并带有接口
+- 验收标准是可测试的
 
-### 5a-bis: Creative Director Pillar Review
+### 5a-bis: Creative Director 支柱审查
 
-**Review mode check** — apply before spawning CD-GDD-ALIGN:
-- `solo` → skip. Note: "CD-GDD-ALIGN skipped — Solo mode." Proceed to Step 5b.
-- `lean` → skip (not a PHASE-GATE). Note: "CD-GDD-ALIGN skipped — Lean mode." Proceed to Step 5b.
-- `full` → spawn as normal.
+**审查模式检查** —— 在生成 CD-GDD-ALIGN 之前应用：
+- `solo` → 跳过。注意："CD-GDD-ALIGN 已跳过 —— Solo 模式。" 进入步骤 5b。
+- `lean` → 跳过（不是 PHASE-GATE）。注意："CD-GDD-ALIGN 已跳过 —— Lean 模式。" 进入步骤 5b。
+- `full` → 正常生成。
 
-Before finalizing the GDD, spawn `creative-director` via Task using gate **CD-GDD-ALIGN** (`.claude/docs/director-gates.md`).
+在最终确定 GDD 之前，通过 Task 使用 gate **CD-GDD-ALIGN** (`.claude/docs/director-gates.md`) 生成 `creative-director`。
 
-Pass: completed GDD file path, game pillars (from `design/gdd/game-concept.md` or `design/gdd/game-pillars.md`), MDA aesthetics target.
+传递：已完成的 GDD 文件路径、游戏支柱（来自 `design/gdd/game-concept.md` 或 `design/gdd/game-pillars.md`）、MDA 美学目标。
 
-Handle verdict per the standard rules in `director-gates.md`. After resolution, record the verdict in the GDD Status header:
+按照 `director-gates.md` 中的标准规则处理裁决。解决后，在 GDD Status 标题中记录裁决：
 `> **Creative Director Review (CD-GDD-ALIGN)**: APPROVED [date] / CONCERNS (accepted) [date] / REVISED [date]`
 
 ---
 
-### 5b: Update Entity Registry
+### 5b: 更新实体注册表
 
-Scan the completed GDD for cross-system facts that should be registered:
-- Named entities (enemies, NPCs, bosses) with stats or drops
-- Named items with values, weights, or categories
-- Named formulas with defined variables and output ranges
-- Named constants referenced by value in more than one place
+扫描已完成的 GDD，查找应注册的跨系统事实：
+- 具有属性或掉落物的命名实体（敌人、NPC、Boss）
+- 具有值、权重或类别的命名物品
+- 具有已定义变量和输出范围的命名公式
+- 在多个地方按值引用的命名常量
 
-For each candidate, check if it already exists in `design/registry/entities.yaml`:
+对于每个候选，检查它是否已存在于 `design/registry/entities.yaml` 中：
 ```
 Grep pattern="  - name: [candidate_name]" path="design/registry/entities.yaml"
 ```
 
-Present a summary:
+呈现摘要：
 ```
 Registry candidates from this GDD:
   NEW (not yet registered):
@@ -692,71 +638,69 @@ Registry candidates from this GDD:
     - [constant_name] [constant]: value=[N] ← matches registry ✅
 ```
 
-Ask: "May I update `design/registry/entities.yaml` with these [N] new entries
-and update `referenced_by` for the existing entries?"
+询问："我可以用这 [N] 个新条目更新 `design/registry/entities.yaml`
+并更新现有条目的 `referenced_by` 吗？"
 
-If yes: append new entries and update `referenced_by` arrays. Never modify
-existing `value` / attribute fields without surfacing it as a conflict first.
+如果同意：追加新条目并更新 `referenced_by` 数组。在没有首先将其作为冲突提出之前，永远不要修改现有的 `value` / attribute 字段。
 
-### 5c: Offer Design Review
+### 5c: 提供设计审查
 
-Present a completion summary:
+呈现完成摘要：
 
-> **GDD Complete: [System Name]**
-> - Sections written: [list]
-> - Provisional assumptions: [list any assumptions about undesigned dependencies]
-> - Cross-system conflicts found: [list or "none"]
+> **GDD 完成：[System Name]**
+> - 已写入章节：[列表]
+> - 临时假设：[关于未设计依赖项的任何假设列表]
+> - 发现的跨系统冲突：[列表或 "none"]
 
-> **To validate this GDD, open a fresh Claude Code session and run:**
+> **要验证此 GDD，请打开一个新的 Claude Code 会话并运行：**
 > `/design-review design/gdd/[system-name].md`
 >
-> **Never run `/design-review` in the same session as `/design-system`.** The reviewing
-> agent must be independent of the authoring context. Running it here would inherit
-> the full design history, making independent critique impossible.
+> **永远不要在 `/design-system` 的同一个会话中运行 `/design-review`。** 审查
+> Agent 必须独立于编写上下文。在这里运行它会继承完整的设计历史，使独立批评变得不可能。
 
-**NEVER offer to run `/design-review` inline.** Always direct the user to a fresh window.
+**永远不要内联提供运行 `/design-review`。** 始终引导用户到新窗口。
 
-### 5d: Update Systems Index
+### 5d: 更新系统索引
 
-After the GDD is complete (and optionally reviewed):
+GDD 完成后（并可选审查后）：
 
-- Read the systems index
-- Update the target system's row:
-  - If design-review was run and verdict is APPROVED: Status → "Approved"
-  - If design-review was run and verdict is NEEDS REVISION: Status → "In Review"
-  - If design-review was skipped: Status → "Designed" (pending review)
-  - If the user chose "I'll review it myself first": Status → "Designed"
-  - Design Doc: link to `design/gdd/[system-name].md`
-- Update the Progress Tracker counts
+- 读取系统索引
+- 更新目标系统的行：
+  - 如果运行了 design-review 且裁决为 APPROVED：Status → "Approved"
+  - 如果运行了 design-review 且裁决为 NEEDS REVISION：Status → "In Review"
+  - 如果跳过了 design-review：Status → "Designed"（待审查）
+  - 如果用户选择 "I'll review it myself first"：Status → "Designed"
+  - Design Doc: 链接到 `design/gdd/[system-name].md`
+- 更新 Progress Tracker 计数
 
-Ask: "May I update the systems index at `design/gdd/systems-index.md`?"
+询问："我可以更新 `design/gdd/systems-index.md` 吗？"
 
-### 5d: Update Session State
+### 5d: 更新会话状态
 
-Update `production/session-state/active.md` with:
-- Task: [system-name] GDD
-- Status: Complete (or In Review if design-review was run)
-- File: design/gdd/[system-name].md
-- Sections: All 8 written
-- Next: [suggest next system from design order]
+使用以下内容更新 `production/session-state/active.md`：
+- 任务：[system-name] GDD
+- 状态：Complete（如果运行了 design-review，则为 In Review）
+- 文件：design/gdd/[system-name].md
+- 章节：全部 8 个已写入
+- 下一步：[从设计顺序中建议下一个系统]
 
-### 5e: Suggest Next Steps
+### 5e: 建议后续步骤
 
-Use `AskUserQuestion`:
-- "What's next?"
-  - Options:
-    - "Run `/consistency-check` — verify this GDD's values don't conflict with existing GDDs (recommended before designing the next system)"
-    - "Design next system ([next-in-order])" — if undesigned systems remain
-    - "Fix review findings" — if design-review flagged issues
-    - "Stop here for this session"
-    - "Run `/gate-check`" — if enough MVP systems are designed
+使用 `AskUserQuestion`：
+- "接下来做什么？"
+  - 选项：
+    - "运行 `/consistency-check` —— 验证此 GDD 的值是否与现有 GDD 冲突（在设计下一个系统之前推荐）"
+    - "设计下一个系统 ([next-in-order])" —— 如果还有未设计的系统
+    - "修复审查发现的问题" —— 如果 design-review 标记了问题
+    - "本次会话在此停止"
+    - "运行 `/gate-check`" —— 如果已设计和审查了足够的 MVP 系统
 
 ---
 
-## 6. Specialist Agent Routing
+## 6. 专家 Agent 路由
 
-This skill delegates to specialist agents for domain expertise. The main session
-orchestrates the overall flow; agents provide expert content.
+本 Skill 将任务委派给专家 Agent 以获取领域专业知识。主会话
+编排整体流程；Agent 提供专家内容。
 
 | System Category | Primary Agent | Supporting Agent(s) |
 |----------------|---------------|---------------------|
@@ -774,68 +718,60 @@ orchestrates the overall flow; agents provide expert content.
 | Visual effects, particles, shaders | `game-designer` | `art-director` (VFX visual direction), `technical-artist` (performance budget, shader complexity), `systems-designer` (trigger/state integration) |
 | Character systems (stats, archetypes) | `game-designer` | `art-director` (character visual archetype), `narrative-director` (character arc alignment), `systems-designer` (stat formulas) |
 
-**When delegating via Task tool**:
-- Provide: system name, game concept summary, dependency GDD excerpts, the specific
-  section being worked on, and what question needs expert input
-- The agent returns analysis/proposals to the main session
-- The main session presents the agent's output to the user via `AskUserQuestion`
-- The user decides; the main session writes to file
-- Agents do NOT write to files directly — the main session owns all file writes
+**通过 Task 工具委派时**：
+- 提供：系统名称、游戏概念摘要、依赖 GDD 摘录、正在处理的特定章节，以及需要专家输入的问题
+- Agent 将分析/提案返回给主会话
+- 主会话通过 `AskUserQuestion` 向用户展示 Agent 的输出
+- 由用户决定；主会话写入文件
+- Agent 不直接写入文件 —— 主会话拥有所有文件写入权
 
 ---
 
-## 7. Recovery & Resume
+## 7. 恢复与续接
 
-If the session is interrupted (compaction, crash, new session):
+如果会话中断（压缩、崩溃、新会话）：
 
-1. Read `production/session-state/active.md` — it records the current system and
-   which sections are complete
-2. Read `design/gdd/[system-name].md` — sections with real content are done;
-   sections with `[To be designed]` still need work
-3. Resume from the next incomplete section — no need to re-discuss completed ones
+1. 读取 `production/session-state/active.md` —— 它记录了当前系统和哪些章节已完成
+2. 读取 `design/gdd/[system-name].md` —— 有真实内容的章节已完成；
+   带有 `[To be designed]` 的章节仍需处理
+3. 从下一个不完整的章节续接 —— 无需重新讨论已完成的章节
 
-This is why incremental writing matters: every approved section survives any
-disruption.
+这就是增量写入的重要性：每个批准的章节都能经受住任何中断。
 
 ---
 
-## Collaborative Protocol
+## 协作协议
 
-This skill follows the collaborative design principle at every step:
+本 Skill 在每一步都遵循协作设计原则：
 
-1. **Question -> Options -> Decision -> Draft -> Approval** for every section
-2. **AskUserQuestion** at every decision point (Explain -> Capture pattern):
-   - Phase 2: "Ready to start, or need more context?"
-   - Phase 3: "May I create the skeleton?"
-   - Phase 4 (each section): Design questions, approach options, draft approval
-   - Phase 5: "Run design review? Update systems index? What's next?"
-3. **"May I write to [filepath]?"** before the skeleton and before each section write
-4. **Incremental writing**: Each section is written to file immediately after approval
-5. **Session state updates**: After every section write
-6. **Cross-referencing**: Every section checks existing GDDs for conflicts
-7. **Specialist routing**: Complex sections get expert agent input, presented to
-   the user for decision — never written silently
+1. 对于每个章节，遵循 **Question -> Options -> Decision -> Draft -> Approval**
+2. 在每个决策点使用 **AskUserQuestion**（Explain -> Capture 模式）：
+   - Phase 2："准备好开始了，还是需要更多上下文？"
+   - Phase 3："我可以创建骨架吗？"
+   - Phase 4（每个章节）：设计问题、方案选项、草稿批准
+   - Phase 5："运行设计审查？更新系统索引？接下来做什么？"
+3. 在骨架和每次章节写入之前，询问 **"May I write to [filepath]?"**
+4. **增量写入**：每个章节在批准后立即写入文件
+5. **会话状态更新**：每次章节写入后
+6. **交叉引用**：每个章节都检查现有 GDD 是否存在冲突
+7. **专家路由**：复杂章节获取专家 Agent 输入，展示给用户以供决策 —— 永远不会默默写入
 
-**Never** auto-generate the full GDD and present it as a fait accompli.
-**Never** write a section without user approval.
-**Never** contradict an existing approved GDD without flagging the conflict.
-**Always** show where decisions come from (dependency GDDs, pillars, user choices).
+**永远不要**自动生成完整的 GDD 并将其作为既成事实呈现。
+**永远不要**未经用户批准就写入章节。
+**永远不要**在没有标记冲突的情况下与现有已批准 GDD 矛盾。
+**始终**展示决策的来源（依赖 GDD、支柱、用户选择）。
 
-## Context Window Awareness
+## 上下文窗口感知
 
-This is a long-running skill. After writing each section, check if the status line
-shows context at or above 70%. If so, append this notice to the response:
+这是一个长时间运行的 Skill。每写完一个章节后，检查状态行是否显示上下文使用率已达到或超过 70%。如果是，则在回复中附加此通知：
 
-> **Context is approaching the limit (≥70%).** Your progress is saved — all approved
-> sections are written to `design/gdd/[system-name].md`. When you're ready to continue,
-> open a fresh Claude Code session and run `/design-system [system-name]` — it will
-> detect which sections are complete and resume from the next one.
+> **上下文接近限制（≥70%）。** 您的进度已保存 —— 所有已批准的章节都已写入 `design/gdd/[system-name].md`。当您准备好继续时，打开一个新的 Claude Code 会话并运行 `/design-system [system-name]` —— 它会检测哪些章节已完成并从下一个章节续接。
 
 ---
 
-## Recommended Next Steps
+## 推荐的后续步骤
 
-- Run `/design-review design/gdd/[system-name].md` in a **fresh session** to validate the completed GDD independently
-- Run `/consistency-check` to verify this GDD's values don't conflict with other GDDs
-- Run `/map-systems next` to move to the next highest-priority undesigned system
-- Run `/gate-check pre-production` when all MVP GDDs are authored and reviewed
+- 在**新会话**中运行 `/design-review design/gdd/[system-name].md` 以独立验证已完成的 GDD
+- 运行 `/consistency-check` 以验证此 GDD 的值是否与其他 GDD 冲突
+- 运行 `/map-systems next` 以移动到下一个最高优先级的未设计系统
+- 当所有 MVP GDD 都已编写和审查后，运行 `/gate-check pre-production`

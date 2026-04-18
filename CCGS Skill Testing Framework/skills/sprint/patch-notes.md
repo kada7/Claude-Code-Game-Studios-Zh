@@ -1,170 +1,162 @@
-# Skill Test Spec: /patch-notes
+# 技能测试规范：/patch-notes
 
-## Skill Summary
+## 技能摘要
 
-`/patch-notes` is a Haiku-tier skill that generates player-facing patch notes
-from existing changelog content, stripping internal task IDs and technical
-jargon in favor of plain language. It filters entries to only those relevant
-to players (visible features and bug fixes; internal refactors are excluded).
-No director gates are used. The skill asks "May I write to
-`docs/patch-notes-vX.X.md`?" before persisting. Verdict is always COMPLETE.
+`/patch-notes` 是一个 Haiku 层级的技能，从现有变更日志内容生成面向玩家的补丁说明，去除内部任务 ID 和技术术语，改用通俗语言。它只筛选对玩家相关的条目（可见功能和错误修复；内部重构被排除）。不调用任何导演关卡。该技能在持久化前询问"我可以写入 `docs/patch-notes-vX.X.md` 吗？"。裁决结果始终为 COMPLETE。
 
 ---
 
-## Static Assertions (Structural)
+## 静态断言（结构）
 
-Verified automatically by `/skill-test static` — no fixture needed.
+由 `/skill-test static` 自动验证 —— 无需测试夹具。
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
-- [ ] Has ≥2 phase headings
-- [ ] Contains verdict keyword: COMPLETE
-- [ ] Contains "May I write" language (skill writes patch notes file)
-- [ ] Has a next-step handoff (e.g., share with community manager)
-
----
-
-## Director Gate Checks
-
-None. Patch notes generation is a fast compilation task; no gates are invoked.
+- [ ] 具有必需的前置元数据字段：`name`、`description`、`argument-hint`、`user-invocable`、`allowed-tools`
+- [ ] 具有 ≥2 个阶段标题
+- [ ] 包含裁决关键词：COMPLETE
+- [ ] 包含 "May I write" 语言（技能写入补丁说明文件）
+- [ ] 具有下一步交接（例如，与社区经理分享）
 
 ---
 
-## Test Cases
+## 导演关卡检查
 
-### Case 1: Happy Path — Changelog filtered to player-facing entries
-
-**Fixture:**
-- `docs/CHANGELOG.md` exists with 5 entries:
-  - "Add dual-wield melee system" (Features — player-facing)
-  - "Fix crash on level transition" (Fixes — player-facing)
-  - "Add enemy patrol AI" (Features — player-facing)
-  - "Refactor input handler to use event bus" (Fixes — internal only)
-  - "Update dependency: Godot 4.6" (internal only)
-- Version is `v0.4.0`
-
-**Input:** `/patch-notes v0.4.0`
-
-**Expected behavior:**
-1. Skill reads `docs/CHANGELOG.md`
-2. Skill filters to 3 player-facing entries; excludes 2 internal entries
-3. Skill rewrites entries in plain language (no task IDs, no tech jargon)
-4. Skill presents draft to user
-5. Skill asks "May I write to `docs/patch-notes-v0.4.0.md`?"
-6. User approves; file written; verdict COMPLETE
-
-**Assertions:**
-- [ ] Only 3 entries appear in the patch notes (2 internal entries excluded)
-- [ ] Entries are written in plain language without internal task IDs
-- [ ] File path matches `docs/patch-notes-v0.4.0.md`
-- [ ] "May I write" prompt appears before file write
-- [ ] Verdict is COMPLETE after write
+无。补丁说明生成是一项快速的编译任务；不调用任何关卡。
 
 ---
 
-### Case 2: No Changelog Found — Directed to run /changelog first
+## 测试用例
 
-**Fixture:**
-- `docs/CHANGELOG.md` does NOT exist
+### 用例 1：理想路径 —— 变更日志筛选为面向玩家的条目
 
-**Input:** `/patch-notes v0.4.0`
+**测试夹具：**
+- `docs/CHANGELOG.md` 存在，包含 5 个条目：
+  - "Add dual-wield melee system"（功能 —— 面向玩家）
+  - "Fix crash on level transition"（修复 —— 面向玩家）
+  - "Add enemy patrol AI"（功能 —— 面向玩家）
+  - "Refactor input handler to use event bus"（修复 —— 仅内部）
+  - "Update dependency: Godot 4.6"（仅内部）
+- 版本为 `v0.4.0`
 
-**Expected behavior:**
-1. Skill attempts to read `docs/CHANGELOG.md` — not found
-2. Skill outputs: "No changelog found — run /changelog first to generate one"
-3. No patch notes are generated; no file is written
+**输入：** `/patch-notes v0.4.0`
 
-**Assertions:**
-- [ ] Skill does not crash when changelog is absent
-- [ ] Output explicitly directs user to run `/changelog`
-- [ ] No "May I write" prompt appears (nothing to write)
-- [ ] Verdict is BLOCKED (dependency not met)
+**预期行为：**
+1. 技能读取 `docs/CHANGELOG.md`
+2. 技能筛选出 3 个面向玩家的条目；排除 2 个内部条目
+3. 技能用通俗语言重写条目（无任务 ID，无技术术语）
+4. 技能向用户展示草稿
+5. 技能询问"我可以写入 `docs/patch-notes-v0.4.0.md` 吗？"
+6. 用户批准；文件写入；裁决为 COMPLETE
 
----
-
-### Case 3: Tone Guidance from Design Folder — Incorporated into output
-
-**Fixture:**
-- `docs/CHANGELOG.md` exists with player-facing entries
-- `design/community/tone-guide.md` exists with guidance: "upbeat, encouraging tone; avoid passive voice"
-
-**Input:** `/patch-notes v0.4.0`
-
-**Expected behavior:**
-1. Skill reads changelog
-2. Skill detects tone guide at `design/community/tone-guide.md`
-3. Skill applies tone guidance when rewriting entries in plain language
-4. Patch notes use upbeat, active-voice phrasing
-5. Skill presents draft, asks to write, writes on approval
-
-**Assertions:**
-- [ ] Skill checks `design/` for a community or tone guidance file
-- [ ] Tone guide content influences phrasing of patch note entries
-- [ ] Output reflects active voice and upbeat tone where applicable
-- [ ] Skill notes that tone guidance was applied
+**断言：**
+- [ ] 补丁说明中只有 3 个条目（2 个内部条目被排除）
+- [ ] 条目用通俗语言编写，不含内部任务 ID
+- [ ] 文件路径匹配 `docs/patch-notes-v0.4.0.md`
+- [ ] "May I write" 提示在文件写入前出现
+- [ ] 写入后裁决为 COMPLETE
 
 ---
 
-### Case 4: Patch Note Template Exists — Used instead of generated structure
+### 用例 2：未找到变更日志 —— 引导先运行 /changelog
 
-**Fixture:**
-- `.claude/docs/templates/patch-notes-template.md` exists with a structured header format
-- `docs/CHANGELOG.md` exists with player-facing entries
+**测试夹具：**
+- `docs/CHANGELOG.md` 不存在
 
-**Input:** `/patch-notes v0.4.0`
+**输入：** `/patch-notes v0.4.0`
 
-**Expected behavior:**
-1. Skill reads changelog and detects template exists
-2. Skill populates the template with player-facing entries
-3. Template header/footer structure is preserved in the output
-4. Skill asks "May I write" and writes on approval
+**预期行为：**
+1. 技能尝试读取 `docs/CHANGELOG.md` —— 未找到
+2. 技能输出："未找到变更日志 —— 先运行 /changelog 生成一个"
+3. 不生成补丁说明；不写入文件
 
-**Assertions:**
-- [ ] Skill checks for a patch notes template before generating from scratch
-- [ ] Template structure is used when found (not overridden by default format)
-- [ ] Player-facing entries are inserted into the correct template section
-- [ ] Output note confirms template was used
+**断言：**
+- [ ] 当变更日志不存在时，技能不会崩溃
+- [ ] 输出明确引导用户运行 `/changelog`
+- [ ] 不出现 "May I write" 提示（无内容可写入）
+- [ ] 裁决为 BLOCKED（依赖未满足）
 
 ---
 
-### Case 5: Gate Compliance — No gate; community-manager is separate
+### 用例 3：来自设计文件夹的语气指导 —— 融入输出
 
-**Fixture:**
-- `docs/CHANGELOG.md` exists with player-facing entries
-- `review-mode.txt` contains `full`
+**测试夹具：**
+- `docs/CHANGELOG.md` 存在，包含面向玩家的条目
+- `design/community/tone-guide.md` 存在，包含指导："积极、鼓励的语气；避免被动语态"
 
-**Input:** `/patch-notes v0.4.0`
+**输入：** `/patch-notes v0.4.0`
 
-**Expected behavior:**
-1. Skill compiles patch notes in full mode
-2. No director gate is invoked (community review is a separate, manual step)
-3. Skill runs on Haiku model — fast compilation
-4. Skill notes in output: "Consider sharing draft with community manager before publishing"
-5. Skill asks user for approval and writes on confirmation
+**预期行为：**
+1. 技能读取变更日志
+2. 技能检测到 `design/community/tone-guide.md` 的语气指导
+3. 技能在用通俗语言重写条目时应用语气指导
+4. 补丁说明使用积极、主动语态的措辞
+5. 技能展示草稿，询问写入，在批准后写入
 
-**Assertions:**
-- [ ] No director gate is invoked regardless of review mode
-- [ ] Output suggests (but does not require) community manager review
-- [ ] Skill proceeds directly from compilation to "May I write" prompt
-- [ ] Verdict is COMPLETE
-
----
-
-## Protocol Compliance
-
-- [ ] Reads `docs/CHANGELOG.md` before generating patch notes
-- [ ] Filters entries to player-facing items only
-- [ ] Rewrites entries in plain language without internal IDs
-- [ ] Always asks "May I write" before writing patch notes file
-- [ ] No director gates are invoked
-- [ ] Runs on Haiku model tier (fast, low-cost)
+**断言：**
+- [ ] 技能检查 `design/` 中的社区或语气指导文件
+- [ ] 语气指导内容影响补丁说明条目的措辞
+- [ ] 输出在适用情况下反映主动语态和积极语气
+- [ ] 技能记录已应用语气指导
 
 ---
 
-## Coverage Notes
+### 用例 4：存在补丁说明模板 —— 使用模板而非生成结构
 
-- The case where all changelog entries are internal (zero player-facing items)
-  is not tested; behavior is an empty patch notes draft with a warning.
-- Version number parsing from the changelog header is an implementation detail
-  not verified here.
-- The community manager consultation noted in Case 5 is advisory; a separate
-  skill or manual review handles that step.
+**测试夹具：**
+- `.claude/docs/templates/patch-notes-template.md` 存在，包含结构化的标题格式
+- `docs/CHANGELOG.md` 存在，包含面向玩家的条目
+
+**输入：** `/patch-notes v0.4.0`
+
+**预期行为：**
+1. 技能读取变更日志并检测到模板存在
+2. 技能用面向玩家的条目填充模板
+3. 模板标题/页脚结构在输出中保留
+4. 技能询问 "May I write" 并在批准后写入
+
+**断言：**
+- [ ] 技能在从头生成前检查补丁说明模板
+- [ ] 找到模板时使用模板结构（不被默认格式覆盖）
+- [ ] 面向玩家的条目被插入到正确的模板部分
+- [ ] 输出记录确认使用了模板
+
+---
+
+### 用例 5：关卡合规性 —— 无关卡；社区经理是单独的
+
+**测试夹具：**
+- `docs/CHANGELOG.md` 存在，包含面向玩家的条目
+- `review-mode.txt` 包含 `full`
+
+**输入：** `/patch-notes v0.4.0`
+
+**预期行为：**
+1. 技能在 full 模式下编译补丁说明
+2. 不调用任何导演关卡（社区审查是单独的、手动的步骤）
+3. 技能在 Haiku 模型上运行 —— 快速编译
+4. 技能在输出中记录："考虑在发布前与社区经理分享草稿"
+5. 技能询问用户批准并在确认后写入
+
+**断言：**
+- [ ] 无论审查模式如何，都不调用导演关卡
+- [ ] 输出建议（但不要求）社区经理审查
+- [ ] 技能直接从编译进入 "May I write" 提示
+- [ ] 裁决为 COMPLETE
+
+---
+
+## 协议合规性
+
+- [ ] 在生成补丁说明前读取 `docs/CHANGELOG.md`
+- [ ] 将条目筛选为仅面向玩家的项目
+- [ ] 用通俗语言重写条目，不含内部 ID
+- [ ] 在写入补丁说明文件前始终询问 "May I write"
+- [ ] 不调用导演关卡
+- [ ] 在 Haiku 模型层级上运行（快速、低成本）
+
+---
+
+## 覆盖说明
+
+- 未测试所有变更日志条目都是内部条目（零个面向玩家项目）的情况；行为是一个空的补丁说明草稿并附带警告。
+- 从变更日志标题解析版本号是此处未验证的实现细节。
+- 用例 5 中记录的社区经理咨询是建议性的；单独的 Skill 或手动审查处理该步骤。

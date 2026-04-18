@@ -1,101 +1,93 @@
-# Architecture Traceability Index
+# 架构可追溯性索引
 
-<!-- Living document — updated by /architecture-review after each review run.
-     Do not edit manually unless correcting an error. -->
+<!-- 动态文档 — 每次审查运行后由 /architecture-review 更新。
+     除非修正错误，否则不要手动编辑。 -->
 
-## Document Status
+## 文档状态
 
-- **Last Updated**: [YYYY-MM-DD]
-- **Engine**: [e.g. Godot 4.6]
-- **GDDs Indexed**: [N]
-- **ADRs Indexed**: [M]
-- **Last Review**: [link to docs/architecture/architecture-review-[date].md]
+- **最后更新**: [YYYY-MM-DD]
+- **引擎**: [例如 Godot 4.6]
+- **已索引的GDD数量**: [N]
+- **已索引的ADR数量**: [M]
+- **最近审查**: [指向 docs/architecture/architecture-review-[date].md 的链接]
 
-## Coverage Summary
+## 覆盖摘要
 
-| Status | Count | Percentage |
+| 状态 | 数量 | 百分比 |
 |--------|-------|-----------|
-| ✅ Covered | [X] | [%] |
-| ⚠️ Partial | [Y] | [%] |
-| ❌ Gap | [Z] | [%] |
-| **Total** | **[N]** | |
+| ✅ 已覆盖 | [X] | [%] |
+| ⚠️ 部分覆盖 | [Y] | [%] |
+| ❌ 缺口 | [Z] | [%] |
+| **总计** | **[N]** | |
 
 ---
 
-## Traceability Matrix
+## 可追溯性矩阵
 
-<!-- One row per technical requirement extracted from a GDD.
-     A "technical requirement" is any GDD statement that implies a specific
-     architectural decision: data structures, performance constraints, engine
-     capabilities needed, cross-system communication, state persistence. -->
+<!-- 每个从GDD中提取的技术需求对应一行。
+     "技术需求"指任何暗示特定架构决策的GDD语句：数据结构、性能约束、所需的引擎能力、跨系统通信、状态持久化。 -->
 
-| Req ID | GDD | System | Requirement Summary | ADR(s) | Status | Notes |
+| 需求ID | GDD | 系统 | 需求摘要 | ADR(s) | 状态 | 备注 |
 |--------|-----|--------|---------------------|--------|--------|-------|
 | TR-[gdd]-001 | [filename] | [system name] | [one-line summary] | [ADR-NNNN] | ✅ | |
-| TR-[gdd]-002 | [filename] | [system name] | [one-line summary] | — | ❌ GAP | Needs `/architecture-decision [title]` |
+| TR-[gdd]-002 | [filename] | [system name] | [one-line summary] | — | ❌ 缺口 | 需要 `/architecture-decision [title]` |
 
 ---
 
-## Known Gaps
+## 已知缺口
 
-Requirements with no ADR coverage, prioritised by layer (Foundation first):
+无ADR覆盖的需求，按层级优先排序（Foundation层优先）：
 
-### Foundation Layer Gaps (BLOCKING — must resolve before coding)
-- [ ] TR-[id]: [requirement] — GDD: [file] — Suggested ADR: "[title]"
+### Foundation层缺口（阻塞性 — 必须在编码前解决）
+- [ ] TR-[id]: [requirement] — GDD: [file] — 建议ADR: "[title]"
 
-### Core Layer Gaps (must resolve before relevant system is built)
-- [ ] TR-[id]: [requirement] — GDD: [file] — Suggested ADR: "[title]"
+### Core层缺口（必须在相关系统构建前解决）
+- [ ] TR-[id]: [requirement] — GDD: [file] — 建议ADR: "[title]"
 
-### Feature Layer Gaps (should resolve before feature sprint)
-- [ ] TR-[id]: [requirement] — GDD: [file] — Suggested ADR: "[title]"
+### Feature层缺口（应在功能冲刺前解决）
+- [ ] TR-[id]: [requirement] — GDD: [file] — 建议ADR: "[title]"
 
-### Presentation Layer Gaps (can defer to implementation)
-- [ ] TR-[id]: [requirement] — GDD: [file] — Suggested ADR: "[title]"
+### Presentation层缺口（可推迟到实现阶段）
+- [ ] TR-[id]: [requirement] — GDD: [file] — 建议ADR: "[title]"
 
 ---
 
-## Cross-ADR Conflicts
+## 跨ADR冲突
 
-<!-- Pairs of ADRs that make contradictory claims. Must be resolved. -->
+<!-- 做出矛盾声明的ADR对。必须解决。 -->
 
-| Conflict ID | ADR A | ADR B | Type | Status |
+| 冲突ID | ADR A | ADR B | 类型 | 状态 |
 |-------------|-------|-------|------|--------|
-| CONFLICT-001 | ADR-NNNN | ADR-MMMM | Data ownership | 🔴 Unresolved |
+| CONFLICT-001 | ADR-NNNN | ADR-MMMM | 数据所有权 | 🔴 未解决 |
 
 ---
 
-## ADR → GDD Coverage (Reverse Index)
+## ADR → GDD 覆盖（反向索引）
 
-<!-- For each ADR, which GDD requirements does it address? -->
+<!-- 对于每个ADR，它解决了哪些GDD需求？ -->
 
-| ADR | Title | GDD Requirements Addressed | Engine Risk |
+| ADR | 标题 | 已解决的GDD需求 | 引擎风险 |
 |-----|-------|---------------------------|-------------|
 | ADR-0001 | [title] | TR-combat-001, TR-combat-002 | HIGH |
 
 ---
 
-## Superseded Requirements
+## 已过时的需求
 
-<!-- Requirements that existed in a GDD when an ADR was written, but the GDD
-     has since changed. The ADR may need updating. -->
+<!-- ADR编写时GDD中存在，但GDD后来发生了变化的需求。ADR可能需要更新。 -->
 
-| Req ID | GDD | Change | Affected ADR | Status |
+| 需求ID | GDD | 变更 | 受影响的ADR | 状态 |
 |--------|-----|--------|-------------|--------|
-| TR-[id] | [file] | [what changed] | ADR-NNNN | 🔴 ADR needs update |
+| TR-[id] | [file] | [what changed] | ADR-NNNN | 🔴 ADR需要更新 |
 
 ---
 
-## How to Use This Document
+## 如何使用本文档
 
-**When writing a new ADR**: Add it to the "ADR → GDD Coverage" table and mark
-the requirements it satisfies as ✅ in the matrix.
+**编写新ADR时**: 将其添加到"ADR → GDD 覆盖"表中，并在矩阵中将它满足的需求标记为✅。
 
-**When approving a GDD change**: Scan the matrix for requirements from that GDD
-and check whether the change invalidates any existing ADR. Add to "Superseded
-Requirements" if so.
+**批准GDD变更时**: 扫描矩阵中该GDD的需求，检查变更是否使任何现有ADR失效。如果是，则添加到"已过时的需求"。
 
-**When running `/architecture-review`**: The skill will update this document
-automatically with the current state.
+**运行 `/architecture-review` 时**: 该技能将自动用当前状态更新此文档。
 
-**Gate check**: The Pre-Production gate requires this document to exist and to
-have zero Foundation Layer Gaps.
+**门控检查**: Pre-Production阶段门控要求此文档存在且Foundation层缺口为零。

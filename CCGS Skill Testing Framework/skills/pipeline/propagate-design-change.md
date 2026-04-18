@@ -2,37 +2,28 @@
 
 ## Skill Summary
 
-`/propagate-design-change` handles GDD revision cascades. When a GDD is updated,
-the skill traces all downstream artifacts that reference it: ADRs, TR-registry
-entries, stories, and epics. It produces a structured impact report showing what
-needs to change and why. The skill does NOT automatically apply changes — it
-proposes edits for each affected artifact and asks "May I write" per artifact
-before making any modification.
+`/propagate-design-change` 处理 GDD 修订的级联影响。当 GDD 更新时，该技能追踪所有引用它的下游工件：ADRs、TR-registry 条目、stories 和 epics。它生成一个结构化影响报告，显示需要更改的内容及原因。该技能不会自动应用更改——它会为每个受影响的工件提出编辑建议，并在进行任何修改前针对每个工件询问"我可以写入吗"。
 
-The skill is read-only during analysis and write-gated per artifact during the
-update phase. It has no director gates — the analysis itself is mechanical
-tracing, not a creative review.
+该技能在分析阶段是只读的，在更新阶段针对每个工件进行写入门控。它没有 director gates——分析本身是机械追踪，而非创意审查。
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+由 `/skill-test static` 自动验证——无需 fixture。
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
-- [ ] Has ≥2 phase headings
-- [ ] Contains verdict keywords: COMPLETE, BLOCKED, NO IMPACT
-- [ ] Contains "May I write" collaborative protocol language (per-artifact approval)
-- [ ] Has a next-step handoff at the end
-- [ ] Documents that changes are proposed, not applied automatically
+- [ ] 具有必需的前置元数据字段：`name`、`description`、`argument-hint`、`user-invocable`、`allowed-tools`
+- [ ] 具有 ≥2 个阶段标题
+- [ ] 包含裁决关键词：COMPLETE、BLOCKED、NO IMPACT
+- [ ] 包含"我可以写入吗"协作协议语言（针对每个工件的批准）
+- [ ] 在末尾有下一步交接
+- [ ] 记录更改是提议的，而非自动应用
 
 ---
 
 ## Director Gate Checks
 
-No director gates — this skill spawns no director gate agents during analysis.
-The impact report is a mechanical tracing operation; no creative or technical
-director review is required at the analysis stage.
+没有 director gates——该技能在分析期间不会生成任何 director gate agents。影响报告是机械追踪操作；在分析阶段不需要创意或技术 director 审查。
 
 ---
 
@@ -41,20 +32,20 @@ director review is required at the analysis stage.
 ### Case 1: Happy Path — GDD revision affects 2 stories and 1 epic
 
 **Fixture:**
-- `design/gdd/[system].md` exists and has been recently revised (git diff shows changes)
-- `production/epics/[layer]/EPIC-[system].md` references this GDD
-- 2 story files reference TR-IDs from this GDD
-- The changed GDD section affects the acceptance criteria of both stories
+- `design/gdd/[system].md` 存在且最近已修订（git diff 显示更改）
+- `production/epics/[layer]/EPIC-[system].md` 引用此 GDD
+- 2 个 story 文件引用此 GDD 的 TR-IDs
+- 更改的 GDD 部分影响两个 story 的验收标准
 
 **Input:** `/propagate-design-change design/gdd/[system].md`
 
 **Expected behavior:**
-1. Skill reads the revised GDD and identifies what changed (git diff or content comparison)
-2. Skill scans ADRs, TR-registry, epics, and stories for references to this GDD
-3. Skill produces an impact report: 1 epic affected, 2 stories affected
-4. Skill shows the proposed change for each artifact
-5. For each artifact: asks "May I update [filepath]?" separately
-6. Applies changes only after per-artifact approval
+1. 技能读取修订后的 GDD 并识别更改内容（git diff 或内容比较）
+2. 技能扫描 ADRs、TR-registry、epics 和 stories 中对此 GDD 的引用
+3. 技能生成影响报告：1 个 epic 受影响，2 个 stories 受影响
+4. 技能显示每个工件的建议更改
+5. 针对每个工件：单独询问"我可以更新 [filepath] 吗？"
+6. 仅在获得每个工件的批准后应用更改
 
 **Assertions:**
 - [ ] Impact report identifies all 3 affected artifacts (1 epic + 2 stories)
@@ -74,11 +65,11 @@ director review is required at the analysis stage.
 **Input:** `/propagate-design-change design/gdd/[system].md`
 
 **Expected behavior:**
-1. Skill reads the revised GDD
-2. Skill scans all ADRs, stories, and epics for references
-3. No references found
-4. Skill outputs: "No downstream impact found for [system].md — no artifacts reference this GDD."
-5. No write operations are performed
+1. 技能读取修订后的 GDD
+2. 技能扫描所有 ADRs、stories 和 epics 中的引用
+3. 未找到引用
+4. 技能输出："No downstream impact found for [system].md — no artifacts reference this GDD."
+5. 不执行任何写入操作
 
 **Assertions:**
 - [ ] Skill outputs the "No downstream impact found" message
@@ -97,10 +88,10 @@ director review is required at the analysis stage.
 **Input:** `/propagate-design-change design/gdd/[system].md`
 
 **Expected behavior:**
-1. Skill identifies the In Progress story as an affected artifact
-2. Skill outputs an elevated warning: "CAUTION: [story-file] is currently In Progress — a developer may be working on this. Coordinate before updating."
-3. The warning appears in the impact report before the "May I write" ask for that story
-4. User can still approve or skip the update for that story
+1. 技能将 In Progress story 识别为受影响的工件
+2. 技能输出提升的警告："CAUTION: [story-file] is currently In Progress — a developer may be working on this. Coordinate before updating."
+3. 警告出现在该 story 的"我可以写入吗"询问之前的影响报告中
+4. 用户仍然可以批准或跳过该 story 的更新
 
 **Assertions:**
 - [ ] In Progress story is flagged with an elevated warning (distinct from regular affected-artifact entries)
@@ -118,10 +109,10 @@ director review is required at the analysis stage.
 **Input:** `/propagate-design-change` (no argument)
 
 **Expected behavior:**
-1. Skill detects no argument is provided
-2. Skill outputs a usage error: "No GDD specified. Usage: /propagate-design-change design/gdd/[system].md"
-3. Skill lists recently modified GDDs as suggestions (git log)
-4. No analysis is performed
+1. 技能检测到未提供参数
+2. 技能输出使用错误："No GDD specified. Usage: /propagate-design-change design/gdd/[system].md"
+3. 技能列出最近修改的 GDDs 作为建议（git log）
+4. 不执行分析
 
 **Assertions:**
 - [ ] Skill outputs a usage error when no argument is given
@@ -140,10 +131,10 @@ director review is required at the analysis stage.
 **Input:** `/propagate-design-change design/gdd/[system].md`
 
 **Expected behavior:**
-1. Skill reads the GDD and traces downstream references
-2. Skill does NOT read `production/session-state/review-mode.txt`
-3. No director gate agents are spawned at any point
-4. Impact report is produced and per-artifact approval proceeds normally
+1. 技能读取 GDD 并追踪下游引用
+2. 技能不会读取 `production/session-state/review-mode.txt`
+3. 在任何阶段都不会生成 director gate agents
+4. 生成影响报告并按工件批准正常进行
 
 **Assertions:**
 - [ ] No director gate agents are spawned (no CD-, TD-, PR-, AD- prefixed gates)
@@ -155,21 +146,17 @@ director review is required at the analysis stage.
 
 ## Protocol Compliance
 
-- [ ] Reads revised GDD and all potentially affected artifacts before producing impact report
-- [ ] Impact report shown in full before any "May I write" ask
-- [ ] "May I write" asked per artifact — never for the entire set at once
-- [ ] In Progress stories flagged with elevated warning before their approval ask
-- [ ] No director gates — no review-mode.txt read
-- [ ] Ends with next-step handoff appropriate to verdict (COMPLETE or NO IMPACT)
+- [ ] 在生成影响报告前读取修订后的 GDD 和所有可能受影响的工件
+- [ ] 在任何"我可以写入吗"询问前完整显示影响报告
+- [ ] 针对每个工件询问"我可以写入吗"——从不一次性询问整个集合
+- [ ] 在批准询问前标记 In Progress stories 并显示提升的警告
+- [ ] 没有 director gates——不读取 review-mode.txt
+- [ ] 以适合裁决（COMPLETE 或 NO IMPACT）的下一步交接结束
 
 ---
 
 ## Coverage Notes
 
-- ADR impact (when a GDD change requires an ADR update or new ADR) follows the
-  same per-artifact approval pattern as story/epic updates — not independently
-  fixture-tested.
-- TR-registry impact (when changed GDD requires new or updated TR-IDs) is part
-  of the analysis phase but not independently fixture-tested.
-- The git diff comparison method (detecting what changed in the GDD) is a runtime
-  concern — fixtures use pre-arranged content differences.
+- ADR 影响（当 GDD 更改需要 ADR 更新或新 ADR 时）遵循与 story/epic 更新相同的按工件批准模式——未独立进行 fixture 测试。
+- TR-registry 影响（当更改的 GDD 需要新的或更新的 TR-IDs 时）是分析阶段的一部分，但未独立进行 fixture 测试。
+- git diff 比较方法（检测 GDD 中的更改内容）是运行时关注点——fixtures 使用预先安排的内容差异。

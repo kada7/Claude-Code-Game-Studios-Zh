@@ -1,168 +1,161 @@
 # Skill Test Spec: /estimate
 
-## Skill Summary
+## 技能摘要
 
-`/estimate` estimates task or story effort using a relative-size scale (S / M /
-L / XL) based on story complexity, acceptance criteria count, and historical
-sprint velocity from past sprint files. Estimates are advisory and are never
-written automatically. No director gates are invoked. Verdicts are effort ranges,
-not pass/fail — every run produces an estimate.
+`/estimate` 使用相对规模等级（S / M / L / XL）基于故事复杂度、验收标准数量和过往 sprint 文件中的历史 sprint velocity 来估算任务或故事工作量。估算结果是建议性的，永远不会自动写入。不调用任何 director gate。判定结果是工作量范围，而非通过/失败 —— 每次运行都会产生一个估算。
 
 ---
 
-## Static Assertions (Structural)
+## 静态断言（结构性的）
 
-Verified automatically by `/skill-test static` — no fixture needed.
+由 `/skill-test static` 自动验证 —— 无需 fixture。
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
-- [ ] Has ≥2 phase headings
-- [ ] Contains size labels: S, M, L, XL (the "verdict" equivalents for this skill)
-- [ ] Does NOT require "May I write" language (advisory output only)
-- [ ] Has a next-step handoff (how to use the estimate in sprint planning)
-
----
-
-## Director Gate Checks
-
-None. Estimation is an advisory informational skill; no gates are invoked.
+- [ ] 具有必需的前置元数据字段：`name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] 具有 ≥2 个阶段标题
+- [ ] 包含规模标签：S, M, L, XL（本技能的"判定"等价物）
+- [ ] 不要求"我可以写入"语言（仅建议性输出）
+- [ ] 具有下一步交接说明（如何在 sprint planning 中使用估算）
 
 ---
 
-## Test Cases
+## Director Gate 检查
 
-### Case 1: Happy Path — Clear story with known tech stack
+无。Estimation 是一个建议性的信息技能；不调用任何 gate。
+
+---
+
+## 测试用例
+
+### 用例 1：Happy Path —— 技术栈已知的清晰故事
 
 **Fixture:**
-- `production/epics/combat/story-hitbox-detection.md` exists with:
-  - 4 clear Acceptance Criteria
-  - ADR reference (Accepted status)
-  - No "unknown" or "TBD" language in story body
-- `production/sprints/sprint-003.md` through `sprint-005.md` exist with velocity data
-- Tech stack is GDScript (well-understood by team per sprint history)
+- `production/epics/combat/story-hitbox-detection.md` 存在，包含：
+  - 4 条清晰的验收标准
+  - ADR 引用（Accepted 状态）
+  - 故事正文中没有"未知"或"待定"语言
+- `production/sprints/sprint-003.md` 到 `sprint-005.md` 存在，包含 velocity 数据
+- 技术栈是 GDScript（根据 sprint 历史，团队对此很熟悉）
 
-**Input:** `/estimate production/epics/combat/story-hitbox-detection.md`
+**输入:** `/estimate production/epics/combat/story-hitbox-detection.md`
 
-**Expected behavior:**
-1. Skill reads the story file — assesses clarity, AC count, tech stack
-2. Skill reads sprint history to determine average velocity
-3. Skill outputs estimate: M (1–2 days) with reasoning
-4. No files are written
+**预期行为:**
+1. 技能读取故事文件 —— 评估清晰度、验收标准数量、技术栈
+2. 技能读取 sprint 历史以确定平均 velocity
+3. 技能输出估算：M（1–2 天）并附上推理
+4. 不写入任何文件
 
-**Assertions:**
-- [ ] Estimate is M for a clear, well-scoped story with known tech
-- [ ] Reasoning references AC count, tech stack familiarity, and velocity data
-- [ ] Estimate is presented as a range (e.g., "1–2 days"), not a single point
-- [ ] No files are written
+**断言:**
+- [ ] 对于清晰、范围明确且技术栈已知的故事，估算为 M
+- [ ] 推理引用了验收标准数量、技术栈熟悉度和 velocity 数据
+- [ ] 估算以范围形式呈现（例如"1–2 天"），而非单个点
+- [ ] 不写入任何文件
 
 ---
 
-### Case 2: High Uncertainty — Unknown system, no ADR yet
+### 用例 2：高不确定性 —— 未知系统，尚无 ADR
 
 **Fixture:**
-- `production/epics/online/story-lobby-matchmaking.md` exists with:
-  - 2 vague Acceptance Criteria (using "should" and "TBD")
-  - No ADR reference — matchmaking architecture not yet decided
-  - References new subsystem ("online/matchmaking") with no existing source files
+- `production/epics/online/story-lobby-matchmaking.md` 存在，包含：
+  - 2 条模糊的验收标准（使用"应该"和"待定"）
+  - 无 ADR 引用 —— 匹配架构尚未决定
+  - 引用新子系统（"online/matchmaking"）且无现有源文件
 
-**Input:** `/estimate production/epics/online/story-lobby-matchmaking.md`
+**输入:** `/estimate production/epics/online/story-lobby-matchmaking.md`
 
-**Expected behavior:**
-1. Skill reads story — finds vague AC, no ADR, no existing source
-2. Skill flags multiple uncertainty factors
-3. Estimate is L–XL with an explicit risk note: "Estimate range is wide due to architectural unknowns"
-4. Skill recommends creating an ADR before development begins
+**预期行为:**
+1. 技能读取故事 —— 发现模糊的验收标准、无 ADR、无现有源文件
+2. 技能标记多个不确定性因素
+3. 估算为 L–XL，并附上明确的风险说明："估算范围较宽，原因是架构未知"
+4. 技能建议在开发开始前创建 ADR
 
-**Assertions:**
-- [ ] Estimate is L or XL (not S or M) when significant unknowns exist
-- [ ] Risk note explains the specific unknowns driving the wide range
-- [ ] Output recommends resolving architectural questions first
-- [ ] No files are written
+**断言:**
+- [ ] 当存在重大未知因素时，估算为 L 或 XL（非 S 或 M）
+- [ ] 风险说明解释了导致范围较宽的具体未知因素
+- [ ] 输出建议首先解决架构问题
+- [ ] 不写入任何文件
 
 ---
 
-### Case 3: No Sprint Velocity Data — Conservative defaults used
+### 用例 3：无 Sprint Velocity 数据 —— 使用保守默认值
 
 **Fixture:**
-- Story file exists and is well-defined
-- `production/sprints/` is empty — no historical sprints
+- 故事文件存在且定义明确
+- `production/sprints/` 为空 —— 无历史 sprints
 
-**Input:** `/estimate production/epics/core/story-save-load.md`
+**输入:** `/estimate production/epics/core/story-save-load.md`
 
-**Expected behavior:**
-1. Skill reads story — assesses complexity
-2. Skill attempts to read sprint velocity data — finds none
-3. Skill notes: "No sprint history found — using conservative defaults for velocity"
-4. Estimate is produced using default assumptions (e.g., 1 story point = 1 day)
-5. No files are written
+**预期行为:**
+1. 技能读取故事 —— 评估复杂度
+2. 技能尝试读取 sprint velocity 数据 —— 未找到
+3. 技能说明："未找到 sprint 历史 —— 对 velocity 使用保守默认值"
+4. 使用默认假设（例如，1 story point = 1 天）生成估算
+5. 不写入任何文件
 
-**Assertions:**
-- [ ] Skill does not error when no sprint history exists
-- [ ] Output explicitly notes that conservative defaults are being used
-- [ ] Estimate is still produced (not blocked by missing velocity)
-- [ ] Conservative defaults produce a higher (not lower) estimate range
+**断言:**
+- [ ] 当无 sprint 历史存在时，技能不会出错
+- [ ] 输出明确说明正在使用保守默认值
+- [ ] 仍然生成估算（不因缺少 velocity 而被阻止）
+- [ ] 保守默认值产生较高（而非较低）的估算范围
 
 ---
 
-### Case 4: Multiple Stories — Each estimated individually plus sprint total
+### 用例 4：多个故事 —— 每个单独估算加上 sprint 总计
 
 **Fixture:**
-- User provides a sprint file: `production/sprints/sprint-007.md` with 4 stories
-- Sprint history exists (3 previous sprints)
+- 用户提供 sprint 文件：`production/sprints/sprint-007.md`，包含 4 个故事
+- 存在 sprint 历史（3 个之前的 sprints）
 
-**Input:** `/estimate production/sprints/sprint-007.md`
+**输入:** `/estimate production/sprints/sprint-007.md`
 
-**Expected behavior:**
-1. Skill reads sprint file — identifies 4 stories
-2. Skill estimates each story individually: S, M, M, L
-3. Skill computes sprint total: approximately 6–8 story points
-4. Skill presents per-story estimates followed by sprint total
-5. No files are written
+**预期行为:**
+1. 技能读取 sprint 文件 —— 识别 4 个故事
+2. 技能单独估算每个故事：S, M, M, L
+3. 技能计算 sprint 总计：约 6–8 story points
+4. 技能呈现每个故事的估算，然后是 sprint 总计
+5. 不写入任何文件
 
-**Assertions:**
-- [ ] Each story receives its own estimate label
-- [ ] Sprint total is presented after individual estimates
-- [ ] Total is a sum range derived from individual ranges
-- [ ] Skill handles sprint files (not just single story files) as input
+**断言:**
+- [ ] 每个故事获得自己的估算标签
+- [ ] sprint 总计在单独估算之后呈现
+- [ ] 总计是从单独范围推导出的总和范围
+- [ ] 技能处理 sprint 文件（不仅仅是单个故事文件）作为输入
 
 ---
 
-### Case 5: Gate Compliance — No gate; estimates are informational
+### 用例 5：Gate 合规性 —— 无 gate；估算是信息性的
 
 **Fixture:**
-- Story file exists with medium complexity
-- `review-mode.txt` contains `full`
+- 故事文件存在，具有中等复杂度
+- `review-mode.txt` 包含 `full`
 
-**Input:** `/estimate production/epics/core/story-item-pickup.md`
+**输入:** `/estimate production/epics/core/story-item-pickup.md`
 
-**Expected behavior:**
-1. Skill reads story and sprint history; computes estimate
-2. No director gate is invoked in any review mode
-3. Estimate is presented as advisory output only
-4. Skill notes: "Use this estimate in /sprint-plan when selecting stories for the next sprint"
+**预期行为:**
+1. 技能读取故事和 sprint 历史；计算估算
+2. 在任何 review mode 中都不调用 director gate
+3. 估算仅作为建议性输出呈现
+4. 技能说明："在 /sprint-plan 中为下一个 sprint 选择故事时使用此估算"
 
-**Assertions:**
-- [ ] No director gate is invoked regardless of review mode
-- [ ] Output is purely informational — no approval or write prompt
-- [ ] Next-step recommendation references `/sprint-plan`
-- [ ] Estimate does not change based on review mode
-
----
-
-## Protocol Compliance
-
-- [ ] Reads story file before estimating
-- [ ] Reads sprint velocity history when available
-- [ ] Produces effort range (S/M/L/XL), not a single number
-- [ ] Does not write any files
-- [ ] No director gates are invoked
-- [ ] Always produces an estimate (never blocked by missing data; uses defaults instead)
+**断言:**
+- [ ] 无论 review mode 如何，都不调用 director gate
+- [ ] 输出纯粹是信息性的 —— 无批准或写入提示
+- [ ] 下一步建议引用 `/sprint-plan`
+- [ ] 估算不基于 review mode 改变
 
 ---
 
-## Coverage Notes
+## 协议合规性
 
-- The skill does not produce PASS/FAIL verdicts; the "verdict" here is the
-  effort range itself. Test assertions focus on the accuracy of the range
-  and the quality of the reasoning, not a binary outcome.
-- Team-specific velocity calibration (what "M" means for this team) is an
-  implementation detail not tested here; it is configured via sprint history.
+- [ ] 在估算前读取故事文件
+- [ ] 在可用时读取 sprint velocity 历史
+- [ ] 产生工作量范围（S/M/L/XL），而非单个数字
+- [ ] 不写入任何文件
+- [ ] 不调用任何 director gate
+- [ ] 总是产生估算（从不因缺少数据而被阻止；使用默认值代替）
+
+---
+
+## 覆盖范围说明
+
+- 本技能不产生 PASS/FAIL 判定；这里的"判定"是工作量范围本身。测试断言侧重于范围的准确性和推理的质量，而非二元结果。
+- 团队特定的 velocity 校准（"M"对该团队意味着什么）是一个实现细节，此处不测试；它通过 sprint 历史配置。

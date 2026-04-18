@@ -1,94 +1,94 @@
 ---
 name: asset-audit
-description: "Audits game assets for compliance with naming conventions, file size budgets, format standards, and pipeline requirements. Identifies orphaned assets, missing references, and standard violations."
+description: "审核游戏资产是否符合命名规范、文件大小预算、格式标准和流水线要求。识别孤立资产、缺失引用和标准违规。"
 argument-hint: "[category|all]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep
 # Read-only diagnostic skill — no specialist agent delegation needed
 ---
 
-## Phase 1: Read Standards
+## 阶段 1: 读取标准
 
-Read the art bible or asset standards from the relevant design docs and the CLAUDE.md naming conventions.
-
----
-
-## Phase 2: Scan Asset Directories
-
-Scan the target asset directory using Glob:
-
-- `assets/art/**/*` for art assets
-- `assets/audio/**/*` for audio assets
-- `assets/vfx/**/*` for VFX assets
-- `assets/shaders/**/*` for shaders
-- `assets/data/**/*` for data files
+从相关设计文档和 CLAUDE.md 的命名约定中读取艺术圣经或资产标准。
 
 ---
 
-## Phase 3: Run Compliance Checks
+## 阶段 2: 扫描资产目录
 
-**Naming conventions:**
-- Art: `[category]_[name]_[variant]_[size].[ext]`
-- Audio: `[category]_[context]_[name]_[variant].[ext]`
-- All files must be lowercase with underscores
+使用 Glob 扫描目标资产目录:
 
-**File standards:**
-- Textures: Power-of-two dimensions, correct format (PNG for UI, compressed for 3D), within size budget
-- Audio: Correct sample rate, format (OGG for SFX, OGG/MP3 for music), within duration limits
-- Data: Valid JSON/YAML, schema-compliant
-
-**Orphaned assets:** Search code for references to each asset file. Flag any with no references.
-
-**Missing assets:** Search code for asset references and verify the files exist.
+- `assets/art/**/*` — 美术资产
+- `assets/audio/**/*` — 音频资产
+- `assets/vfx/**/*` — VFX 资产
+- `assets/shaders/**/*` — 着色器
+- `assets/data/**/*` — 数据文件
 
 ---
 
-## Phase 4: Output Audit Report
+## 阶段 3: 执行合规检查
+
+**命名约定:**
+- 美术: `[category]_[name]_[variant]_[size].[ext]`
+- 音频: `[category]_[context]_[name]_[variant].[ext]`
+- 所有文件必须小写并使用下划线
+
+**文件标准:**
+- 纹理: 2的幂次方尺寸, 正确格式 (UI用PNG, 3D用压缩格式), 在大小预算内
+- 音频: 正确采样率, 格式 (SFX用OGG, 音乐用OGG/MP3), 在时长限制内
+- 数据: 有效的 JSON/YAML, 符合 schema
+
+**孤立资产:** 在代码中搜索对每个资产文件的引用。标记没有引用的资产。
+
+**缺失资产:** 在代码中搜索资产引用并验证文件是否存在。
+
+---
+
+## 阶段 4: 输出审核报告
 
 ```markdown
-# Asset Audit Report -- [Category] -- [Date]
+# 资产审核报告 — [Category] — [Date]
 
-## Summary
-- **Total assets scanned**: [N]
-- **Naming violations**: [N]
-- **Size violations**: [N]
-- **Format violations**: [N]
-- **Orphaned assets**: [N]
-- **Missing assets**: [N]
-- **Overall health**: [CLEAN / MINOR ISSUES / NEEDS ATTENTION]
+## 摘要
+- **扫描的资产总数**: [N]
+- **命名违规**: [N]
+- **大小违规**: [N]
+- **格式违规**: [N]
+- **孤立资产**: [N]
+- **缺失资产**: [N]
+- **整体健康度**: [CLEAN / MINOR ISSUES / NEEDS ATTENTION]
 
-## Naming Violations
-| File | Expected Pattern | Issue |
+## 命名违规
+| 文件 | 期望格式 | 问题 |
 |------|-----------------|-------|
 
-## Size Violations
-| File | Budget | Actual | Overage |
+## 大小违规
+| 文件 | 预算 | 实际 | 超支 |
 |------|--------|--------|---------|
 
-## Format Violations
-| File | Expected Format | Actual Format |
+## 格式违规
+| 文件 | 期望格式 | 实际格式 |
 |------|----------------|---------------|
 
-## Orphaned Assets (no code references found)
-| File | Last Modified | Size | Recommendation |
+## 孤立资产 (未找到代码引用)
+| 文件 | 最后修改 | 大小 | 建议 |
 |------|-------------|------|---------------|
 
-## Missing Assets (referenced but not found)
-| Reference Location | Expected Path |
+## 缺失资产 (有引用但未找到)
+| 引用位置 | 期望路径 |
 |-------------------|---------------|
 
-## Recommendations
-[Prioritized list of fixes]
+## 建议
+[优先修复列表]
 
-## Verdict: [COMPLIANT / WARNINGS / NON-COMPLIANT]
+## 裁决: [COMPLIANT / WARNINGS / NON-COMPLIANT]
 ```
 
-This skill is read-only — it produces a report but does not write files.
+此 skill 为只读 — 生成报告但不写入文件。
 
 ---
 
-## Phase 5: Next Steps
+## 阶段 5: 后续步骤
 
-- Fix naming violations using the patterns defined in CLAUDE.md.
-- Delete confirmed orphaned assets after manual review.
-- Run `/content-audit` to cross-check asset counts against GDD-specified requirements.
+- 使用 CLAUDE.md 中定义的格式修复命名违规。
+- 人工审核后删除确认的孤立资产。
+- 运行 `/content-audit` 交叉检查资产数量是否符合 GDD 规定的需求。

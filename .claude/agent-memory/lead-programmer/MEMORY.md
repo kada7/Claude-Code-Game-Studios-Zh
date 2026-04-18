@@ -1,28 +1,27 @@
-# Lead Programmer — Agent Memory
+# 首席程序员 — Agent 记忆
 
-## Skill Authoring Conventions
+## Skill 创作规范
 
 ### Frontmatter
-- Fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
-- Read-only analysis skills that run in isolation also carry `context: fork` and `agent:`
-- Interactive skills (write files, ask questions) do NOT use `context: fork`
-- `AskUserQuestion` is a usage pattern described in skill body text — it is NOT listed
-  in `allowed-tools` frontmatter (no existing skill does this)
+- 字段：`name`、`description`、`argument-hint`、`user-invocable`、`allowed-tools`
+- 独立运行的只读分析技能还包含 `context: fork` 和 `agent:`
+- 交互式技能（写入文件、提问）**不使用** `context: fork`
+- `AskUserQuestion` 是在技能正文中描述的使用模式 — 它**不**列在 `allowed-tools` frontmatter 中（现有技能没有这样做的）
 
-### File Layout
-- Skills live in `.claude/skills/<name>/SKILL.md` (subdirectory per skill, never flat .md)
-- Section headers use `##` for phases, `###` for sub-sections
-- Phase names follow "Phase N: Verb Noun" pattern (e.g., "Phase 1: Find the Story")
-- Output format templates go in fenced code blocks
+### 文件布局
+- 技能位于 `.claude/skills/<name>/SKILL.md`（每个技能一个子目录，不使用扁平 .md 文件）
+- 章节标题使用 `##` 表示阶段，`###` 表示子章节
+- 阶段名称遵循 "Phase N: Verb Noun" 模式（例如 "Phase 1: Find the Story"）
+- 输出格式模板放在围栏代码块中
 
-### Known Canonical Paths (verify before referencing in new skills)
-- Tech debt register: `docs/tech-debt-register.md` (NOT `production/tech-debt.md`)
-- Sprint files: `production/sprints/`
-- Epic story files: `production/epics/[epic-slug]/story-[NNN]-[slug].md`
-- Control manifest: `docs/architecture/control-manifest.md`
-- Session state: `production/session-state/active.md`
-- Systems index: `design/gdd/systems-index.md`
-- Engine reference: `docs/engine-reference/[engine]/VERSION.md`
+### 已知规范路径（在新技能中引用前请验证）
+- 技术债务登记：`docs/tech-debt-register.md`（**非** `production/tech-debt.md`）
+- 冲刺文件：`production/sprints/`
+- 史诗故事文件：`production/epics/[epic-slug]/story-[NNN]-[slug].md`
+- 控制清单：`docs/architecture/control-manifest.md`
+- 会话状态：`production/session-state/active.md`
+- 系统索引：`design/gdd/systems-index.md`
+- 引擎参考：`docs/engine-reference/[engine]/VERSION.md`
 
-### Skills Completed
-- `story-done` — end-of-story completion handshake (Phase 1-8, writes story file)
+### 已完成的技能
+- `story-done` — 故事完成握手（第 1-8 阶段，写入故事文件）

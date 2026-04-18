@@ -1,135 +1,128 @@
-# Incident Response: [Incident Title]
+# 事件响应：[事件标题]
 
-**Severity**: [S1-Critical / S2-Major / S3-Moderate / S4-Minor]
-**Status**: [Active / Mitigated / Resolved / Post-Mortem Complete]
-**Detected**: [Date Time UTC]
-**Resolved**: [Date Time UTC or ONGOING]
-**Duration**: [Total time from detection to resolution]
-**Incident Commander**: [Name/Role]
-
----
-
-## Impact Summary
-
-[2-3 sentences describing what players experienced. Write from the player
-perspective, not the technical perspective.]
-
-- **Players affected**: [estimated count or percentage]
-- **Platforms affected**: [PC / Console / Mobile / All]
-- **Regions affected**: [All / specific regions]
-- **Revenue impact**: [estimated if applicable]
+**严重性**：[S1-关键 / S2-重大 / S3-中等 / S4-轻微]
+**状态**：[活跃 / 已缓解 / 已解决 / 事后分析完成]
+**检测时间**：[日期 时间 UTC]
+**解决时间**：[日期 时间 UTC 或 进行中]
+**持续时间**：[从检测到解决的总时间]
+**事件指挥官**：[姓名/角色]
 
 ---
 
-## Timeline
+## 影响摘要
 
-| Time (UTC) | Event | Action Taken |
-| ---- | ---- | ---- |
-| [HH:MM] | Incident detected via [monitoring/player report/etc.] | Incident commander assigned |
-| [HH:MM] | Root cause identified | [Brief description of cause] |
-| [HH:MM] | Mitigation deployed | [What was done] |
-| [HH:MM] | Service restored / Fix confirmed | Monitoring for recurrence |
-| [HH:MM] | All-clear declared | Post-mortem scheduled |
+[2-3句话描述玩家经历的情况。从玩家角度写，而不是技术角度。]
 
----
-
-## Root Cause
-
-### What Happened
-[Technical description of the root cause. Be specific about the chain of events
-that led to the incident.]
-
-### Why It Happened
-[Systemic cause — why did existing processes, tests, or safeguards fail to
-prevent this? This is more important than the technical cause.]
-
-### Contributing Factors
-- [Factor 1 — e.g., "Insufficient load testing for the new matchmaking system"]
-- [Factor 2 — e.g., "Monitoring alert threshold was set too high"]
-- [Factor 3]
+- **受影响的玩家**：[估计数量或百分比]
+- **受影响的平台**：[PC / 主机 / 移动端 / 所有]
+- **受影响的地区**：[所有 / 特定地区]
+- **收入影响**：[如适用，估计值]
 
 ---
 
-## Mitigation and Resolution
+## 时间线
 
-### Immediate Actions (during incident)
-1. [Action taken to stop the bleeding]
-2. [Action taken to restore service]
-3. [Action taken to verify resolution]
-
-### Follow-Up Actions (after resolution)
-1. [Permanent fix if immediate action was a workaround]
-2. [Additional testing or monitoring added]
-3. [Process changes to prevent recurrence]
+| 时间 (UTC) | 事件 | 采取的行动 |
+| ---------- | ---- | ---------- |
+| [HH:MM] | 通过[监控/玩家报告/等]检测到事件 | 分配事件指挥官 |
+| [HH:MM] | 确定根本原因 | [原因的简要描述] |
+| [HH:MM] | 部署缓解措施 | [做了什么] |
+| [HH:MM] | 服务恢复 / 修复确认 | 监控是否复发 |
+| [HH:MM] | 宣布全部清除 | 安排事后分析 |
 
 ---
 
-## Player Communication
+## 根本原因
 
-### Initial Acknowledgment
-*Sent: [Time] via [channel]*
-> [Exact text of the first public message acknowledging the issue]
+### 发生了什么
+[根本原因的技术描述。具体说明导致事件的事件链。]
 
-### Status Updates
-*Sent: [Time] via [channel]*
-> [Text of each subsequent update]
+### 为什么会发生
+[系统性原因 —— 为什么现有的流程、测试或保障措施未能阻止此事？这比技术原因更重要。]
 
-### Resolution Notice
-*Sent: [Time] via [channel]*
-> [Text announcing the fix and any compensation]
-
-### Compensation (if applicable)
-- **What**: [description of compensation — e.g., "500 premium currency + 24-hour XP boost"]
-- **Who**: [all players / affected players only / players who logged in during incident]
-- **When**: [delivery date and method]
-- **Rationale**: [why this compensation is appropriate for the impact]
+### 影响因素
+- [因素1 —— 例如，"新匹配系统的负载测试不足"]
+- [因素2 —— 例如，"监控警报阈值设置过高"]
+- [因素3]
 
 ---
 
-## Prevention
+## 缓解与解决
 
-### What We Are Changing
+### 立即行动（事件期间）
+1. [采取的止血行动]
+2. [采取的恢复服务行动]
+3. [采取的验证解决行动]
 
-| Action Item | Owner | Deadline | Status |
-| ---- | ---- | ---- | ---- |
-| [Specific preventive measure] | [Role] | [Date] | [TODO/Done] |
-| [Add monitoring for X] | [Role] | [Date] | [TODO/Done] |
-| [Add test coverage for Y] | [Role] | [Date] | [TODO/Done] |
-| [Update runbook for Z] | [Role] | [Date] | [TODO/Done] |
-
-### Process Improvements
-- [Process change to prevent similar incidents]
-- [Monitoring/alerting improvement]
-- [Testing improvement]
+### 后续行动（解决后）
+1. [如果立即行动是变通方案，则进行永久修复]
+2. [添加额外的测试或监控]
+3. [防止再次发生的过程变更]
 
 ---
 
-## Lessons Learned
+## 玩家沟通
 
-### What Went Well
-- [Positive aspect of incident response — e.g., "Detection was fast due to
-  monitoring alerts"]
-- [Positive aspect]
+### 首次确认
+*发送时间：[时间] 通过[渠道]*
+> [首次公开承认问题的确切文本]
 
-### What Went Poorly
-- [Problem with response — e.g., "Took 20 minutes to identify the correct
-  on-call person"]
-- [Problem]
+### 状态更新
+*发送时间：[时间] 通过[渠道]*
+> [每个后续更新的文本]
 
-### Where We Got Lucky
-- [Factor that reduced impact by chance rather than design — these are hidden
-  risks to address]
+### 解决通知
+*发送时间：[时间] 通过[渠道]*
+> [宣布修复和任何补偿的文本]
 
----
-
-## Sign-Offs
-
-- [ ] Technical Director — Root cause accurate, prevention plan sufficient
-- [ ] QA Lead — Test coverage gaps addressed
-- [ ] Producer — Timeline and communication reviewed
-- [ ] Community Manager — Player communication reviewed
+### 补偿（如适用）
+- **内容**：[补偿描述 —— 例如，"500高级货币 + 24小时经验值加成"]
+- **对象**：[所有玩家 / 仅受影响的玩家 / 事件期间登录的玩家]
+- **时间**：[交付日期和方法]
+- **理由**：[为什么此补偿对影响是合适的]
 
 ---
 
-*This document is filed in `production/hotfixes/` and linked from the
-release notes for the fix version.*
+## 预防
+
+### 我们将改变什么
+
+| 行动项 | 负责人 | 截止日期 | 状态 |
+| ------ | ------ | -------- | ---- |
+| [具体的预防措施] | [角色] | [日期] | [待办/完成] |
+| [添加对 X 的监控] | [角色] | [日期] | [待办/完成] |
+| [添加对 Y 的测试覆盖] | [角色] | [日期] | [待办/完成] |
+| [更新 Z 的运行手册] | [角色] | [日期] | [待办/完成] |
+
+### 流程改进
+- [防止类似事件的流程变更]
+- [监控/警报改进]
+- [测试改进]
+
+---
+
+## 经验教训
+
+### 进展顺利的方面
+- [事件响应的积极方面 —— 例如，"由于监控警报，检测迅速"]
+- [积极方面]
+
+### 进展不佳的方面
+- [响应的问题 —— 例如，"花了20分钟才确定正确的待命人员"]
+- [问题]
+
+### 我们幸运的地方
+- [因机会而非设计减少影响的因素 —— 这些是需要解决的隐藏风险]
+
+---
+
+## 签署
+
+- [ ] 技术总监 —— 根本原因准确，预防计划充分
+- [ ] QA 主管 —— 测试覆盖差距已解决
+- [ ] 制作人 —— 时间线和沟通已审核
+- [ ] 社区经理 —— 玩家沟通已审核
+
+---
+
+*本文档存储在 `production/hotfixes/` 中，并从修复版本的发布说明链接。*

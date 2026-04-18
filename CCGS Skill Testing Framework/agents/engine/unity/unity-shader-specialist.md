@@ -1,83 +1,83 @@
-# Agent Test Spec: unity-shader-specialist
+# Agent 测试规范：unity-shader-specialist
 
-## Agent Summary
-Domain: Unity Shader Graph, custom HLSL, VFX Graph, URP/HDRP pipeline customization, and post-processing effects.
-Does NOT own: gameplay code, art style direction.
-Model tier: Sonnet (default).
-No gate IDs assigned.
-
----
-
-## Static Assertions (Structural)
-
-- [ ] `description:` field is present and domain-specific (references Shader Graph / HLSL / VFX Graph / URP / HDRP)
-- [ ] `allowed-tools:` list includes Read, Write, Edit, Glob, Grep
-- [ ] Model tier is Sonnet (default for specialists)
-- [ ] Agent definition does not claim authority over gameplay code or art direction
+## Agent 概述
+领域：Unity Shader Graph、自定义 HLSL、VFX Graph、URP/HDRP 管线定制和后处理效果。
+不负责：游戏玩法代码、美术风格指导。
+模型层级：Sonnet（默认）。
+未分配门禁 ID。
 
 ---
 
-## Test Cases
+## 静态断言（结构）
 
-### Case 1: In-domain request — appropriate output
-**Input:** "Create an outline effect for characters using Shader Graph in URP."
-**Expected behavior:**
-- Produces a Shader Graph node setup description:
-  - Inverted hull method: Scale Normal → Vertex offset in vertex stage, Cull Front
-  - OR screen-space post-process outline using depth/normal edge detection
-- Recommends the appropriate method based on URP capabilities (inverted hull for URP compatibility, post-process for HDRP)
-- Notes URP limitations: no geometry shader support (rules out geometry-shader outline approach)
-- Does NOT produce HDRP-specific nodes without confirming the render pipeline
-
-### Case 2: Out-of-domain redirect
-**Input:** "Implement the character health bar UI in code."
-**Expected behavior:**
-- Does NOT produce UI implementation code
-- Explicitly states that UI implementation belongs to `ui-programmer` (or `unity-ui-specialist`)
-- Redirects the request appropriately
-- May note that a shader-based fill effect for a health bar (e.g., a dissolve/fill gradient) is within its domain if the visual effect itself is shader-driven
-
-### Case 3: HDRP custom pass for outline
-**Input:** "We're on HDRP and want the outline as a post-process effect."
-**Expected behavior:**
-- Produces the HDRP `CustomPassVolume` pattern:
-  - C# class inheriting `CustomPass`
-  - `Execute()` method using `CoreUtils.SetRenderTarget()` and a full-screen shader blit
-  - Depth/normal buffer sampling for edge detection
-- Notes that CustomPass requires HDRP package and does not work in URP
-- Confirms the project is on HDRP before providing HDRP-specific code
-
-### Case 4: VFX Graph performance — GPU event batching
-**Input:** "The explosion VFX Graph has 10,000 particles per event and spawning 20 simultaneous explosions is causing GPU frame spikes."
-**Expected behavior:**
-- Identifies GPU particle spawn as the cost driver (200,000 simultaneous particles)
-- Proposes GPU event batching: spawn events deferred over multiple frames, stagger initialization
-- Recommends a particle budget cap per active explosion (e.g., 3,000 per explosion, queue excess)
-- Notes the VFX Graph Event Batcher pattern and Output Event API for cross-frame distribution
-- Does NOT change the gameplay event system — proposes a VFX-side budgeting solution
-
-### Case 5: Context pass — render pipeline (URP or HDRP)
-**Input:** Project context: URP render pipeline, Unity 2022.3. Request: "Add depth of field post-processing."
-**Expected behavior:**
-- Uses URP Volume framework: `DepthOfField` Volume Override component
-- Does NOT use HDRP Volume components (e.g., HDRP's `DepthOfField` with different parameter names)
-- Notes URP-specific DOF limitations vs HDRP (e.g., Bokeh quality differences)
-- Produces C# Volume profile setup code compatible with Unity 2022.3 URP package version
+- [ ] `description:` 字段存在且具有领域特定性（引用 Shader Graph / HLSL / VFX Graph / URP / HDRP）
+- [ ] `allowed-tools:` 列表包含 Read、Write、Edit、Glob、Grep
+- [ ] 模型层级为 Sonnet（专家默认）
+- [ ] Agent 定义不声称对游戏玩法代码或美术指导拥有权限
 
 ---
 
-## Protocol Compliance
+## 测试用例
 
-- [ ] Stays within declared domain (Shader Graph, HLSL, VFX Graph, URP/HDRP customization)
-- [ ] Redirects gameplay and UI code to appropriate agents
-- [ ] Returns structured output (node graph descriptions, HLSL code, CustomPass patterns)
-- [ ] Distinguishes between URP and HDRP approaches — never cross-contaminates pipeline-specific APIs
-- [ ] Flags geometry shader approaches as URP-incompatible when relevant
-- [ ] Produces VFX optimizations that do not change gameplay behavior
+### 用例 1：领域内请求 — 适当的输出
+**输入：** "Create an outline effect for characters using Shader Graph in URP."
+**预期行为：**
+- 生成 Shader Graph 节点设置描述：
+  - 反转外壳方法：在顶点阶段缩放法线 → 顶点偏移，Cull Front
+  - 或使用深度/法线边缘检测的屏幕空间后处理轮廓
+- 基于 URP 能力推荐适当的方法（URP 兼容性使用反转外壳，HDRP 使用后处理）
+- 注意 URP 限制：不支持几何着色器（排除几何着色器轮廓方法）
+- 在未确认渲染管线的情况下不生成 HDRP 特定节点
+
+### 用例 2：领域外重定向
+**输入：** "Implement the character health bar UI in code."
+**预期行为：**
+- 不生成 UI 实现代码
+- 明确说明 UI 实现属于 `ui-programmer`（或 `unity-ui-specialist`）
+- 适当地重定向请求
+- 可能指出，如果视觉效果本身是由着色器驱动的，则健康条的着色器填充效果（例如溶解/填充渐变）在其领域内
+
+### 用例 3：HDRP 自定义通道实现轮廓
+**输入：** "We're on HDRP and want the outline as a post-process effect."
+**预期行为：**
+- 生成 HDRP `CustomPassVolume` 模式：
+  - 继承 `CustomPass` 的 C# 类
+  - 使用 `CoreUtils.SetRenderTarget()` 和全屏着色器 blit 的 `Execute()` 方法
+  - 用于边缘检测的深度/法线缓冲区采样
+- 指出 CustomPass 需要 HDRP 包且在 URP 中不工作
+- 在提供 HDRP 特定代码前确认项目使用 HDRP
+
+### 用例 4：VFX Graph 性能 — GPU 事件批处理
+**输入：** "The explosion VFX Graph has 10,000 particles per event and spawning 20 simultaneous explosions is causing GPU frame spikes."
+**预期行为：**
+- 识别 GPU 粒子生成为成本驱动因素（200,000 个同时存在的粒子）
+- 提出 GPU 事件批处理：在多帧上延迟生成事件，错开初始化
+- 推荐每个活动爆炸的粒子预算上限（例如，每个爆炸 3,000 个，排队处理超额部分）
+- 指出用于跨帧分布的 VFX Graph 事件批处理模式和输出事件 API
+- 不更改游戏玩法事件系统 — 提出 VFX 侧的预算解决方案
+
+### 用例 5：上下文传递 — 渲染管线（URP 或 HDRP）
+**输入：** 项目上下文：URP 渲染管线，Unity 2022.3。请求："Add depth of field post-processing."
+**预期行为：**
+- 使用 URP Volume 框架：`DepthOfField` Volume Override 组件
+- 不使用 HDRP Volume 组件（例如，具有不同参数名称的 HDRP `DepthOfField`）
+- 指出 URP 特定 DOF 限制与 HDRP 的对比（例如，散景质量差异）
+- 生成与 Unity 2022.3 URP 包版本兼容的 C# Volume 配置文件设置代码
 
 ---
 
-## Coverage Notes
-- Outline effect (Case 1) should be paired with a visual screenshot test in `production/qa/evidence/`
-- HDRP CustomPass (Case 3) confirms the agent produces the correct Unity pattern, not a generic post-process approach
-- Pipeline separation (Case 5) verifies the agent never assumes the render pipeline without context
+## 协议合规性
+
+- [ ] 保持在声明的领域内（Shader Graph、HLSL、VFX Graph、URP/HDRP 定制）
+- [ ] 将游戏玩法和 UI 代码重定向到适当的 Agent
+- [ ] 返回结构化输出（节点图描述、HLSL 代码、CustomPass 模式）
+- [ ] 区分 URP 和 HDRP 方法 — 从不交叉污染管线特定 API
+- [ ] 在相关时将几何着色器方法标记为 URP 不兼容
+- [ ] 生成不改变游戏玩法行为的 VFX 优化
+
+---
+
+## 覆盖范围说明
+- 轮廓效果（用例 1）应与 `production/qa/evidence/` 中的视觉截图测试配对
+- HDRP CustomPass（用例 3）确认 Agent 生成正确的 Unity 模式，而非通用后处理方法
+- 管线分离（用例 5）验证 Agent 在没有上下文的情况下从不假设渲染管线

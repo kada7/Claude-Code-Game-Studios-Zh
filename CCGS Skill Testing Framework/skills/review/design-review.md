@@ -1,170 +1,156 @@
 # Skill Test Spec: /design-review
 
-## Skill Summary
+## 技能摘要
 
-`/design-review` reads a game design document (GDD) and evaluates it against
-the project's 8-section design standard (Overview, Player Fantasy, Detailed
-Rules, Formulas, Edge Cases, Dependencies, Tuning Knobs, Acceptance Criteria).
-It checks for internal consistency, implementability, and cross-system
-conflicts. It produces a verdict of APPROVED, NEEDS REVISION, or MAJOR
-REVISION NEEDED. It is a read-only skill (no file writes) and runs as a
-`context: fork` subagent.
+`/design-review` 读取游戏设计文档 (GDD) 并根据项目的8部分设计标准（概述、玩家幻想、详细规则、公式、边缘案例、依赖关系、调整旋钮、验收标准）进行评估。它检查内部一致性、可实施性和跨系统冲突。它产生 APPROVED、NEEDS REVISION 或 MAJOR REVISION NEEDED 的判定。它是一个只读技能（无文件写入）并以 `context: fork` 子代理身份运行。
 
 ---
 
-## Static Assertions (Structural)
+## 静态断言（结构）
 
-Verified automatically by `/skill-test static` — no fixture needed.
+由 `/skill-test static` 自动验证——无需 Fixture。
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
-- [ ] Has ≥2 phase headings or numbered steps
-- [ ] Contains verdict keywords: APPROVED, NEEDS REVISION, MAJOR REVISION NEEDED
-- [ ] Does NOT require "May I write" language (read-only skill — `allowed-tools` excludes Write/Edit)
-- [ ] Output format is documented (review template shown in skill body)
+- [ ] 具有必需的前言字段：`name`、`description`、`argument-hint`、`user-invocable`、`allowed-tools`
+- [ ] 具有≥2个阶段标题或编号步骤
+- [ ] 包含判定关键词：APPROVED、NEEDS REVISION、MAJOR REVISION NEEDED
+- [ ] 不要求“我可以写入”语言（只读技能——`allowed-tools` 排除 Write/Edit）
+- [ ] 输出格式有文档说明（技能主体中显示评审模板）
 
 ---
 
-## Test Cases
+## 测试用例
 
-### Case 1: Happy Path — Complete GDD, all 8 sections present
+### 用例 1：Happy Path —— 完整的 GDD，所有8部分均存在
 
 **Fixture:**
-- `design/gdd/light-manipulation.md` exists (use `_fixtures/minimal-game-concept.md`
-  as a stand-in — represents a complete document with all required content)
-- All 8 required sections are populated with substantive content
-- Formulas section contains at least one formula with defined variables
-- Acceptance Criteria section contains at least 3 testable criteria
+- `design/gdd/light-manipulation.md` 存在（使用 `_fixtures/minimal-game-concept.md` 作为替身——代表包含所有必需内容的完整文档）
+- 所有8个必需部分都填充了实质性内容
+- 公式部分包含至少一个具有定义变量的公式
+- 验收标准部分包含至少3个可测试的标准
 
-**Input:** `/design-review design/gdd/light-manipulation.md`
+**输入:** `/design-review design/gdd/light-manipulation.md`
 
-**Expected behavior:**
-1. Skill reads the target document in full
-2. Skill reads CLAUDE.md for project context and standards
-3. Skill evaluates all 8 required sections (present/absent check)
-4. Skill checks internal consistency (formulas match described behavior)
-5. Skill checks implementability (rules are precise enough to code)
-6. Skill outputs structured review with section-by-section status
-7. Skill outputs APPROVED verdict
+**预期行为:**
+1. 技能完整读取目标文档
+2. 技能读取 CLAUDE.md 获取项目上下文和标准
+3. 技能评估所有8个必需部分（存在/不存在检查）
+4. 技能检查内部一致性（公式与描述行为匹配）
+5. 技能检查可实施性（规则足够精确以便编码）
+6. 技能输出结构化评审，包含按部分的状态
+7. 技能输出 APPROVED 判定
 
-**Assertions:**
-- [ ] Skill reads the target file before producing any output
-- [ ] Output includes a "Completeness" section showing X/8 sections present
-- [ ] Output includes an "Internal Consistency" section
-- [ ] Output includes an "Implementability" section
-- [ ] Output ends with a verdict line: APPROVED / NEEDS REVISION / MAJOR REVISION NEEDED
-- [ ] APPROVED verdict is given when all 8 sections are present and consistent
+**断言:**
+- [ ] 技能在产生任何输出之前读取目标文件
+- [ ] 输出包含“完整性”部分，显示 X/8 个部分存在
+- [ ] 输出包含“内部一致性”部分
+- [ ] 输出包含“可实施性”部分
+- [ ] 输出以判定行结束：APPROVED / NEEDS REVISION / MAJOR REVISION NEEDED
+- [ ] 当所有8个部分都存在且一致时给出 APPROVED 判定
 
 ---
 
-### Case 2: Failure Path — Incomplete GDD (4/8 sections)
+### 用例 2：失败路径 —— 不完整的 GDD（4/8 部分）
 
 **Fixture:**
-- `design/gdd/light-manipulation.md` exists using content from
-  `tests/skills/_fixtures/incomplete-gdd.md` (4 of 8 sections populated;
-  Formulas, Edge Cases, Tuning Knobs, Acceptance Criteria are missing)
+- `design/gdd/light-manipulation.md` 存在，使用来自 `tests/skills/_fixtures/incomplete-gdd.md` 的内容（8个部分中填充了4个；公式、边缘案例、调整旋钮、验收标准缺失）
 
-**Input:** `/design-review design/gdd/light-manipulation.md`
+**输入:** `/design-review design/gdd/light-manipulation.md`
 
-**Expected behavior:**
-1. Skill reads the document
-2. Skill identifies 4 missing sections
-3. Skill outputs "Completeness: 4/8 sections present"
-4. Skill lists specifically which 4 sections are missing
-5. Skill outputs MAJOR REVISION NEEDED verdict (not APPROVED or NEEDS REVISION)
+**预期行为:**
+1. 技能读取文档
+2. 技能识别出4个缺失的部分
+3. 技能输出“完整性：8个部分中已有4个”
+4. 技能具体列出缺失的4个部分
+5. 技能输出 MAJOR REVISION NEEDED 判定（非 APPROVED 或 NEEDS REVISION）
 
-**Assertions:**
-- [ ] Output shows "4/8" in the completeness section (not a higher number)
-- [ ] Output explicitly names each missing section (Formulas, Edge Cases, Tuning Knobs, Acceptance Criteria)
-- [ ] Verdict is MAJOR REVISION NEEDED (not APPROVED or NEEDS REVISION) when ≥3 sections are missing
-- [ ] Output does not suggest the document is implementation-ready
-- [ ] Skill does not write any files (read-only enforcement)
+**断言:**
+- [ ] 输出在完整性部分显示“4/8”（非更高数字）
+- [ ] 输出明确命名每个缺失的部分（公式、边缘案例、调整旋钮、验收标准）
+- [ ] 当≥3个部分缺失时判定为 MAJOR REVISION NEEDED（非 APPROVED 或 NEEDS REVISION）
+- [ ] 输出不暗示文档已准备好实施
+- [ ] 技能不写入任何文件（只读强制执行）
 
 ---
 
-### Case 3: Partial Path — 7/8 sections, minor inconsistency
+### 用例 3：部分路径 —— 7/8 部分，轻微不一致
 
 **Fixture:**
-- GDD has all sections except Formulas
-- The described behavior mentions numeric values but no formulas are defined
-- Acceptance Criteria exist but are vague ("feels good" rather than measurable)
+- GDD 拥有除公式部分外的所有部分
+- 描述的行为提及数值但未定义公式
+- 验收标准存在但模糊（“感觉良好”而非可测量的）
 
-**Input:** `/design-review design/gdd/[document].md`
+**输入:** `/design-review design/gdd/[document].md`
 
-**Expected behavior:**
-1. Skill identifies missing Formulas section
-2. Skill flags vague acceptance criteria as an implementability issue
-3. Skill outputs NEEDS REVISION verdict (not APPROVED, not MAJOR REVISION NEEDED)
-4. Skill provides specific remediation notes for each issue
+**预期行为:**
+1. 技能识别出缺失的公式部分
+2. 技能将模糊的验收标准标记为可实施性问题
+3. 技能输出 NEEDS REVISION 判定（非 APPROVED，非 MAJOR REVISION NEEDED）
+4. 技能为每个问题提供具体的修复说明
 
-**Assertions:**
-- [ ] Verdict is NEEDS REVISION (not APPROVED, not MAJOR REVISION NEEDED) for 7/8 with issues
-- [ ] Output identifies the missing Formulas section specifically
-- [ ] Output flags the vague acceptance criteria as an implementability gap
-- [ ] Each flagged issue has a specific, actionable remediation note
+**断言:**
+- [ ] 对于7/8部分存在问题的情况，判定为 NEEDS REVISION（非 APPROVED，非 MAJOR REVISION NEEDED）
+- [ ] 输出具体识别缺失的公式部分
+- [ ] 输出将模糊的验收标准标记为可实施性差距
+- [ ] 每个标记的问题都有具体、可操作的修复说明
 
 ---
 
-### Case 4: Edge Case — File not found
+### 用例 4：边缘案例 —— 文件未找到
 
 **Fixture:**
-- The path provided does not exist in the project
+- 提供的路径在项目中不存在
 
-**Input:** `/design-review design/gdd/nonexistent.md`
+**输入:** `/design-review design/gdd/nonexistent.md`
 
-**Expected behavior:**
-1. Skill attempts to read the file
-2. File not found
-3. Skill outputs an error message naming the missing file
-4. Skill suggests checking the path or listing files in `design/gdd/`
-5. Skill does NOT produce a verdict
+**预期行为:**
+1. 技能尝试读取文件
+2. 文件未找到
+3. 技能输出错误消息，指出缺失的文件
+4. 技能建议检查路径或列出 `design/gdd/` 中的文件
+5. 技能不产生判定
 
-**Assertions:**
-- [ ] Skill outputs a clear error when the file is not found
-- [ ] Skill does NOT output APPROVED, NEEDS REVISION, or MAJOR REVISION NEEDED when file is missing
-- [ ] Skill suggests a corrective action (check path, list available GDDs)
-
----
+**断言:**
+- [ ] 文件未找到时，技能输出清晰的错误
+- [ ] 文件缺失时，技能不输出 APPROVED、NEEDS REVISION 或 MAJOR REVISION NEEDED
+- [ ] 技能建议纠正措施（检查路径，列出可用的 GDD）
 
 ---
 
-### Case 5: Director Gate — no gate spawned regardless of review mode
+### 用例 5：导演关卡 —— 无论评审模式如何，均不生成关卡
 
 **Fixture:**
-- `design/gdd/light-manipulation.md` exists with all 8 sections
-- `production/session-state/review-mode.txt` exists with `full` (most permissive mode)
+- `design/gdd/light-manipulation.md` 存在且包含所有8部分
+- `production/session-state/review-mode.txt` 存在且内容为 `full`（最宽松的模式）
 
-**Input:** `/design-review design/gdd/light-manipulation.md` (with full review mode active)
+**输入:** `/design-review design/gdd/light-manipulation.md` （完全评审模式激活）
 
-**Expected behavior:**
-1. Skill reads the GDD document
-2. Skill does NOT read `review-mode.txt` — this skill has no director gates
-3. Skill produces the review output normally
-4. No director gate agents are spawned at any point
-5. Verdict is APPROVED (all 8 sections present in fixture)
+**预期行为:**
+1. 技能读取 GDD 文档
+2. 技能不读取 `review-mode.txt` —— 该技能无导演关卡
+3. 技能正常产生评审输出
+4. 在任何时候均不生成任何导演关卡代理
+5. 判定为 APPROVED（Fixture 中所有8部分存在）
 
-**Assertions:**
-- [ ] Skill does NOT spawn any director gate agent (CD-, TD-, PR-, AD- prefixed agents)
-- [ ] Skill does NOT read `review-mode.txt` or equivalent mode file
-- [ ] The `--review` flag or `full` mode state has NO effect on whether directors spawn
-- [ ] Output does not contain any "Gate: [GATE-ID]" entries
-- [ ] Skill IS the review — it does not delegate the review to a director
-
----
-
-## Protocol Compliance
-
-- [ ] Does NOT use Write or Edit tools (read-only skill)
-- [ ] Presents complete findings before any verdict
-- [ ] Does not ask for approval before producing output (no writes to approve)
-- [ ] Ends with recommended next step (e.g., fix issues and re-run, or proceed to `/map-systems`)
+**断言:**
+- [ ] 技能不生成任何导演关卡代理（无 CD-、TD-、PR-、AD- 前缀的代理）
+- [ ] 技能不读取 `review-mode.txt` 或等效的模式文件
+- [ ] `--review` 标志或 `full` 模式状态对是否生成导演无影响
+- [ ] 输出不包含任何“关卡：[关卡ID]”条目
+- [ ] 技能即评审本身——不将评审委托给导演
 
 ---
 
-## Coverage Notes
+## 协议合规性
 
-- Cross-system consistency checking (Case 3 in the skill's own phase list) is
-  not directly tested here because it requires multiple GDD files to compare;
-  this is covered by the `/review-all-gdds` spec instead.
-- The skill's `context: fork` behavior (running as a subagent) is not tested
-  at the spec level — this is a runtime behavior verified manually.
-- Performance and edge cases involving very large GDD files are not in scope.
+- [ ] 不使用 Write 或 Edit 工具（只读技能）
+- [ ] 在所有判定前呈现完整发现
+- [ ] 不要求批准后再产生输出（无写入需要批准）
+- [ ] 以推荐的下一步结束（例如，修复问题并重新运行，或继续进入 `/map-systems`）
+
+---
+
+## 覆盖范围说明
+
+- 跨系统一致性检查（技能自身阶段列表中的用例 3）在此不直接测试，因为它需要多个 GDD 文件进行比较；这由 `/review-all-gdds` 规范覆盖。
+- 技能的 `context: fork` 行为（作为子代理运行）在规范级别未测试——这是运行时行为，需手动验证。
+- 涉及非常大 GDD 文件的性能和边缘案例不在覆盖范围内。

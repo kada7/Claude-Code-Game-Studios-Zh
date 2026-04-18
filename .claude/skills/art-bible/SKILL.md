@@ -1,248 +1,248 @@
 ---
 name: art-bible
-description: "Guided, section-by-section Art Bible authoring. Creates the visual identity specification that gates all asset production. Run after /brainstorm is approved and before /map-systems or any GDD authoring begins."
+description: "引导式、逐节编写艺术圣经。创建视觉识别规范，用于把控所有资产生成流程。在/brainstorm获批后、/map-systems或任何GDD编写之前运行。"
 argument-hint: "[--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Task, AskUserQuestion
 ---
 
-## Phase 0: Parse Arguments and Context Check
+## 阶段0：解析参数和上下文检查
 
-Resolve the review mode (once, store for all gate spawns this run):
-1. If `--review [full|lean|solo]` was passed → use that
-2. Else read `production/review-mode.txt` → use that value
-3. Else → default to `lean`
+解析审查模式（一次，存储供本次运行所有关卡生成使用）：
+1. 如果传入了 `--review [full|lean|solo]` → 使用该值
+2. 否则读取 `production/review-mode.txt` → 使用该值
+3. 否则 → 默认为 `lean`
 
-See `.claude/docs/director-gates.md` for the full check pattern.
+完整检查模式详见 `.claude/docs/director-gates.md`。
 
-Read `design/gdd/game-concept.md`. If it does not exist, fail with:
-> "No game concept found. Run `/brainstorm` first — the art bible is authored after the game concept is approved."
+读取 `design/gdd/game-concept.md`。如果不存在，失败并提示：
+> "未找到游戏概念。请先运行 `/brainstorm` — 艺术圣经在游戏概念获批后编写。"
 
-Extract from game-concept.md:
-- Game title (working title)
-- Core fantasy and elevator pitch
-- Game pillars (all of them)
-- **Visual Identity Anchor** section if present (from brainstorm Phase 4 art-director output)
-- Target platform (if noted)
+从 game-concept.md 中提取：
+- 游戏标题（工作标题）
+- 核心幻想和电梯宣传语
+- 游戏支柱（全部）
+- **视觉识别锚点**部分（如果存在）（来自头脑风暴阶段4的 art-director 输出）
+- 目标平台（如果已注明）
 
-**Retrofit mode detection**: Glob `design/art/art-bible.md`. If the file exists:
-- Read it in full
-- For each of the 9 sections, check whether the body contains real content (more than a `[To be designed]` placeholder or similar) vs. is empty/placeholder
-- Build a section status table:
+**改造模式检测**：Glob `design/art/art-bible.md`。如果文件存在：
+- 完整读取
+- 对于 9 个部分中的每一个，检查正文是否包含真实内容（多于 `[待设计]` 占位符或类似内容）还是空白/占位符
+- 构建章节状态表格：
 
 ```
-Section | Status
+章节 | 状态
 --------|--------
-1. Visual Identity Statement | [Complete / Empty / Placeholder]
-2. Color Palette | ...
-3. Lighting & Atmosphere | ...
-4. Character Art Direction | ...
-5. Environment & Level Art | ...
-6. UI Visual Language | ...
-7. VFX & Particle Style | ...
-8. Asset Standards | ...
-9. Style Prohibitions | ...
+1. 视觉识别声明 | [完成 / 空白 / 占位符]
+2. 色彩调色板 | ...
+3. 光照与氛围 | ...
+4. 角色美术方向 | ...
+5. 环境与关卡美术 | ...
+6. UI 视觉语言 | ...
+7. VFX 与粒子风格 | ...
+8. 资产标准 | ...
+9. 风格禁止项 | ...
 ```
 
-- Present this table to the user:
-  > "Found existing art bible at `design/art/art-bible.md`. [N] sections are complete, [M] need content. I'll work on the incomplete sections only — existing content will not be touched."
-- Only work on sections with Status: Empty or Placeholder. Do not re-author sections that are already complete.
+- 向用户呈现此表格：
+  > "在 `design/art/art-bible.md` 找到现有艺术圣经。[N] 个章节已完成，[M] 个需要内容。我将只处理未完成的章节 — 现有内容不会被修改。"
+- 只处理状态为"空白"或"占位符"的章节。不要重新编写已完成的章节。
 
-If the file does not exist, this is a fresh authoring session — proceed normally.
+如果文件不存在，这是新的编写会话 — 正常进行。
 
-Read `.claude/docs/technical-preferences.md` if it exists — extract performance budgets and engine for asset standard constraints.
-
----
-
-## Phase 1: Framing
-
-Present the session context and ask two questions before authoring anything:
-
-Use `AskUserQuestion` with two tabs:
-- Tab **"Scope"** — "Which sections need to be authored today?"
-  Options: `Full bible — all 9 sections` / `Visual identity core (sections 1–4 only)` / `Asset standards only (section 8)` / `Resume — fill in missing sections`
-- Tab **"References"** — "Do you have reference games, films, or art that define the visual direction?"
-  (Free text — let the user type specific titles. Do NOT preset options here.)
-
-If the game-concept.md has a Visual Identity Anchor section, note it:
-> "Found a visual identity anchor from brainstorm: '[anchor name] — [one-line rule]'. I'll use this as the foundation for the art bible."
+如果存在，读取 `.claude/docs/technical-preferences.md` — 提取性能预算和引擎以约束资产标准。
 
 ---
 
-## Phase 2: Visual Identity Foundation (Sections 1–4)
+## 阶段1：定框架
 
-These four sections define the core visual language. **All other sections flow from them.** Author and write each to file before moving to the next.
+呈现会话上下文并在编写任何内容之前询问两个问题：
 
-### Section 1: Visual Identity Statement
+使用 `AskUserQuestion` 并包含两个标签页：
+- 标签页**"范围"** — "今天需要编写哪些章节？"
+  选项：`完整圣经 — 全部 9 个章节` / `视觉识别核心（仅章节 1–4）` / `仅资产标准（章节 8）` / `继续 — 填写缺失的章节`
+- 标签页**"参考"** — "您有定义视觉方向的参考游戏、电影或艺术作品吗？"
+  （自由文本 — 让用户输入具体标题。不要在此预设选项。）
 
-**Goal**: A one-line visual rule plus 2–3 supporting principles that resolve visual ambiguity.
-
-If a visual anchor exists from game-concept.md: present it and ask:
-- "Build directly from this anchor?"
-- "Revise it before expanding?"
-- "Start fresh with new options?"
-
-**Agent delegation (MANDATORY)**: Spawn `art-director` via Task:
-- Provide: game concept (elevator pitch, core fantasy), full pillar set, platform target, any reference games/art from Phase 1 framing, the visual anchor if it exists
-- Ask: "Draft a Visual Identity Statement for this game. Provide: (1) a one-line visual rule that could resolve any visual decision ambiguity, (2) 2–3 supporting visual principles, each with a one-sentence design test ('when X is ambiguous, this principle says choose Y'). Anchor all principles directly in the stated pillars — each principle must serve a specific pillar."
-
-Present the art-director's draft to the user. Use `AskUserQuestion`:
-- Options: `[A] Lock this in` / `[B] Revise the one-liner` / `[C] Revise a supporting principle` / `[D] Describe my own direction`
-
-Write the approved section to file immediately.
-
-### Section 2: Mood & Atmosphere
-
-**Goal**: Emotional targets by game state — specific enough for a lighting artist to work from.
-
-For each major game state (e.g., exploration, combat, victory, defeat, menus — adapt to this game's states), define:
-- Primary emotion/mood target
-- Lighting character (time of day, color temperature, contrast level)
-- Atmospheric descriptors (3–5 adjectives)
-- Energy level (frenetic / measured / contemplative / etc.)
-
-**Agent delegation**: Spawn `art-director` via Task with the Visual Identity Statement and pillar set. Ask: "Define mood and atmosphere targets for each major game state in this game. Be specific — 'dark and foreboding' is not enough. Name the exact emotional target, the lighting character (warm/cool, high/low contrast, time of day direction), and at least one visual element that carries the mood. Each game state must feel visually distinct from the others."
-
-Write the approved section to file immediately.
-
-### Section 3: Shape Language
-
-**Goal**: The geometric vocabulary that makes this game's world visually coherent and distinguishable.
-
-Cover:
-- Character silhouette philosophy (how readable at thumbnail size? Distinguishing trait per archetype?)
-- Environment geometry (angular/curved/organic/geometric — which dominates and why?)
-- UI shape grammar (does UI echo the world aesthetic, or is it a distinct HUD language?)
-- Hero shapes vs. supporting shapes (what draws the eye, what recedes?)
-
-**Agent delegation**: Spawn `art-director` via Task with Visual Identity Statement and mood targets. Ask: "Define the shape language for this game. Connect each shape principle back to the visual identity statement and a specific game pillar. Explain what these shape choices communicate to the player emotionally."
-
-Write the approved section to file immediately.
-
-### Section 4: Color System
-
-**Goal**: A complete, producible palette system that serves both aesthetic and communication needs.
-
-Cover:
-- Primary palette (5–7 colors with roles — not just hex codes, but what each color means in this world)
-- Semantic color usage (what does red communicate? Gold? Blue? White? Establish the color vocabulary)
-- Per-biome or per-area color temperature rules (if the game has distinct areas)
-- UI palette (may differ from world palette — define the divergence explicitly)
-- Colorblind safety: which semantic colors need shape/icon/sound backup
-
-**Agent delegation**: Spawn `art-director` via Task with Visual Identity Statement and mood targets. Ask: "Design the color system for this game. Every semantic color assignment must be explained — why does this color mean danger/safety/reward in this world? Identify which color pairs might fail colorblind players and specify what backup cues are needed."
-
-Write the approved section to file immediately.
+如果 game-concept.md 有视觉识别锚点章节，注明：
+> "在头脑风暴中找到了视觉识别锚点：'[锚点名称] — [一行规则]'。我将以此作为艺术圣经的基础。"
 
 ---
 
-## Phase 3: Production Guides (Sections 5–8)
+## 阶段2：视觉识别基础（章节 1–4）
 
-These sections translate the visual identity into concrete production rules. They should be specific enough that an outsourcing team can follow them without additional briefing.
+这四个章节定义了核心视觉语言。**所有其他章节都从它们流出。** 逐章节编写并写入文件，然后再进行下一个。
 
-### Section 5: Character Design Direction
+### 章节 1：视觉识别声明
 
-**Agent delegation**: Spawn `art-director` via Task with sections 1–4. Ask: "Define character design direction for this game. Cover: visual archetype for the player character (if any), distinguishing feature rules per character type (how do players tell enemies/NPCs/allies apart at a glance?), expression/pose style targets (stiff/expressive/realistic/exaggerated), and LOD philosophy (how much detail is preserved at game camera distance?)."
+**目标**：一行视觉规则加上 2–3 条支持原则，用于解决视觉歧义。
 
-Write the approved section to file.
+如果 game-concept.md 存在视觉锚点，呈现它并询问：
+- "直接从此锚点构建？"
+- "在扩展之前修订它？"
+- "用新选项重新开始？"
 
-### Section 6: Environment Design Language
+**Agent 委托（强制）**：通过 Task 生成 `art-director`：
+- 提供：游戏概念（电梯宣传语、核心幻想）、完整支柱集、平台目标、阶段1定框架中的任何参考游戏/艺术、如果存在的视觉锚点
+- 询问："为此游戏起草视觉识别声明。提供：(1) 一行视觉规则，可以解决任何视觉决策的歧义；(2) 2–3 条支持视觉原则，每条都有一句设计测试（'当 X 模糊时，此原则说选择 Y'）。将所有原则直接锚定在已声明的支柱上 — 每条原则必须服务于特定支柱。"
 
-**Agent delegation**: Spawn `art-director` via Task with sections 1–4. Ask: "Define the environment design language for this game. Cover: architectural style and its relationship to the world's culture/history, texture philosophy (painted vs. PBR vs. stylized — why this choice for this game?), prop density rules (sparse/dense — what drives the choice per area type?), and environmental storytelling guidelines (what visual details should tell the story without text?)."
+向用户呈现 art-director 的草案。使用 `AskUserQuestion`：
+- 选项：`[A] 确认这个` / `[B] 修改一行规则` / `[C] 修改一条支持原则` / `[D] 描述我自己的方向`
 
-Write the approved section to file.
+立即将批准的章节写入文件。
 
-### Section 7: UI/HUD Visual Direction
+### 章节 2：氛围与气氛
 
-**Agent delegation**: Spawn in parallel:
-- **`art-director`**: Visual style for UI — diegetic vs. screen-space HUD, typography direction (font personality, weight, size hierarchy), iconography style (flat/outlined/illustrated/photorealistic), animation feel for UI elements
-- **`ux-designer`**: UX alignment check — does the visual direction support the interaction patterns this game requires? Flag any conflicts between art direction and readability/accessibility needs.
+**目标**：按游戏状态划分的情感目标 — 足够具体，光照艺术师可以据此工作。
 
-Collect both. If they conflict (e.g., art-director wants elaborate diegetic UI but ux-designer flags it would reduce combat readability), surface the conflict explicitly with both positions. Do NOT silently resolve — use `AskUserQuestion` to let the user decide.
+对于每个主要游戏状态（例如，探索、战斗、胜利、失败、菜单 — 根据此游戏的状态调整），定义：
+- 主要情感/氛围目标
+- 光照特征（时间段、色温、对比度级别）
+- 氛围描述词（3–5 个形容词）
+- 能量级别（激烈 / 从容 / 沉思 / 等等）
 
-Write the approved section to file.
+**Agent 委托**：通过 Task 生成 `art-director`，提供视觉识别声明和支柱集。询问："为此游戏的每个主要游戏状态定义氛围和气氛目标。要具体 — '黑暗和令人不安'是不够的。命名确切的情感目标、光照特征（暖/冷、高/低对比度、时间方向），以及至少一个承载氛围的视觉元素。每个游戏状态必须在视觉上与其他状态明显不同。"
 
-### Section 8: Asset Standards
+立即将批准的章节写入文件。
 
-**Agent delegation**: Spawn in parallel:
-- **`art-director`**: File format preferences, naming convention direction, texture resolution tiers, LOD level expectations, export settings philosophy
-- **`technical-artist`**: Engine-specific hard constraints — poly count budgets per asset category, texture memory limits, material slot counts, importer constraints, anything from the performance budgets in `.claude/docs/technical-preferences.md`
+### 章节 3：形状语言
 
-If any art preference conflicts with a technical constraint (e.g., art-director wants 4K textures but performance budget requires 2K for mobile), resolve the conflict explicitly — note both the ideal and the constrained standard, and explain the tradeoff. Ambiguity in asset standards is where production costs are born.
+**目标**：使此游戏世界在视觉上连贯且可辨识的几何词汇。
 
-Write the approved section to file.
+涵盖：
+- 角色剪影哲学（缩略图大小下有多可读？每种原型的区分特征？）
+- 环境几何（棱角/曲线/有机/几何 — 哪种占主导以及为什么？）
+- UI 形状语法（UI 是否呼应世界美学，还是一种独特的 HUD 语言？）
+- 主角形状与配角形状（什么吸引目光，什么退入背景？）
 
----
+**Agent 委托**：通过 Task 生成 `art-director`，提供视觉识别声明和氛围目标。询问："为此游戏定义形状语言。将每条形状原则与视觉识别声明和特定游戏支柱联系起来。解释这些形状选择在情感上向玩家传达了什么。"
 
-## Phase 4: Reference Direction (Section 9)
+立即将批准的章节写入文件。
 
-**Goal**: A curated reference set that is specific about what to take and what to avoid from each source.
+### 章节 4：色彩系统
 
-**Agent delegation**: Spawn `art-director` via Task with the completed sections 1–8. Ask: "Compile a reference direction for this game. Provide 3–5 reference sources (games, films, art styles, or specific artists). For each: name it, specify exactly what visual element to draw from it (not 'the general aesthetic' — a specific technique, color choice, or compositional rule), and specify what to explicitly avoid or diverge from (to prevent the 'trying to copy X' reading). References should be additive — no two references should be pointing in exactly the same direction."
+**目标**：完整的、可生产的调色板系统，同时服务于美学和传达需求。
 
-Write the approved section to file.
+涵盖：
+- 主调色板（5–7 种颜色，带角色定义 — 不只是十六进制代码，而是每种颜色在此世界中的含义）
+- 语义色彩用法（红色传达什么？金色？蓝色？白色？建立色彩词汇）
+- 每个生物群落或区域的色温规则（如果游戏有不同区域）
+- UI 调色板（可能与世界调色板不同 — 明确定义差异）
+- 色盲安全性：哪些语义颜色需要形状/图标/声音备用方案
 
----
+**Agent 委托**：通过 Task 生成 `art-director`，提供视觉识别声明和氛围目标。询问："为此游戏设计色彩系统。每个语义颜色分配都必须解释 — 为什么这种颜色在此世界中意味着危险/安全/奖励？识别哪些色彩对可能对色盲玩家造成困难，并指定需要哪些备用提示。"
 
-## Phase 5: Art Director Sign-Off
-
-**Review mode check** — apply before spawning AD-ART-BIBLE:
-- `solo` → skip. Note: "AD-ART-BIBLE skipped — Solo mode." Proceed to Phase 6.
-- `lean` → skip (not a PHASE-GATE). Note: "AD-ART-BIBLE skipped — Lean mode." Proceed to Phase 6.
-- `full` → spawn as normal.
-
-After all sections are complete (or the scoped set from Phase 1 is complete), spawn `creative-director` via Task using gate **AD-ART-BIBLE** (`.claude/docs/director-gates.md`).
-
-Pass: art bible file path, game pillars, visual identity anchor.
-
-Handle verdict per standard rules in `director-gates.md`. Record the verdict in the art bible's status header:
-`> **Art Director Sign-Off (AD-ART-BIBLE)**: APPROVED [date] / CONCERNS (accepted) [date] / REVISED [date]`
-
----
-
-## Phase 6: Close
-
-Before presenting next steps, check project state:
-- Does `design/gdd/systems-index.md` exist? → map-systems is done, skip that option
-- Does `.claude/docs/technical-preferences.md` contain a configured engine (not `[TO BE CONFIGURED]`)? → setup-engine is done, skip that option
-- Does `design/gdd/` contain any `*.md` files? → design-system has been run, skip that option
-- Does `design/gdd/gdd-cross-review-*.md` exist? → review-all-gdds is done
-- Do GDDs exist (check above)? → include /consistency-check option
-
-Use `AskUserQuestion` for next steps. Only include options that are genuinely next based on the state check above:
-
-**Option pool — include only if not already done:**
-- `[_] Run /map-systems — decompose the concept into systems before writing GDDs` (skip if systems-index.md exists)
-- `[_] Run /setup-engine — configure the engine (asset standards may need revisiting after engine is set)` (skip if engine configured)
-- `[_] Run /design-system — start the first GDD` (skip if any GDDs exist)
-- `[_] Run /review-all-gdds — cross-GDD consistency check (required before Technical Setup gate)` (skip if gdd-cross-review-*.md exists)
-- `[_] Run /asset-spec — generate per-asset visual specs and AI generation prompts from approved GDDs` (include if GDDs exist)
-- `[_] Run /consistency-check — scan existing GDDs against the art bible for visual direction conflicts` (include if GDDs exist)
-- `[_] Run /create-architecture — author the master architecture document (next Technical Setup step)`
-- `[_] Stop here`
-
-Assign letters A, B, C… only to the options actually included. Mark the most logical pipeline-advancing option as `(recommended)`.
-
-> **Always include** `/create-architecture` and Stop here as options — these are always valid next steps once the art bible is complete.
+立即将批准的章节写入文件。
 
 ---
 
-## Collaborative Protocol
+## 阶段3：生产指南（章节 5–8）
 
-Every section follows: **Question → Options → Decision → Draft (from art-director agent) → Approval → Write to file**
+这些章节将视觉识别转化为具体的生产规则。应该足够具体，外包团队无需额外简报即可遵循。
 
-- Never draft a section without first spawning the relevant agent(s)
-- Write each section to file immediately after approval — do not batch
-- Surface all agent disagreements to the user — never silently resolve conflicts between art-director and technical-artist
-- The art bible is a constraint document: it restricts future decisions in exchange for visual coherence. Every section should feel like it narrows the solution space productively.
+### 章节 5：角色设计方向
+
+**Agent 委托**：通过 Task 生成 `art-director`，提供章节 1–4。询问："为此游戏定义角色设计方向。涵盖：玩家角色的视觉原型（如果有）、每种角色类型的区分特征规则（玩家如何一眼识别敌人/NPC/盟友？）、表情/姿势风格目标（僵硬/表现力强/写实/夸张）、以及 LOD 哲学（游戏摄像机距离下保留多少细节？）"
+
+将批准的章节写入文件。
+
+### 章节 6：环境设计语言
+
+**Agent 委托**：通过 Task 生成 `art-director`，提供章节 1–4。询问："为此游戏定义环境设计语言。涵盖：建筑风格及其与世界文化/历史的关系、纹理哲学（绘制 vs. PBR vs. 风格化 — 为什么此游戏做此选择？）、道具密度规则（稀疏/密集 — 每种区域类型由什么驱动选择？）、以及环境叙事指南（哪些视觉细节应该无需文字即可讲述故事？）"
+
+将批准的章节写入文件。
+
+### 章节 7：UI/HUD 视觉方向
+
+**Agent 委托**：并行生成：
+- **`art-director`**：UI 的视觉风格 — 沉浸式 vs. 屏幕空间 HUD、字体方向（字体个性、粗细、大小层级）、图标风格（扁平/轮廓/插图/照片写实）、UI 元素的动画感
+- **`ux-designer`**：UX 对齐检查 — 视觉方向是否支持此游戏所需的交互模式？标记艺术方向与可读性/可访问性需求之间的任何冲突。
+
+收集两者。如果它们冲突（例如，art-director 希望精心设计的沉浸式 UI，但 ux-designer 标记它会降低战斗可读性），明确呈现冲突及双方立场。不要静默解决 — 使用 `AskUserQuestion` 让用户决定。
+
+将批准的章节写入文件。
+
+### 章节 8：资产标准
+
+**Agent 委托**：并行生成：
+- **`art-director`**：文件格式偏好、命名约定方向、纹理分辨率级别、LOD 级别期望、导出设置哲学
+- **`technical-artist`**：引擎专属硬性约束 — 每个资产类别的面数预算、纹理内存限制、材质槽数量、导入器约束、来自 `.claude/docs/technical-preferences.md` 中性能预算的任何内容
+
+如果任何艺术偏好与技术约束冲突（例如，art-director 希望 4K 纹理但性能预算需要移动端使用 2K），明确解决冲突 — 注明理想标准和受约束的标准，并解释权衡。资产标准中的歧义是生产成本产生的地方。
+
+将批准的章节写入文件。
 
 ---
 
-## Recommended Next Steps
+## 阶段4：参考方向（章节 9）
 
-After the art bible is approved:
-- Run `/map-systems` to decompose the concept into game systems before authoring GDDs
-- Run `/setup-engine` if the engine is not yet configured (asset standards may need revisiting after engine selection)
-- Run `/design-system [first-system]` to start authoring per-system GDDs
-- Run `/consistency-check` once GDDs exist to validate them against the art bible's visual rules
-- Run `/create-architecture` to produce the master architecture document
+**目标**：精选的参考集，对每个来源具体说明借鉴什么和避免什么。
+
+**Agent 委托**：通过 Task 生成 `art-director`，提供已完成的章节 1–8。询问："为此游戏编译参考方向。提供 3–5 个参考来源（游戏、电影、艺术风格或特定艺术家）。对于每个：命名它，精确指定要从中借鉴的视觉元素（不是'整体美学' — 是具体的技术、色彩选择或构图规则），并指定明确要避免或背离的内容（以防止'试图复制 X'的阅读）。参考应该是累加的 — 没有两个参考应该指向完全相同的方向。"
+
+将批准的章节写入文件。
+
+---
+
+## 阶段5：艺术总监签署
+
+**审查模式检查** — 在生成 AD-ART-BIBLE 之前应用：
+- `solo` → 跳过。注明："AD-ART-BIBLE 已跳过 — Solo 模式。"继续阶段6。
+- `lean` → 跳过（非 PHASE-GATE）。注明："AD-ART-BIBLE 已跳过 — Lean 模式。"继续阶段6。
+- `full` → 正常生成。
+
+所有章节完成后（或阶段1中确定的范围完成后），通过 Task 生成 `creative-director`，使用关卡 **AD-ART-BIBLE**（`.claude/docs/director-gates.md`）。
+
+传递：艺术圣经文件路径、游戏支柱、视觉识别锚点。
+
+按照 `director-gates.md` 中的标准规则处理裁决。在艺术圣经的状态头部记录裁决：
+`> **艺术总监签署 (AD-ART-BIBLE)**：APPROVED [日期] / CONCERNS（已接受）[日期] / REVISED [日期]`
+
+---
+
+## 阶段6：收尾
+
+在呈现下一步之前，检查项目状态：
+- `design/gdd/systems-index.md` 是否存在？→ map-systems 已完成，跳过该选项
+- `.claude/docs/technical-preferences.md` 是否包含已配置的引擎（非 `[TO BE CONFIGURED]`）？→ setup-engine 已完成，跳过该选项
+- `design/gdd/` 是否包含任何 `*.md` 文件？→ design-system 已运行，跳过该选项
+- `design/gdd/gdd-cross-review-*.md` 是否存在？→ review-all-gdds 已完成
+- GDD 是否存在（见上方）？→ 包含 /consistency-check 选项
+
+使用 `AskUserQuestion` 进行下一步。仅包含基于上方状态检查确实是下一步的选项：
+
+**选项池 — 仅在尚未完成时包含：**
+- `[_] 运行 /map-systems — 在编写 GDD 之前将概念分解为系统`（如果 systems-index.md 存在则跳过）
+- `[_] 运行 /setup-engine — 配置引擎（引擎设置后可能需要重新审视资产标准）`（如果引擎已配置则跳过）
+- `[_] 运行 /design-system — 开始第一个 GDD`（如果任何 GDD 存在则跳过）
+- `[_] 运行 /review-all-gdds — 跨 GDD 一致性检查（技术设置关卡前必需）`（如果 gdd-cross-review-*.md 存在则跳过）
+- `[_] 运行 /asset-spec — 从已批准的 GDD 生成每个资产的视觉规范和 AI 生成提示`（如果 GDD 存在则包含）
+- `[_] 运行 /consistency-check — 扫描现有 GDD 与艺术圣经的视觉方向冲突`（如果 GDD 存在则包含）
+- `[_] 运行 /create-architecture — 编写主架构文档（技术设置的下一步）`
+- `[_] 停在这里`
+
+仅为实际包含的选项分配字母 A、B、C…。将最有利于推进流水线的选项标记为 `（推荐）`。
+
+> **始终包含** `/create-architecture` 和"停在这里"作为选项 — 艺术圣经完成后这些始终是有效的下一步。
+
+---
+
+## 协作协议
+
+每个章节遵循：**问题 → 选项 → 决策 → 草案（来自 art-director Agent）→ 批准 → 写入文件**
+
+- 永远不要在没有先生成相关 Agent 的情况下起草章节
+- 批准后立即将每个章节写入文件 — 不要批量处理
+- 将所有 Agent 分歧呈现给用户 — 不要静默解决 art-director 和 technical-artist 之间的冲突
+- 艺术圣经是约束文档：它以视觉一致性换取对未来决策的限制。每个章节都应该感觉像是在有效地缩小解决方案空间。
+
+---
+
+## 推荐的后续步骤
+
+艺术圣经获批后：
+- 运行 `/map-systems` 在编写 GDD 之前将概念分解为游戏系统
+- 如果引擎尚未配置，运行 `/setup-engine`（引擎选择后可能需要重新审视资产标准）
+- 运行 `/design-system [first-system]` 开始为每个系统编写 GDD
+- 一旦 GDD 存在，运行 `/consistency-check` 验证它们与艺术圣经的视觉规则
+- 运行 `/create-architecture` 生成主架构文档

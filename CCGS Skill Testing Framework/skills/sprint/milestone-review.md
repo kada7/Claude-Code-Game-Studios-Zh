@@ -1,171 +1,163 @@
-# Skill Test Spec: /milestone-review
+# 技能测试规范：/milestone-review
 
-## Skill Summary
+## 技能摘要
 
-`/milestone-review` generates a comprehensive review of a completed milestone:
-what shipped, velocity metrics, deferred items, risks surfaced, and retrospective
-seeds. In full mode the PR-MILESTONE director gate runs after the review is
-compiled (producer reviews scope delivery). In lean and solo modes the gate is
-skipped. The skill asks "May I write to `production/milestones/review-milestone-N.md`?"
-before persisting. Verdicts: MILESTONE COMPLETE or MILESTONE INCOMPLETE.
+`/milestone-review` 生成已完成里程碑的全面审查：已交付内容、速度指标、延期项目、暴露的风险和回顾种子。在完整模式下，PR-MILESTONE 导演关卡在审查编译后运行（制作人审查范围交付）。在精简和单人模式下，关卡被跳过。该技能在持久化前询问"我可以写入 `production/milestones/review-milestone-N.md` 吗？"。裁决结果：MILESTONE COMPLETE 或 MILESTONE INCOMPLETE。
 
 ---
 
-## Static Assertions (Structural)
+## 静态断言（结构）
 
-Verified automatically by `/skill-test static` — no fixture needed.
+由 `/skill-test static` 自动验证 —— 无需测试夹具。
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
-- [ ] Has ≥2 phase headings
-- [ ] Contains verdict keywords: MILESTONE COMPLETE, MILESTONE INCOMPLETE
-- [ ] Contains "May I write" language (skill writes review document)
-- [ ] Has a next-step handoff (what to do after review is written)
-
----
-
-## Director Gate Checks
-
-| Gate ID       | Trigger condition              | Mode guard              |
-|---------------|--------------------------------|-------------------------|
-| PR-MILESTONE  | After review document compiled | full only (not lean/solo) |
+- [ ] 具有必需的前置元数据字段：`name`、`description`、`argument-hint`、`user-invocable`、`allowed-tools`
+- [ ] 具有 ≥2 个阶段标题
+- [ ] 包含裁决关键词：MILESTONE COMPLETE、MILESTONE INCOMPLETE
+- [ ] 包含 "May I write" 语言（技能写入审查文档）
+- [ ] 具有下一步交接（审查文档写入后该做什么）
 
 ---
 
-## Test Cases
+## 导演关卡检查
 
-### Case 1: Happy Path — Nearly complete milestone with one deferred story
-
-**Fixture:**
-- `production/milestones/milestone-03.md` exists with 8 stories
-- 7 stories have `Status: Complete`
-- 1 story has `Status: Deferred` (deferred to milestone-04)
-- `review-mode.txt` contains `full`
-
-**Input:** `/milestone-review milestone-03`
-
-**Expected behavior:**
-1. Skill reads `milestone-03.md` and all referenced sprint files
-2. Skill compiles: 7 shipped, 1 deferred; velocity; no blockers
-3. Skill presents review draft to user
-4. PR-MILESTONE gate invoked; producer approves
-5. Skill asks "May I write to `production/milestones/review-milestone-03.md`?"
-6. User approves; file is written; verdict MILESTONE COMPLETE
-
-**Assertions:**
-- [ ] Deferred story is noted in the review with its target milestone
-- [ ] Verdict is MILESTONE COMPLETE despite the one deferred story
-- [ ] PR-MILESTONE gate is invoked after draft compilation in full mode
-- [ ] Skill asks "May I write" before writing review file
-- [ ] Review document path matches `production/milestones/review-milestone-03.md`
+| 关卡 ID       | 触发条件              | 模式限制              |
+|---------------|-------------------------|-------------------------|
+| PR-MILESTONE  | 审查文档编译后 | 仅 full 模式（非 lean/solo） |
 
 ---
 
-### Case 2: Blocked Milestone — Multiple blocked stories
+## 测试用例
 
-**Fixture:**
-- `production/milestones/milestone-03.md` exists with 5 stories
-- 2 stories have `Status: Complete`
-- 3 stories have `Status: Blocked` (named blockers listed in each story)
-- `review-mode.txt` contains `full`
+### 用例 1：理想路径 —— 几乎完成的里程碑，有一个延期 Story
 
-**Input:** `/milestone-review milestone-03`
+**测试夹具：**
+- `production/milestones/milestone-03.md` 存在，包含 8 个 Story
+- 7 个 Story 的状态为 `Complete`
+- 1 个 Story 的状态为 `Deferred`（延期到 milestone-04）
+- `review-mode.txt` 包含 `full`
 
-**Expected behavior:**
-1. Skill reads milestone and sprint files
-2. Skill finds 3 blocked stories; compiles blocker details
-3. Verdict is MILESTONE INCOMPLETE
-4. PR-MILESTONE gate runs; producer notes the unresolved blockers
-5. Review is written with blocker list on approval
+**输入：** `/milestone-review milestone-03`
 
-**Assertions:**
-- [ ] Verdict is MILESTONE INCOMPLETE when any stories are Blocked
-- [ ] Each blocked story's name and blocker reason is listed in the review
-- [ ] PR-MILESTONE gate is still invoked in full mode even for INCOMPLETE verdict
-- [ ] "May I write" prompt still appears before file write
+**预期行为：**
+1. 技能读取 `milestone-03.md` 和所有引用的 Sprint 文件
+2. 技能编译：7 个已交付，1 个延期；速度；无阻塞项
+3. 技能向用户展示审查草稿
+4. 调用 PR-MILESTONE 关卡；制作人批准
+5. 技能询问"我可以写入 `production/milestones/review-milestone-03.md` 吗？"
+6. 用户批准；文件写入；裁决为 MILESTONE COMPLETE
 
----
-
-### Case 3: Full Mode — PR-MILESTONE returns CONCERNS
-
-**Fixture:**
-- Milestone-03 has 6 complete stories but 2 were not in the original scope (added mid-sprint)
-- `review-mode.txt` contains `full`
-
-**Input:** `/milestone-review milestone-03`
-
-**Expected behavior:**
-1. Skill compiles review; notes 2 out-of-scope stories shipped
-2. PR-MILESTONE gate invoked; producer returns CONCERNS about scope drift
-3. Skill surfaces the CONCERNS to the user and adds a "scope drift" note to the review
-4. User approves revised review; file written as MILESTONE COMPLETE with caveat
-
-**Assertions:**
-- [ ] CONCERNS from PR-MILESTONE gate are shown to user before write
-- [ ] Scope drift is explicitly noted in the written review document
-- [ ] Verdict is MILESTONE COMPLETE (stories shipped) with CONCERNS annotation
-- [ ] Skill does not suppress gate feedback
+**断言：**
+- [ ] 延期的 Story 在审查中被记录并标明其目标里程碑
+- [ ] 尽管有一个延期 Story，裁决仍为 MILESTONE COMPLETE
+- [ ] 在 full 模式下，PR-MILESTONE 关卡在草稿编译后被调用
+- [ ] 技能在写入审查文件前询问 "May I write"
+- [ ] 审查文档路径匹配 `production/milestones/review-milestone-03.md`
 
 ---
 
-### Case 4: Edge Case — No milestone file found for specified milestone
+### 用例 2：阻塞的里程碑 —— 多个阻塞的 Story
 
-**Fixture:**
-- User calls `/milestone-review milestone-07`
-- `production/milestones/milestone-07.md` does NOT exist
+**测试夹具：**
+- `production/milestones/milestone-03.md` 存在，包含 5 个 Story
+- 2 个 Story 的状态为 `Complete`
+- 3 个 Story 的状态为 `Blocked`（每个 Story 中都列出了具体的阻塞项）
+- `review-mode.txt` 包含 `full`
 
-**Input:** `/milestone-review milestone-07`
+**输入：** `/milestone-review milestone-03`
 
-**Expected behavior:**
-1. Skill attempts to read `production/milestones/milestone-07.md`
-2. File not found; skill outputs an error message
-3. Skill suggests checking available milestones in `production/milestones/`
-4. No gate is invoked; no file is written
+**预期行为：**
+1. 技能读取里程碑和 Sprint 文件
+2. 技能发现 3 个阻塞的 Story；编译阻塞项详情
+3. 裁决为 MILESTONE INCOMPLETE
+4. PR-MILESTONE 关卡运行；制作人记录了未解决的阻塞项
+5. 在批准后写入包含阻塞项列表的审查
 
-**Assertions:**
-- [ ] Skill does not crash when milestone file is absent
-- [ ] Output names the expected file path in the error message
-- [ ] Output suggests checking `production/milestones/` for valid milestone names
-- [ ] Verdict is BLOCKED (cannot review a non-existent milestone)
-
----
-
-### Case 5: Lean/Solo Mode — PR-MILESTONE gate skipped
-
-**Fixture:**
-- `production/milestones/milestone-03.md` exists with 5 complete stories
-- `review-mode.txt` contains `solo`
-
-**Input:** `/milestone-review milestone-03`
-
-**Expected behavior:**
-1. Skill reads review mode — determines `solo`
-2. Skill compiles review draft
-3. PR-MILESTONE gate is skipped; output notes "[PR-MILESTONE] skipped — Solo mode"
-4. Skill asks user for direct approval of the review
-5. User approves; review file is written; verdict MILESTONE COMPLETE
-
-**Assertions:**
-- [ ] PR-MILESTONE gate is NOT invoked in solo (or lean) mode
-- [ ] Skip is explicitly noted in skill output
-- [ ] User direct approval is still required before write
-- [ ] Verdict is MILESTONE COMPLETE after successful write
+**断言：**
+- [ ] 当存在任何阻塞的 Story 时，裁决为 MILESTONE INCOMPLETE
+- [ ] 每个阻塞的 Story 的名称和阻塞原因都列在审查中
+- [ ] 即使在裁决为 INCOMPLETE 的情况下，PR-MILESTONE 关卡仍在 full 模式下被调用
+- [ ] "May I write" 提示仍在文件写入前出现
 
 ---
 
-## Protocol Compliance
+### 用例 3：Full 模式 —— PR-MILESTONE 返回 CONCERNS
 
-- [ ] Shows compiled review draft before invoking PR-MILESTONE or asking to write
-- [ ] Always asks "May I write" before writing review document
-- [ ] PR-MILESTONE gate only runs in full mode
-- [ ] Skip message appears in lean and solo output
-- [ ] Verdict is MILESTONE COMPLETE or MILESTONE INCOMPLETE, stated clearly
+**测试夹具：**
+- Milestone-03 有 6 个已完成的 Story，但其中有 2 个不在原始范围内（在 Sprint 中期添加）
+- `review-mode.txt` 包含 `full`
+
+**输入：** `/milestone-review milestone-03`
+
+**预期行为：**
+1. 技能编译审查；记录 2 个超出范围的 Story 已交付
+2. 调用 PR-MILESTONE 关卡；制作人返回关于范围蔓延的 CONCERNS
+3. 技能将 CONCERNS 展示给用户，并在审查中添加"范围蔓延"记录
+4. 用户批准修订后的审查；文件写入为 MILESTONE COMPLETE 并附带警告
+
+**断言：**
+- [ ] PR-MILESTONE 关卡的 CONCERNS 在写入前展示给用户
+- [ ] 范围蔓延在写入的审查文档中被明确记录
+- [ ] 裁决为 MILESTONE COMPLETE（Story 已交付）并附带 CONCERNS 注释
+- [ ] 技能不会压制关卡反馈
 
 ---
 
-## Coverage Notes
+### 用例 4：边界情况 —— 未找到指定里程碑的里程碑文件
 
-- The case where the milestone has zero stories is not tested; it follows the
-  MILESTONE INCOMPLETE pattern with a note suggesting the milestone may not
-  have been planned.
-- Velocity calculation specifics (story points vs. story count) are not
-  verified here; they are implementation details of the review compilation phase.
+**测试夹具：**
+- 用户调用 `/milestone-review milestone-07`
+- `production/milestones/milestone-07.md` 不存在
+
+**输入：** `/milestone-review milestone-07`
+
+**预期行为：**
+1. 技能尝试读取 `production/milestones/milestone-07.md`
+2. 文件未找到；技能输出错误信息
+3. 技能建议检查 `production/milestones/` 中的可用里程碑
+4. 不调用关卡；不写入文件
+
+**断言：**
+- [ ] 当里程碑文件不存在时，技能不会崩溃
+- [ ] 输出在错误信息中命名了预期的文件路径
+- [ ] 输出建议检查 `production/milestones/` 以获取有效的里程碑名称
+- [ ] 裁决为 BLOCKED（无法审查不存在的里程碑）
+
+---
+
+### 用例 5：Lean/Solo 模式 —— PR-MILESTONE 关卡被跳过
+
+**测试夹具：**
+- `production/milestones/milestone-03.md` 存在，包含 5 个已完成的 Story
+- `review-mode.txt` 包含 `solo`
+
+**输入：** `/milestone-review milestone-03`
+
+**预期行为：**
+1. 技能读取审查模式 —— 确定为 `solo`
+2. 技能编译审查草稿
+3. PR-MILESTONE 关卡被跳过；输出记录"[PR-MILESTONE] skipped —— Solo mode"
+4. 技能询问用户直接批准审查
+5. 用户批准；审查文件写入；裁决为 MILESTONE COMPLETE
+
+**断言：**
+- [ ] 在 solo（或 lean）模式下不调用 PR-MILESTONE 关卡
+- [ ] 跳过在技能输出中被明确记录
+- [ ] 在写入前仍需要用户的直接批准
+- [ ] 成功写入后裁决为 MILESTONE COMPLETE
+
+---
+
+## 协议合规性
+
+- [ ] 在调用 PR-MILESTONE 或询问写入前展示编译的审查草稿
+- [ ] 在写入审查文档前始终询问 "May I write"
+- [ ] PR-MILESTONE 关卡仅在 full 模式下运行
+- [ ] 跳过消息出现在 lean 和 solo 模式输出中
+- [ ] 裁决为 MILESTONE COMPLETE 或 MILESTONE INCOMPLETE，明确说明
+
+---
+
+## 覆盖说明
+
+- 未测试里程碑有零个 Story 的情况；它遵循 MILESTONE INCOMPLETE 模式，并附带一条注释，建议该里程碑可能尚未规划。
+- 速度计算细节（Story 点数 vs. Story 数量）不在此处验证；它们是审查编译阶段的实现细节。

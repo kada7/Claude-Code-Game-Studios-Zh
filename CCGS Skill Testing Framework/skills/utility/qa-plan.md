@@ -1,175 +1,162 @@
-# Skill Test Spec: /qa-plan
+# 技能测试规范：/qa-plan
 
-## Skill Summary
+## 技能摘要
 
-`/qa-plan` generates a structured QA test plan for a feature or sprint milestone.
-It reads story files for the specified sprint, extracts acceptance criteria from
-each story, cross-references test standards from `coding-standards.md` to assign
-the appropriate test type (unit, integration, visual, UI, or config/data), and
-produces a prioritized QA plan document.
+`/qa-plan` 为功能或 Sprint 里程碑生成结构化的 QA 测试计划。它读取指定 Sprint 的 Story 文件，从每个 Story 中提取验收标准，交叉引用 `coding-standards.md` 中的测试标准以分配适当的测试类型（单元、集成、视觉、UI 或配置/数据），并生成一份优先级的 QA 计划文档。
 
-The skill asks "May I write to `production/qa/qa-plan-sprint-NNN.md`?" before
-persisting the output. If an existing test plan for the same sprint is found, the
-skill offers to update rather than replace. The verdict is COMPLETE when the plan
-is written. No director gates are used — gate-level story readiness is handled by
-`/story-readiness`.
+技能在持久化输出前询问"May I write to `production/qa/qa-plan-sprint-NNN.md`?"。如果找到同一 Sprint 的现有测试计划，技能会提议更新而非替换。计划写入时裁决为 COMPLETE。不使用总监关卡 —— 关卡级别的 Story 准备度由 `/story-readiness` 处理。
 
 ---
 
-## Static Assertions (Structural)
+## 静态断言（结构）
 
-Verified automatically by `/skill-test static` — no fixture needed.
+由 `/skill-test static` 自动验证 —— 无需夹具。
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
-- [ ] Has ≥2 phase headings
-- [ ] Contains verdict keyword: COMPLETE
-- [ ] Contains "May I write" collaborative protocol language before writing the plan
-- [ ] Has a next-step handoff (e.g., `/smoke-check` or `/story-readiness`)
-
----
-
-## Director Gate Checks
-
-None. `/qa-plan` is a planning utility. Story readiness gates are separate.
+- [ ] 具有必需的前置元数据字段：`name`、`description`、`argument-hint`、`user-invocable`、`allowed-tools`
+- [ ] 具有 ≥2 个阶段标题
+- [ ] 包含裁决关键词：COMPLETE
+- [ ] 包含 "May I write" 协作协议语言，在写入计划前
+- [ ] 具有下一步交接（例如，`/smoke-check` 或 `/story-readiness`）
 
 ---
 
-## Test Cases
+## 总监关卡检查
 
-### Case 1: Happy Path — Sprint with 4 stories generates full test plan
-
-**Fixture:**
-- `production/sprints/sprint-003.md` lists 4 stories with defined acceptance criteria
-- Stories span types: 1 logic (formula), 1 integration, 1 visual, 1 UI
-- `coding-standards.md` is present with test evidence table
-
-**Input:** `/qa-plan sprint-003`
-
-**Expected behavior:**
-1. Skill reads sprint-003.md and identifies 4 stories
-2. Skill reads each story's acceptance criteria
-3. Skill assigns test types per coding-standards.md table:
-   - Logic story → Unit test (BLOCKING)
-   - Integration story → Integration test (BLOCKING)
-   - Visual story → Screenshot + lead sign-off (ADVISORY)
-   - UI story → Manual walkthrough doc (ADVISORY)
-4. Skill drafts QA plan with story-by-story test type breakdown
-5. Skill asks "May I write to `production/qa/qa-plan-sprint-003.md`?"
-6. File is written on approval; verdict is COMPLETE
-
-**Assertions:**
-- [ ] All 4 stories are included in the plan
-- [ ] Test type is assigned per coding-standards.md (not guessed)
-- [ ] Gate level (BLOCKING vs ADVISORY) is noted for each story
-- [ ] "May I write" is asked with the correct file path
-- [ ] Verdict is COMPLETE
+无。`/qa-plan` 是规划工具。Story 准备度关卡是单独的。
 
 ---
 
-### Case 2: Story With No Acceptance Criteria — Flagged as UNTESTABLE
+## 测试用例
 
-**Fixture:**
-- `production/sprints/sprint-004.md` lists 3 stories; one story has empty
-  acceptance criteria section
+### 用例 1：理想路径 —— 包含 4 个 Story 的 Sprint 生成完整测试计划
 
-**Input:** `/qa-plan sprint-004`
+**测试夹具：**
+- `production/sprints/sprint-003.md` 列出了 4 个具有已定义验收标准的 Story
+- Story 跨越类型：1 个 logic（公式）、1 个 integration、1 个 visual、1 个 UI
+- `coding-standards.md` 存在，包含测试证据表
 
-**Expected behavior:**
-1. Skill reads all 3 stories
-2. Skill detects the story with no AC
-3. Story is flagged as `UNTESTABLE — Acceptance Criteria required` in the plan
-4. Other 2 stories receive normal test type assignments
-5. Plan is written with the UNTESTABLE story flagged; verdict is COMPLETE
+**输入：** `/qa-plan sprint-003`
 
-**Assertions:**
-- [ ] UNTESTABLE label appears for the story with no AC
-- [ ] Plan is not blocked — the other stories are still planned
-- [ ] Output suggests adding AC to the flagged story (next step)
-- [ ] Verdict is COMPLETE (the plan is still generated)
+**预期行为：**
+1. 技能读取 sprint-003.md 并识别 4 个 Story
+2. 技能读取每个 Story 的验收标准
+3. 技能根据 coding-standards.md 表分配测试类型：
+   - Logic Story → 单元测试（BLOCKING）
+   - Integration Story → 集成测试（BLOCKING）
+   - Visual Story → 截图 + 主管签核（ADVISORY）
+   - UI Story → 手动走查文档（ADVISORY）
+4. 技能起草按 Story 划分的测试类型分解的 QA 计划
+5. 技能询问"May I write to `production/qa/qa-plan-sprint-003.md`?"
+6. 文件在批准后写入；裁决为 COMPLETE
 
----
-
-### Case 3: Existing Test Plan Found — Offers update rather than replace
-
-**Fixture:**
-- `production/qa/qa-plan-sprint-003.md` already exists from a previous run
-- Sprint-003 has 2 new stories added since the last plan
-
-**Input:** `/qa-plan sprint-003`
-
-**Expected behavior:**
-1. Skill reads sprint-003.md and detects 2 stories not in the existing plan
-2. Skill reports: "Existing QA plan found for sprint-003 — offering to update"
-3. Skill presents the 2 new stories and their proposed test assignments
-4. Skill asks "May I update `production/qa/qa-plan-sprint-003.md`?" (not overwrite)
-5. Updated plan is written on approval
-
-**Assertions:**
-- [ ] Skill detects the existing plan file
-- [ ] "update" language is used (not "overwrite")
-- [ ] Only new stories are proposed for addition — existing entries preserved
-- [ ] Verdict is COMPLETE
+**断言：**
+- [ ] 计划中包含所有 4 个 Story
+- [ ] 测试类型根据 coding-standards.md 分配（非猜测）
+- [ ] 每个 Story 都注明了关卡级别（BLOCKING vs ADVISORY）
+- [ ] "May I write" 询问了正确的文件路径
+- [ ] 裁决为 COMPLETE
 
 ---
 
-### Case 4: No Stories Found for Sprint — Error with guidance
+### 用例 2：Story 无验收标准 —— 标记为 UNTESTABLE
 
-**Fixture:**
-- `production/sprints/sprint-007.md` does not exist
-- No other sprint file matching sprint-007
+**测试夹具：**
+- `production/sprints/sprint-004.md` 列出了 3 个 Story；其中一个的验收标准部分为空
 
-**Input:** `/qa-plan sprint-007`
+**输入：** `/qa-plan sprint-004`
 
-**Expected behavior:**
-1. Skill attempts to read sprint-007.md — file not found
-2. Skill outputs: "No sprint file found for sprint-007"
-3. Skill suggests running `/sprint-plan` to create the sprint first
-4. No plan is written; no "May I write" is asked
+**预期行为：**
+1. 技能读取所有 3 个 Story
+2. 技能检测到无 AC 的 Story
+3. 该 Story 在计划中被标记为 `UNTESTABLE — Acceptance Criteria required`
+4. 其他 2 个 Story 获得正常的测试类型分配
+5. 计划使用被标记的 UNTESTABLE Story 写入；裁决为 COMPLETE
 
-**Assertions:**
-- [ ] Error message names the missing sprint file
-- [ ] `/sprint-plan` is suggested as the remediation step
-- [ ] No write tool is called
-- [ ] Verdict is not COMPLETE (error state)
-
----
-
-### Case 5: Director Gate Check — No gate; QA planning is a utility
-
-**Fixture:**
-- Sprint with valid stories and AC
-
-**Input:** `/qa-plan sprint-003`
-
-**Expected behavior:**
-1. Skill generates and writes QA plan
-2. No director agents are spawned
-3. No gate IDs appear in output
-
-**Assertions:**
-- [ ] No director gate is invoked
-- [ ] No gate skip messages appear
-- [ ] Skill reaches COMPLETE without any gate check
+**断言：**
+- [ ] UNTESTABLE 标签出现在无 AC 的 Story 上
+- [ ] 计划未被阻塞 —— 其他 Story 仍在计划中
+- [ ] 输出建议向被标记的 Story 添加 AC（下一步）
+- [ ] 裁决为 COMPLETE（计划仍然生成）
 
 ---
 
-## Protocol Compliance
+### 用例 3：找到现有测试计划 —— 提供更新而非替换
 
-- [ ] Reads coding-standards.md test evidence table before assigning test types
-- [ ] Assigns BLOCKING or ADVISORY gate level per story type
-- [ ] Flags stories with no AC as UNTESTABLE (does not silently skip them)
-- [ ] Detects existing plan and offers update path
-- [ ] Asks "May I write" before creating or updating the plan file
-- [ ] Verdict is COMPLETE when plan is written
+**测试夹具：**
+- `production/qa/qa-plan-sprint-003.md` 已从之前的运行存在
+- Sprint-003 自上次计划以来添加了 2 个新 Story
+
+**输入：** `/qa-plan sprint-003`
+
+**预期行为：**
+1. 技能读取 sprint-003.md 并检测到 2 个不在现有计划中的 Story
+2. 技能报告："Existing QA plan found for sprint-003 — offering to update"
+3. 技能展示 2 个新 Story 及其提议的测试分配
+4. 技能询问"May I update `production/qa/qa-plan-sprint-003.md`?"（非 overwrite）
+5. 更新的计划在批准后写入
+
+**断言：**
+- [ ] 技能检测到现有的计划文件
+- [ ] 使用 "update" 语言（非 "overwrite"）
+- [ ] 仅提议添加新 Story —— 保留现有条目
+- [ ] 裁决为 COMPLETE
 
 ---
 
-## Coverage Notes
+### 用例 4：未找到 Sprint 的 Story —— 带引导的错误
 
-- The case where `coding-standards.md` is missing (skill cannot assign test types)
-  is not fixture-tested; behavior would follow the BLOCKED pattern with a note
-  to restore the standards file.
-- Multi-sprint planning (spanning 2 sprints) is not tested; the skill is designed
-  for one sprint at a time.
-- Config/data story type (balance tuning → smoke check) follows the same
-  assignment pattern as other types in Case 1 and is not separately tested.
+**测试夹具：**
+- `production/sprints/sprint-007.md` 不存在
+- 无其他匹配 sprint-007 的 Sprint 文件
+
+**输入：** `/qa-plan sprint-007`
+
+**预期行为：**
+1. 技能尝试读取 sprint-007.md —— 文件未找到
+2. 技能输出："No sprint file found for sprint-007"
+3. 技能建议先运行 `/sprint-plan` 来创建 Sprint
+4. 未写入计划；未询问 "May I write"
+
+**断言：**
+- [ ] 错误消息命名了缺失的 Sprint 文件
+- [ ] `/sprint-plan` 被建议为补救步骤
+- [ ] 未调用 Write 工具
+- [ ] 裁决不为 COMPLETE（错误状态）
+
+---
+
+### 用例 5：总监关卡检查 —— 无关卡；QA 规划是工具
+
+**测试夹具：**
+- Sprint 具有有效的 Story 和 AC
+
+**输入：** `/qa-plan sprint-003`
+
+**预期行为：**
+1. 技能生成并写入 QA 计划
+2. 不生成总监代理
+3. 输出中不出现关卡 ID
+
+**断言：**
+- [ ] 未调用总监关卡
+- [ ] 未出现关卡跳过消息
+- [ ] 技能在无任何关卡检查的情况下达到 COMPLETE
+
+---
+
+## 协议合规性
+
+- [ ] 在分配测试类型前读取 coding-standards.md 测试证据表
+- [ ] 按 Story 类型分配 BLOCKING 或 ADVISORY 关卡级别
+- [ ] 将无 AC 的 Story 标记为 UNTESTABLE（非静默跳过）
+- [ ] 检测到现有计划时提供更新路径
+- [ ] 在创建或更新计划文件前询问 "May I write"
+- [ ] 计划写入时裁决为 COMPLETE
+
+---
+
+## 覆盖说明
+
+- `coding-standards.md` 缺失（技能无法分配测试类型）的情况未使用夹具测试；行为将遵循带有恢复 standards 文件提示的 BLOCKED 模式。
+- 多 Sprint 规划（跨越 2 个 Sprint）未测试；该技能设计为一次处理一个 Sprint。
+- Config/data Story 类型（平衡调整 → 冒烟检查）遵循与用例 1 中其他类型相同的分配模式，未单独测试。

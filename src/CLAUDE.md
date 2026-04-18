@@ -1,36 +1,36 @@
-# Source Directory
+# 源代码目录
 
-When writing or editing game code in this directory, follow these standards.
+在此目录中编写或编辑游戏代码时，请遵循以下标准。
 
-## Engine Version Warning
+## 引擎版本警告
 
-The LLM's training data predates the pinned engine version.
-**Always check `docs/engine-reference/` before using any engine API.**
-Do not guess at post-cutoff API signatures — look them up first.
+LLM 的训练数据早于固定的引擎版本。
+**在使用任何引擎 API 之前，务必检查 `docs/engine-reference/`。**
+不要猜测截止日期后的 API 签名——先查阅。
 
-## Coding Standards
+## 编码标准
 
-- All public APIs require doc comments
-- Gameplay values must be **data-driven** (external config files), never hardcoded
-- Prefer dependency injection over singletons for testability
-- Every new system needs a corresponding ADR in `docs/architecture/`
-- Commits must reference the relevant story ID or design document
+- 所有公共 API 需要文档注释
+- 游戏玩法值必须是**数据驱动**的（外部配置文件），切勿硬编码
+- 为了可测试性，优先使用依赖注入而非单例模式
+- 每个新系统都需要在 `docs/architecture/` 中有对应的 ADR
+- 提交必须引用相关的故事 ID 或设计文档
 
-## File Routing
+## 文件路由
 
-Match the engine-specialist agent to the file type being written.
-See `CLAUDE.md` → Technical Preferences → Engine Specialists → File Extension Routing.
+将引擎专家 Agent 与正在编写的文件类型匹配。
+参见 `CLAUDE.md` → 技术偏好 → 引擎专家 → 文件扩展名路由。
 
-When in doubt, use the primary engine specialist configured in `CLAUDE.md`.
+如有疑问，使用 `CLAUDE.md` 中配置的主要引擎专家。
 
-## Tests
+## 测试
 
-Tests live in `tests/` — not in `src/`.
-Run `/test-setup` to scaffold the test framework if it doesn't exist yet.
-Every gameplay system should have unit tests covering its formulas and edge cases.
+测试位于 `tests/` 中——不在 `src/` 中。
+如果测试框架尚不存在，运行 `/test-setup` 来搭建。
+每个游戏玩法系统都应有涵盖其公式和边缘情况的单元测试。
 
-## Verification-Driven Development
+## 验证驱动开发
 
-Write tests first when adding gameplay systems.
-For UI changes, verify with screenshots.
-Compare expected output to actual output before marking work complete.
+添加游戏玩法系统时，先编写测试。
+对于 UI 变更，使用截图验证。
+在工作完成前比较预期输出与实际输出。

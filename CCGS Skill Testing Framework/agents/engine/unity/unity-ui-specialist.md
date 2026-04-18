@@ -1,81 +1,81 @@
-# Agent Test Spec: unity-ui-specialist
+# Agent 测试规范：unity-ui-specialist
 
-## Agent Summary
-Domain: Unity UI Toolkit (UXML/USS), UGUI (Canvas), data binding, runtime UI performance, and UI input event handling.
-Does NOT own: UX flow design (ux-designer), visual art style (art-director).
-Model tier: Sonnet (default).
-No gate IDs assigned.
-
----
-
-## Static Assertions (Structural)
-
-- [ ] `description:` field is present and domain-specific (references UI Toolkit / UGUI / Canvas / data binding)
-- [ ] `allowed-tools:` list includes Read, Write, Edit, Bash, Glob, Grep
-- [ ] Model tier is Sonnet (default for specialists)
-- [ ] Agent definition does not claim authority over UX flow design or visual art direction
+## Agent 摘要
+领域：Unity UI Toolkit (UXML/USS)、UGUI (Canvas)、数据绑定、运行时 UI 性能以及 UI 输入事件处理。
+不负责：UX 流程设计 (ux-designer)、视觉艺术风格 (art-director)。
+模型层级：Sonnet（默认）。
+未分配门控 ID。
 
 ---
 
-## Test Cases
+## 静态断言（结构）
 
-### Case 1: In-domain request — appropriate output
-**Input:** "Implement an inventory UI screen using Unity UI Toolkit."
-**Expected behavior:**
-- Produces a UXML document defining the inventory panel structure (ListView, item templates, detail panel)
-- Produces USS styles for the inventory layout and item states (default, hover, selected)
-- Provides C# code binding the inventory data model to the UI via `INotifyValueChanged` or `IBindable`
-- Uses `ListView` with `makeItem` / `bindItem` callbacks for the scrollable item list
-- Does NOT produce the UX flow design — implements from a provided spec
-
-### Case 2: Out-of-domain redirect
-**Input:** "Design the UX flow for the inventory — what happens when the player equips vs. drops an item."
-**Expected behavior:**
-- Does NOT produce UX flow design
-- Explicitly states that interaction flow design belongs to `ux-designer`
-- Redirects the request to `ux-designer`
-- Notes it will implement whatever flow the ux-designer specifies
-
-### Case 3: UI Toolkit data binding for dynamic list
-**Input:** "The inventory list needs to update in real time as items are added or removed from the player's bag."
-**Expected behavior:**
-- Produces the `ListView` pattern with a bound `ObservableList<T>` or event-driven refresh approach
-- Uses `ListView.Rebuild()` or `ListView.RefreshItems()` on the backing collection change event
-- Notes the performance considerations for large lists (virtualization via `makeItem`/`bindItem` pattern)
-- Does NOT use `QuerySelector` loops to update individual elements as a list refresh strategy — flags that as a performance antipattern
-
-### Case 4: Canvas performance — overdraw
-**Input:** "The main menu canvas is causing GPU overdraw warnings; there are many overlapping panels."
-**Expected behavior:**
-- Identifies overdraw causes: multiple stacked canvases, full-screen overlay panels not culled when inactive
-- Recommends:
-  - Separate canvases for world-space, screen-space-overlay, and screen-space-camera layers
-  - Disable/deactivate panels instead of setting alpha to 0 (invisible alpha-0 panels still draw)
-  - Canvas Group + alpha for fade effects, not individual Image alpha
-- Notes UI Toolkit alternative if the project is in a migration position
-
-### Case 5: Context pass — Unity version
-**Input:** Project context: Unity 2022.3 LTS. Request: "Implement the settings panel with data binding."
-**Expected behavior:**
-- Uses UI Toolkit with the 2022.3 LTS version of the runtime binding system
-- Notes that Unity 2022.3 introduced runtime data binding (as opposed to editor-only binding in earlier versions)
-- Does NOT use the Unity 6 enhanced binding API features if they are not available in 2022.3
-- Produces code compatible with the stated Unity version, with version-specific API notes
+- [ ] `description:` 字段存在且具有领域特定性（引用 UI Toolkit / UGUI / Canvas / 数据绑定）
+- [ ] `allowed-tools:` 列表包含 Read、Write、Edit、Bash、Glob、Grep
+- [ ] 模型层级为 Sonnet（专家默认）
+- [ ] Agent 定义不声称对 UX 流程设计或视觉艺术方向具有权威
 
 ---
 
-## Protocol Compliance
+## 测试用例
 
-- [ ] Stays within declared domain (UI Toolkit, UGUI, data binding, UI performance)
-- [ ] Redirects UX flow design to ux-designer
-- [ ] Returns structured output (UXML, USS, C# binding code)
-- [ ] Uses the correct Unity UI framework version for the project's Unity version
-- [ ] Flags Canvas overdraw as a performance antipattern and provides specific remediation
-- [ ] Does not use alpha-0 as a hide/show pattern — uses SetActive() or VisualElement.style.display
+### 用例 1：领域内请求 — 适当的输出
+**输入：** "使用 Unity UI Toolkit 实现一个库存 UI 屏幕。"
+**预期行为：**
+- 生成定义库存面板结构的 UXML 文档（ListView、项目模板、详情面板）
+- 生成库存布局和项目状态（默认、悬停、选中）的 USS 样式
+- 提供通过 `INotifyValueChanged` 或 `IBindable` 将库存数据模型绑定到 UI 的 C# 代码
+- 为可滚动项目列表使用带有 `makeItem` / `bindItem` 回调的 `ListView`
+- 不生成 UX 流程设计 — 根据提供的规范实现
+
+### 用例 2：领域外重定向
+**输入：** "设计库存的 UX 流程 — 当玩家装备与丢弃物品时会发生什么。"
+**预期行为：**
+- 不生成 UX 流程设计
+- 明确说明交互流程设计属于 `ux-designer`
+- 将请求重定向到 `ux-designer`
+- 注明将实现 ux-designer 指定的任何流程
+
+### 用例 3：UI Toolkit 动态列表数据绑定
+**输入：** "当物品被添加或从玩家的背包中移除时，库存列表需要实时更新。"
+**预期行为：**
+- 生成带有绑定 `ObservableList<T>` 或事件驱动刷新方法的 `ListView` 模式
+- 在后台集合变更事件上使用 `ListView.Rebuild()` 或 `ListView.RefreshItems()`
+- 注明大型列表的性能考虑（通过 `makeItem`/`bindItem` 模式进行虚拟化）
+- 不使用 `QuerySelector` 循环作为列表刷新策略来更新单个元素 — 将其标记为性能反模式
+
+### 用例 4：Canvas 性能 — 过度绘制
+**输入：** "主菜单 Canvas 导致 GPU 过度绘制警告；有许多重叠的面板。"
+**预期行为：**
+- 识别过度绘制原因：多个堆叠的 Canvas、非活动时未剔除的全屏覆盖面板
+- 建议：
+  - 为世界空间、屏幕空间覆盖和屏幕空间相机层分离 Canvas
+  - 禁用/停用面板而不是将 alpha 设置为 0（不可见的 alpha-0 面板仍会绘制）
+  - 使用 Canvas Group + alpha 实现淡入淡出效果，而不是单个 Image 的 alpha
+- 如果项目处于迁移阶段，注明 UI Toolkit 替代方案
+
+### 用例 5：上下文传递 — Unity 版本
+**输入：** 项目上下文：Unity 2022.3 LTS。请求："使用数据绑定实现设置面板。"
+**预期行为：**
+- 使用 UI Toolkit 和 2022.3 LTS 版本的运行时绑定系统
+- 注明 Unity 2022.3 引入了运行时数据绑定（与早期版本中仅编辑器绑定相对）
+- 如果 Unity 6 增强的绑定 API 功能在 2022.3 中不可用，则不使用
+- 生成与声明的 Unity 版本兼容的代码，并包含版本特定的 API 说明
 
 ---
 
-## Coverage Notes
-- Inventory UI (Case 1) should have a manual walkthrough doc in `production/qa/evidence/`
-- Dynamic list binding (Case 3) should have an integration test or automated interaction test
-- Canvas overdraw (Case 4) verifies the agent knows the correct Unity UI performance patterns
+## 协议合规性
+
+- [ ] 保持在声明的领域内（UI Toolkit、UGUI、数据绑定、UI 性能）
+- [ ] 将 UX 流程设计重定向到 ux-designer
+- [ ] 返回结构化输出（UXML、USS、C# 绑定代码）
+- [ ] 为项目的 Unity 版本使用正确的 Unity UI 框架版本
+- [ ] 将 Canvas 过度绘制标记为性能反模式并提供具体的修复方案
+- [ ] 不使用 alpha-0 作为显示/隐藏模式 — 使用 SetActive() 或 VisualElement.style.display
+
+---
+
+## 覆盖范围说明
+- 库存 UI（用例 1）应在 `production/qa/evidence/` 中有一个手动演练文档
+- 动态列表绑定（用例 3）应有一个集成测试或自动化交互测试
+- Canvas 过度绘制（用例 4）验证 Agent 了解正确的 Unity UI 性能模式

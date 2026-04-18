@@ -2,23 +2,15 @@
 
 ## Skill Summary
 
-`/architecture-decision` guides the user through section-by-section authoring of
-a new Architecture Decision Record (ADR). Required sections are: Status, Context,
-Decision, Consequences, Alternatives, and Related ADRs. The skill also stamps the
-engine version reference from `docs/engine-reference/` into the ADR for traceability.
+`/architecture-decision` 引导用户逐节编写新的 Architecture Decision Record (ADR)。必需的部分包括：Status、Context、Decision、Consequences、Alternatives 和 Related ADRs。该技能还会从 `docs/engine-reference/` 中提取引擎版本参考并加盖到 ADR 中，以便追溯。
 
-In `full` review mode, TD-ADR (technical-director) and LP-FEASIBILITY
-(lead-programmer) gate agents spawn after the draft is complete. If both gates
-return APPROVED, the ADR status is set to Accepted. In `lean` or `solo` mode,
-both gates are skipped and the ADR is written with Status: Proposed. The skill
-asks "May I write" per section during authoring. ADRs are written to
-`docs/architecture/adr-NNN-[name].md`.
+在 `full` 审查模式下，ADR 草案完成后会生成 TD-ADR (technical-director) 和 LP-FEASIBILITY (lead-programmer) 门控代理。如果两个门控都返回 APPROVED，ADR 状态将设置为 Accepted。在 `lean` 或 `solo` 模式下，两个门控都会被跳过，ADR 将以 Status: Proposed 写入。该技能在编写过程中会按节询问 "May I write"。ADR 被写入 `docs/architecture/adr-NNN-[name].md`。
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+由 `/skill-test static` 自动验证 — 无需夹具。
 
 - [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
 - [ ] Has ≥2 phase headings
@@ -33,14 +25,11 @@ Verified automatically by `/skill-test static` — no fixture needed.
 
 ## Director Gate Checks
 
-In `full` mode: TD-ADR (technical-director) and LP-FEASIBILITY (lead-programmer)
-spawn after the ADR draft is complete. If both return APPROVED, ADR Status is set
-to Accepted. If either returns CONCERNS or FAIL, ADR stays Proposed.
+在 `full` 模式下：ADR 草案完成后会生成 TD-ADR (technical-director) 和 LP-FEASIBILITY (lead-programmer)。如果两者都返回 APPROVED，ADR 状态将设置为 Accepted。如果任一返回 CONCERNS 或 FAIL，ADR 保持 Proposed。
 
-In `lean` mode: both gates are skipped. ADR is written with Status: Proposed.
-Output notes: "TD-ADR skipped — lean mode" and "LP-FEASIBILITY skipped — lean mode".
+在 `lean` 模式下：两个门控都被跳过。ADR 以 Status: Proposed 写入。输出注释："TD-ADR skipped — lean mode" 和 "LP-FEASIBILITY skipped — lean mode"。
 
-In `solo` mode: both gates are skipped. ADR is written with Status: Proposed.
+在 `solo` 模式下：两个门控都被跳过。ADR 以 Status: Proposed 写入。
 
 ---
 
@@ -49,9 +38,9 @@ In `solo` mode: both gates are skipped. ADR is written with Status: Proposed.
 ### Case 1: Happy Path — New ADR for rendering approach, full mode, gates approve
 
 **Fixture:**
-- `docs/architecture/` exists with no existing ADR for rendering
-- `docs/engine-reference/[engine]/VERSION.md` exists
-- `production/session-state/review-mode.txt` contains `full`
+- `docs/architecture/` 存在，没有现有的渲染 ADR
+- `docs/engine-reference/[engine]/VERSION.md` 存在
+- `production/session-state/review-mode.txt` 包含 `full`
 
 **Input:** `/architecture-decision rendering-approach`
 

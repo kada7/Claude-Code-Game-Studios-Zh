@@ -1,73 +1,57 @@
-# Agent Coordination Rules
+# 代理协调规则
 
-1. **Vertical Delegation**: Leadership agents delegate to department leads, who
-   delegate to specialists. Never skip a tier for complex decisions.
-2. **Horizontal Consultation**: Agents at the same tier may consult each other
-   but must not make binding decisions outside their domain.
-3. **Conflict Resolution**: When two agents disagree, escalate to the shared
-   parent. If no shared parent, escalate to `creative-director` for design
-   conflicts or `technical-director` for technical conflicts.
-4. **Change Propagation**: When a design change affects multiple domains, the
-   `producer` agent coordinates the propagation.
-5. **No Unilateral Cross-Domain Changes**: An agent must never modify files
-   outside its designated directories without explicit delegation.
+1. **垂直委派**：领导代理委派给部门负责人，部门负责人委派给专家。对于复杂决策，永远不要跳过层级。
+2. **横向咨询**：同一层级的代理可以相互咨询，但不得在其领域外做出有约束力的决策。
+3. **冲突解决**：当两个代理意见不一致时，升级到共享上级。如果没有共享上级，设计冲突升级到 `creative-director`，技术冲突升级到 `technical-director`。
+4. **变更传播**：当设计变更影响多个领域时，`producer` 代理协调传播。
+5. **禁止单方面跨领域变更**：代理在没有明确委派的情况下，绝不得修改其指定目录外的文件。
 
-## Model Tier Assignment
+## 模型层级分配
 
-Skills and agents are assigned to model tiers based on task complexity:
+技能和代理根据任务复杂性分配到模型层级：
 
-| Tier | Model | When to use |
+| Tier | Model | 何时使用 |
 |------|-------|-------------|
-| **Haiku** | `claude-haiku-4-5-20251001` | Read-only status checks, formatting, simple lookups — no creative judgment needed |
-| **Sonnet** | `claude-sonnet-4-6` | Implementation, design authoring, analysis of individual systems — default for most work |
-| **Opus** | `claude-opus-4-6` | Multi-document synthesis, high-stakes phase gate verdicts, cross-system holistic review |
+| **Haiku** | `claude-haiku-4-5-20251001` | 只读状态检查、格式化、简单查找 — 不需要创造性判断 |
+| **Sonnet** | `claude-sonnet-4-6` | 实施、设计编写、单个系统分析 — 大多数工作的默认选择 |
+| **Opus** | `claude-opus-4-6` | 多文档综合、高风险阶段门裁决、跨系统整体审查 |
 
-Skills with `model: haiku`: `/help`, `/sprint-status`, `/story-readiness`, `/scope-check`,
+使用 `model: haiku` 的技能：`/help`, `/sprint-status`, `/story-readiness`, `/scope-check`,
 `/project-stage-detect`, `/changelog`, `/patch-notes`, `/onboard`
 
-Skills with `model: opus`: `/review-all-gdds`, `/architecture-review`, `/gate-check`
+使用 `model: opus` 的技能：`/review-all-gdds`, `/architecture-review`, `/gate-check`
 
-All other skills default to Sonnet. When creating new skills, assign Haiku if the
-skill only reads and formats; assign Opus if it must synthesize 5+ documents with
-high-stakes output; otherwise leave unset (Sonnet).
+所有其他技能默认使用 Sonnet。创建新技能时，如果技能只读取和格式化，则分配 Haiku；如果必须综合 5+ 个文档且输出高风险，则分配 Opus；否则不设置（Sonnet）。
 
-## Subagents vs Agent Teams
+## 子代理 vs 代理团队
 
-This project uses two distinct multi-agent patterns:
+本项目使用两种不同的多代理模式：
 
-### Subagents (current, always active)
-Spawned via `Task` within a single Claude Code session. Used by all `team-*` skills
-and orchestration skills. Subagents share the session's permission context, run
-sequentially or in parallel within the session, and return results to the parent.
+### 子代理（当前，始终活动）
+通过单个 Claude Code 会话内的 `Task` 生成。所有 `team-*` 技能和编排技能使用。子代理共享会话的权限上下文，在会话内顺序或并行运行，并将结果返回给父级。
 
-**When to spawn in parallel**: If two subagents' inputs are independent (neither
-needs the other's output to begin), spawn both Task calls simultaneously rather
-than waiting. Example: `/review-all-gdds` Phase 1 (consistency) and Phase 2
-(design theory) are independent — spawn both at the same time.
+**何时并行生成**：如果两个子代理的输入是独立的（都不需要对方的输出才能开始），则同时生成两个 Task 调用，而不是等待。例如：`/review-all-gdds` 第 1 阶段（一致性）和第 2 阶段（设计理论）是独立的 — 同时生成两者。
 
-### Agent Teams (experimental — opt-in)
-Multiple independent Claude Code *sessions* running simultaneously, coordinated
-via a shared task list. Each session has its own context window and token budget.
-Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` environment variable.
+### 代理团队（实验性 — 可选加入）
+多个独立的 Claude Code *会话* 同时运行，通过共享任务列表协调。每个会话都有自己的上下文窗口和令牌预算。需要 `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` 环境变量。
 
-**Use agent teams when**:
-- Work spans multiple subsystems that will not touch the same files
-- Each workstream would take >30 minutes and benefits from true parallelism
-- A senior agent (technical-director, producer) needs to coordinate 3+ specialist
-  sessions working on different epics simultaneously
+**在以下情况下使用代理团队**：
+- 工作跨越多个不会接触相同文件的子系统
+- 每个工作流需要 >30 分钟且受益于真正的并行性
+- 高级代理（technical-director, producer）需要协调 3+ 个专家会话同时处理不同的史诗
 
-**Do not use agent teams when**:
-- One session's output is required as input for another (use sequential subagents)
-- The task fits in a single session's context (use subagents instead)
-- Cost is a concern — each team member burns tokens independently
+**在以下情况下不要使用代理团队**：
+- 一个会话的输出是另一个会话的必需输入（使用顺序子代理）
+- 任务适合单个会话的上下文（改用子代理）
+- 成本是考虑因素 — 每个团队成员独立消耗令牌
 
-**Current status**: Not yet used in this project. Document usage here when first adopted.
+**当前状态**：本项目尚未使用。首次采用时在此记录使用情况。
 
-## Parallel Task Protocol
+## 并行任务协议
 
-When an orchestration skill spawns multiple independent agents:
+当编排技能生成多个独立代理时：
 
-1. Issue all independent Task calls before waiting for any result
-2. Collect all results before proceeding to dependent phases
-3. If any agent is BLOCKED, surface it immediately — do not silently skip
-4. Always produce a partial report if some agents complete and others block
+1. 在等待任何结果之前，发出所有独立的 Task 调用
+2. 在进入依赖阶段之前收集所有结果
+3. 如果有任何代理被阻塞，立即提出 — 不要静默跳过
+4. 如果某些代理完成而其他代理阻塞，始终生成部分报告

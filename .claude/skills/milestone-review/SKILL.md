@@ -1,6 +1,6 @@
 ---
 name: milestone-review
-description: "Generates a comprehensive milestone progress review including feature completeness, quality metrics, risk assessment, and go/no-go recommendation. Use at milestone checkpoints or when evaluating readiness for a milestone deadline."
+description: "生成全面的里程碑进度审查，包括功能完整性、质量指标、风险评估和通过/不通过建议。在里程碑检查点或评估里程碑截止日期准备情况时使用。"
 argument-hint: "[milestone-name|current] [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Task, AskUserQuestion
@@ -8,27 +8,27 @@ allowed-tools: Read, Glob, Grep, Write, Task, AskUserQuestion
 
 ## Phase 0: Parse Arguments
 
-Extract the milestone name (`current` or a specific name) and resolve the review mode (once, store for all gate spawns this run):
-1. If `--review [full|lean|solo]` was passed → use that
-2. Else read `production/review-mode.txt` → use that value
-3. Else → default to `lean`
+提取里程碑名称（`current` 或特定名称）并解析审查模式（一次，存储用于此运行的所有关卡生成）：
+1. 如果传入了 `--review [full|lean|solo]` → 使用它
+2. 否则读取 `production/review-mode.txt` → 使用该值
+3. 否则 → 默认为 `lean`
 
-See `.claude/docs/director-gates.md` for the full check pattern.
+有关完整检查模式，请参阅 `.claude/docs/director-gates.md`。
 
 ---
 
 ## Phase 1: Load Milestone Data
 
-Read the milestone definition from `production/milestones/`. If the argument is `current`, use the most recently modified milestone file.
+从 `production/milestones/` 读取里程碑定义。如果参数是 `current`，使用最近修改的里程碑文件。
 
-Read all sprint reports for sprints within this milestone from `production/sprints/`.
+从 `production/sprints/` 读取此里程碑内所有冲刺的冲刺报告。
 
 ---
 
 ## Phase 2: Scan Codebase Health
 
-- Scan for `TODO`, `FIXME`, `HACK` markers that indicate incomplete work
-- Check the risk register at `production/risk-register/`
+- 扫描表示未完成工作的 `TODO`, `FIXME`, `HACK` 标记
+- 检查 `production/risk-register/` 中的风险登记册
 
 ---
 
@@ -108,32 +108,32 @@ Read all sprint reports for sprints within this milestone from `production/sprin
 
 ## Phase 3b: Producer Risk Assessment
 
-**Review mode check** — apply before spawning PR-MILESTONE:
-- `solo` → skip. Note: "PR-MILESTONE skipped — Solo mode." Present the Go/No-Go section without a producer verdict.
-- `lean` → skip (not a PHASE-GATE). Note: "PR-MILESTONE skipped — Lean mode." Present the Go/No-Go section without a producer verdict.
-- `full` → spawn as normal.
+**审查模式检查** — 在生成 PR-MILESTONE 之前应用：
+- `solo` → 跳过。注意："PR-MILESTONE skipped — Solo mode。" 呈现没有 producer verdict 的 Go/No-Go 部分。
+- `lean` → 跳过（不是 PHASE-GATE）。注意："PR-MILESTONE skipped — Lean mode。" 呈现没有 producer verdict 的 Go/No-Go 部分。
+- `full` → 正常生成。
 
-Before generating the Go/No-Go recommendation, spawn `producer` via Task using gate **PR-MILESTONE** (`.claude/docs/director-gates.md`).
+在生成 Go/No-Go 推荐之前，使用 gate **PR-MILESTONE** (`.claude/docs/director-gates.md`) 通过 Task 生成 `producer`。
 
-Pass: milestone name and target date, current completion percentage, blocked story count, velocity data from sprint reports (if available), list of cut candidates.
+传递：里程碑名称和目标日期、当前完成百分比、阻塞的 story 计数、来自冲刺报告的速度数据（如果可用）、cut candidates 列表。
 
-Present the producer's assessment inline within the Go/No-Go section. The producer's verdict (ON TRACK / AT RISK / OFF TRACK) informs the overall recommendation — do not issue a GO against an OFF TRACK producer verdict without explicit user acknowledgement.
+在 Go/No-Go 部分内联呈现 producer 的评估。Producer 的 verdict（ON TRACK / AT RISK / OFF TRACK）通知整体推荐 — 不要在没有明确用户确认的情况下针对 OFF TRACK producer verdict 发出 GO。
 
 ---
 
 ## Phase 4: Save Review
 
-Present the review to the user.
+向用户呈现审查。
 
-Ask: "May I write this to `production/milestones/[milestone-name]-review.md`?"
+询问："我可以将此写入 `production/milestones/[milestone-name]-review.md` 吗？"
 
-If yes, write the file, creating the directory if needed. Verdict: **COMPLETE** — milestone review saved.
+如果是，写入文件，如果需要则创建目录。Verdict: **COMPLETE** — 里程碑审查已保存。
 
-If no, stop here. Verdict: **BLOCKED** — user declined write.
+如果否，在这里停止。Verdict: **BLOCKED** — 用户拒绝写入。
 
 ---
 
 ## Phase 5: Next Steps
 
-- Run `/gate-check` for a formal phase gate verdict if this milestone marks a development phase boundary.
-- Run `/sprint-plan` to adjust the next sprint based on the scope recommendations above.
+- 如果此里程碑标记开发阶段边界，运行 `/gate-check` 获得正式的阶段关卡裁决。
+- 运行 `/sprint-plan` 根据上面的范围推荐调整下一个冲刺。

@@ -1,275 +1,246 @@
 ---
 name: consistency-check
-description: "Scan all GDDs against the entity registry to detect cross-document inconsistencies: same entity with different stats, same item with different values, same formula with different variables. Grep-first approach — reads registry then targets only conflicting GDD sections rather than full document reads."
+description: "扫描所有GDD与实体注册表对比，检测跨文档不一致性：同一实体不同属性、同一物品不同数值、同一公式不同变量。优先使用Grep方法 — 读取注册表后仅定位冲突的GDD章节而非完整文档读取。"
 argument-hint: "[full | since-last-review | entity:<name> | item:<name>]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash
 ---
 
-# Consistency Check
+# 一致性检查
 
-Detects cross-document inconsistencies by comparing all GDDs against the
-entity registry (`design/registry/entities.yaml`). Uses a grep-first approach:
-reads the registry once, then targets only the GDD sections that mention
-registered names — no full document reads unless a conflict needs investigation.
+通过将所有GDD与实体注册表（`design/registry/entities.yaml`）进行对比，检测跨文档不一致性。使用grep优先方法：先读取一次注册表，然后只定位提及注册名称的GDD部分 — 除非冲突需要调查，否则不进行完整文档读取。
 
-**This skill is the write-time safety net.** It catches what `/design-system`'s
-per-section checks may have missed and what `/review-all-gdds`'s holistic review
-catches too late.
+**此技能是写入时的安全网。** 它捕获 `/design-system` 的逐节检查可能遗漏的内容，以及 `/review-all-gdds` 的整体审查发现太晚的内容。
 
-**When to run:**
-- After writing each new GDD (before moving to the next system)
-- Before `/review-all-gdds` (so that skill starts with a clean baseline)
-- Before `/create-architecture` (inconsistencies poison downstream ADRs)
-- On demand: `/consistency-check entity:[name]` to check one entity specifically
+**运行时机：**
+- 写入每个新GDD后（在转到下一个系统之前）
+- 在 `/review-all-gdds` 之前（以便该技能从干净的基线开始）
+- 在 `/create-architecture` 之前（不一致性会污染下游ADR）
+- 按需：`/consistency-check entity:[name]` 专门检查一个实体
 
-**Output:** Conflict report + optional registry corrections
+**输出：** 冲突报告 + 可选的注册表更正
 
 ---
 
-## Phase 1: Parse Arguments and Load Registry
+## 阶段1：解析参数并加载注册表
 
-**Modes:**
-- No argument / `full` — check all registered entries against all GDDs
-- `since-last-review` — check only GDDs modified since the last review report
-- `entity:<name>` — check one specific entity across all GDDs
-- `item:<name>` — check one specific item across all GDDs
+**模式：**
+- 无参数 / `full` — 对照所有GDD检查所有注册条目
+- `since-last-review` — 仅检查自上次审查报告以来修改的GDD
+- `entity:<name>` — 跨所有GDD检查一个特定实体
+- `item:<name>` — 跨所有GDD检查一个特定物品
 
-**Load the registry:**
+**加载注册表：**
 
 ```
 Read path="design/registry/entities.yaml"
 ```
 
-If the file does not exist or has no entries:
-> "Entity registry is empty. Run `/design-system` to write GDDs — the registry
-> is populated automatically after each GDD is completed. Nothing to check yet."
+如果文件不存在或无条目：
+> "实体注册表为空。运行 `/design-system` 写入GDD — 每个GDD完成后注册表会自动填充。目前没有内容可检查。"
 
-Stop and exit.
+停止并退出。
 
-Build four lookup tables from the registry:
-- **entity_map**: `{ name → { source, attributes, referenced_by } }`
-- **item_map**: `{ name → { source, value_gold, weight, ... } }`
-- **formula_map**: `{ name → { source, variables, output_range } }`
-- **constant_map**: `{ name → { source, value, unit } }`
+从注册表构建四个查找表：
+- **entity_map**：`{ name → { source, attributes, referenced_by } }`
+- **item_map**：`{ name → { source, value_gold, weight, ... } }`
+- **formula_map**：`{ name → { source, variables, output_range } }`
+- **constant_map**：`{ name → { source, value, unit } }`
 
-Count total registered entries. Report:
+计算注册条目总数。报告：
 ```
-Registry loaded: [N] entities, [N] items, [N] formulas, [N] constants
-Scope: [full | since-last-review | entity:name]
+注册表已加载：[N] 个实体，[N] 个物品，[N] 个公式，[N] 个常量
+范围：[full | since-last-review | entity:name]
 ```
 
 ---
 
-## Phase 2: Locate In-Scope GDDs
+## 阶段2：定位范围内的GDD
 
 ```
 Glob pattern="design/gdd/*.md"
 ```
 
-Exclude: `game-concept.md`, `systems-index.md`, `game-pillars.md` — these are
-not system GDDs.
+排除：`game-concept.md`、`systems-index.md`、`game-pillars.md` — 这些不是系统GDD。
 
-For `since-last-review` mode:
+对于 `since-last-review` 模式：
 ```bash
 git log --name-only --pretty=format: -- design/gdd/ | grep "\.md$" | sort -u
 ```
-Limit to GDDs modified since the most recent `design/gdd/gdd-cross-review-*.md`
-file's creation date.
+限制为自最近 `design/gdd/gdd-cross-review-*.md` 文件创建日期以来修改的GDD。
 
-Report the in-scope GDD list before scanning.
+扫描前报告范围内的GDD列表。
 
 ---
 
-## Phase 3: Grep-First Conflict Scan
+## 阶段3：Grep优先冲突扫描
 
-For each registered entry, grep every in-scope GDD for the entry's name.
-Do NOT do full reads — extract only the matching lines and their immediate
-context (-C 3 lines).
+对于每个注册条目，在每个范围内的GDD中grep该条目的名称。不要进行完整读取 — 只提取匹配行及其直接上下文（-C 3行）。
 
-This is the core optimization: instead of reading 10 GDDs × 400 lines each
-(4,000 lines), you grep 50 entity names × 10 GDDs (50 targeted searches,
-each returning ~10 lines on a hit).
+这是核心优化：不是读取10个GDD × 每个400行（4,000行），而是grep 50个实体名称 × 10个GDD（50次有针对性的搜索，每次命中时返回约10行）。
 
-### 3a: Entity Scan
+### 3a：实体扫描
 
-For each entity in entity_map:
+对于entity_map中的每个实体：
 
 ```
 Grep pattern="[entity_name]" glob="design/gdd/*.md" output_mode="content" -C 3
 ```
 
-For each GDD hit, extract the values mentioned near the entity name:
-- any numeric attributes (counts, costs, durations, ranges, rates)
-- any categorical attributes (types, tiers, categories)
-- any derived values (totals, outputs, results)
-- any other attributes registered in entity_map
+对于每个GDD命中，提取实体名称附近提及的值：
+- 任何数字属性（计数、成本、持续时间、范围、比率）
+- 任何分类属性（类型、等级、类别）
+- 任何派生值（总计、输出、结果）
+- entity_map中注册的任何其他属性
 
-Compare extracted values against the registry entry.
+将提取的值与注册条目进行比较。
 
-**Conflict detection:**
-- Registry says `[entity_name].[attribute] = [value_A]`. GDD says `[entity_name] has [value_B]`. → **CONFLICT**
-- Registry says `[item_name].[attribute] = [value_A]`. GDD says `[item_name] is [value_B]`. → **CONFLICT**
-- GDD mentions `[entity_name]` but doesn't specify the attribute. → **NOTE** (no conflict, just unverifiable)
+**冲突检测：**
+- 注册表说 `[entity_name].[attribute] = [value_A]`。GDD说 `[entity_name] 有 [value_B]`。→ **冲突**
+- 注册表说 `[item_name].[attribute] = [value_A]`。GDD说 `[item_name] 是 [value_B]`。→ **冲突**
+- GDD提及 `[entity_name]` 但未指定属性。→ **注意**（无冲突，只是不可验证）
 
-### 3b: Item Scan
+### 3b：物品扫描
 
-For each item in item_map, grep all GDDs for the item name. Extract:
-- sell price / value / gold value
-- weight
-- stack rules (stackable / non-stackable)
-- category
+对于item_map中的每个物品，在所有GDD中grep该物品名称。提取：
+- 出售价格/价值/金币值
+- 重量
+- 堆叠规则（可堆叠/不可堆叠）
+- 类别
 
-Compare against registry entry values.
+与注册条目值进行比较。
 
-### 3c: Formula Scan
+### 3c：公式扫描
 
-For each formula in formula_map, grep all GDDs for the formula name. Extract:
-- variable names mentioned near the formula
-- output range or cap values mentioned
+对于formula_map中的每个公式，在所有GDD中grep该公式名称。提取：
+- 公式附近提及的变量名
+- 提及的输出范围或上限值
 
-Compare against registry entry:
-- Different variable names → **CONFLICT**
-- Output range stated differently → **CONFLICT**
+与注册条目进行比较：
+- 不同的变量名 → **冲突**
+- 输出范围表述不同 → **冲突**
 
-### 3d: Constant Scan
+### 3d：常量扫描
 
-For each constant in constant_map, grep all GDDs for the constant name. Extract:
-- Any numeric value mentioned near the constant name
+对于constant_map中的每个常量，在所有GDD中grep该常量名称。提取：
+- 常量名附近提及的任何数字值
 
-Compare against registry value:
-- Different number → **CONFLICT**
+与注册值进行比较：
+- 不同的数字 → **冲突**
 
 ---
 
-## Phase 4: Deep Investigation (Conflicts Only)
+## 阶段4：深入调查（仅限冲突）
 
-For each conflict found in Phase 3, do a targeted full-section read of the
-conflicting GDD to get precise context:
+对于阶段3中发现的每个冲突，对冲突的GDD进行有针对性的完整部分读取以获取精确上下文：
 
 ```
 Read path="design/gdd/[conflicting_gdd].md"
 ```
-(Or use Grep with wider context if the file is large)
+（或者如果文件很大，使用更宽上下文的Grep）
 
-Confirm the conflict with full context. Determine:
-1. **Which GDD is correct?** Check the `source:` field in the registry — the
-   source GDD is the authoritative owner. Any other GDD that contradicts it
-   is the one that needs updating.
-2. **Is the registry itself out of date?** If the source GDD was updated after
-   the registry entry was written (check git log), the registry may be stale.
-3. **Is this a genuine design change?** If the conflict represents an intentional
-   design decision, the resolution is: update the source GDD, update the registry,
-   then fix all other GDDs.
+用完整上下文确认冲突。确定：
+1. **哪个GDD是正确的？** 检查注册表中的 `source:` 字段 — 源GDD是权威所有者。任何与其矛盾的其他GDD都是需要更新的那个。
+2. **注册表本身是否过时？** 如果源GDD在注册条目写入后被更新（检查git log），注册表可能已陈旧。
+3. **这是真正的设计变更吗？** 如果冲突代表有意的设计决策，解决方案是：更新源GDD、更新注册表，然后修复所有其他GDD。
 
-For each conflict, classify:
-- **🔴 CONFLICT** — same named entity/item/formula/constant with different values
-  in different GDDs. Must resolve before architecture begins.
-- **⚠️ STALE REGISTRY** — source GDD value changed but registry not updated.
-  Registry needs updating; other GDDs may be correct already.
-- **ℹ️ UNVERIFIABLE** — entity mentioned but no comparable attribute stated.
-  Not a conflict; just noting the reference.
+对于每个冲突，分类：
+- **🔴 冲突** — 不同GDD中具有不同值的同名实体/物品/公式/常量。在架构开始之前必须解决。
+- **⚠️ 注册表陈旧** — 源GDD值已更改但注册表未更新。注册表需要更新；其他GDD可能已经正确。
+- **ℹ️ 不可验证** — 实体被提及但未陈述可比属性。不是冲突；只是注明引用。
 
 ---
 
-## Phase 5: Output Report
+## 阶段5：输出报告
 
 ```
-## Consistency Check Report
-Date: [date]
-Registry entries checked: [N entities, N items, N formulas, N constants]
-GDDs scanned: [N] ([list names])
+## 一致性检查报告
+日期：[日期]
+检查的注册条目：[N个实体，N个物品，N个公式，N个常量]
+扫描的GDD：[N]（[列出名称]）
 
 ---
 
-### Conflicts Found (must resolve before architecture)
+### 发现的冲突（在架构之前必须解决）
 
-🔴 [Entity/Item/Formula/Constant Name]
-   Registry (source: [gdd]): [attribute] = [value]
-   Conflict in [other_gdd].md: [attribute] = [different_value]
-   → Resolution needed: [which doc to change and to what]
-
----
-
-### Stale Registry Entries (registry behind the GDD)
-
-⚠️ [Entry Name]
-   Registry says: [value] (written [date])
-   Source GDD now says: [new value]
-   → Update registry entry to match source GDD, then check referenced_by docs.
+🔴 [实体/物品/公式/常量名称]
+   注册表（来源：[gdd]）：[attribute] = [value]
+   [other_gdd].md中的冲突：[attribute] = [不同值]
+   → 需要解决：[更改哪个文档以及更改为什么]
 
 ---
 
-### Unverifiable References (no conflict, informational)
+### 陈旧注册条目（注册表落后于GDD）
 
-ℹ️ [gdd].md mentions [entity_name] but states no comparable attributes.
-   No conflict detected. No action required.
-
----
-
-### Clean Entries (no issues found)
-
-✅ [N] registry entries verified across all GDDs with no conflicts.
+⚠️ [条目名称]
+   注册表显示：[value]（写于[日期]）
+   源GDD现在显示：[new value]
+   → 更新注册条目以匹配源GDD，然后检查referenced_by文档。
 
 ---
 
-Verdict: PASS | CONFLICTS FOUND
+### 不可验证引用（无冲突，仅供参考）
+
+ℹ️ [gdd].md提及[entity_name]但未陈述可比属性。
+   未检测到冲突。无需操作。
+
+---
+
+### 干净条目（未发现问题）
+
+✅ [N] 个注册条目在所有GDD中经过验证，无冲突。
+
+---
+
+裁决：PASS | CONFLICTS FOUND
 ```
 
-**Verdict:**
-- **PASS** — no conflicts. Registry and GDDs agree on all checked values.
-- **CONFLICTS FOUND** — one or more conflicts detected. List resolution steps.
+**裁决：**
+- **PASS** — 无冲突。注册表和GDD在所有检查值上一致。
+- **CONFLICTS FOUND** — 检测到一个或多个冲突。列出解决步骤。
 
 ---
 
-## Phase 6: Registry Corrections
+## 阶段6：注册表更正
 
-If stale registry entries were found, ask:
-> "May I update `design/registry/entities.yaml` to fix the [N] stale entries?"
+如果发现陈旧注册条目，询问：
+> "我可以更新 `design/registry/entities.yaml` 修复 [N] 个陈旧条目吗？"
 
-For each stale entry:
-- Update the `value` / attribute field
-- Set `revised:` to today's date
-- Add a YAML comment with the old value: `# was: [old_value] before [date]`
+对于每个陈旧条目：
+- 更新 `value` / 属性字段
+- 将 `revised:` 设为今天的日期
+- 添加带旧值的YAML注释：`# 之前：[旧值]，[日期]之前`
 
-If new entries were found in GDDs that are not in the registry, ask:
-> "Found [N] entities/items mentioned in GDDs that aren't in the registry yet.
-> May I add them to `design/registry/entities.yaml`?"
+如果在GDD中发现注册表中没有的新条目，询问：
+> "发现 [N] 个在GDD中提及但尚未在注册表中的实体/物品。我可以将它们添加到 `design/registry/entities.yaml` 吗？"
 
-Only add entries that appear in more than one GDD (true cross-system facts).
+只添加出现在多个GDD中的条目（真正的跨系统事实）。
 
-**Never delete registry entries.** Set `status: deprecated` if an entry is removed
-from all GDDs.
+**永远不要删除注册条目。** 如果一个条目从所有GDD中删除，设置 `status: deprecated`。
 
-After writing: Verdict: **COMPLETE** — consistency check finished.
-If conflicts remain unresolved: Verdict: **BLOCKED** — [N] conflicts need manual resolution before architecture begins.
+写入后：裁决：**COMPLETE** — 一致性检查完成。
+如果冲突仍未解决：裁决：**BLOCKED** — [N] 个冲突需要手动解决，然后才能开始架构。
 
-### 6b: Append to Reflexion Log
+### 6b：追加到反思日志
 
-If any 🔴 CONFLICT entries were found (regardless of whether they were resolved),
-append an entry to `docs/consistency-failures.md` for each conflict:
+如果发现任何🔴冲突条目（无论是否已解决），为每个冲突在 `docs/consistency-failures.md` 追加条目：
 
 ```markdown
-### [YYYY-MM-DD] — /consistency-check — 🔴 CONFLICT
-**Domain**: [system domain(s) involved]
-**Documents involved**: [source GDD] vs [conflicting GDD]
-**What happened**: [specific conflict — entity name, attribute, differing values]
-**Resolution**: [how it was fixed, or "Unresolved — manual action needed"]
-**Pattern**: [generalised lesson, e.g. "Item values defined in combat GDD were not
-referenced in economy GDD before authoring — always check entities.yaml first"]
+### [YYYY-MM-DD] — /consistency-check — 🔴 冲突
+**领域**：[涉及的系统领域]
+**涉及的文档**：[源GDD] vs [冲突GDD]
+**发生了什么**：[具体冲突 — 实体名称、属性、不同值]
+**解决方案**：[如何修复，或"未解决 — 需要手动操作"]
+**模式**：[概括性教训，例如"战斗GDD中定义的物品值在编写之前未在经济GDD中引用 — 始终先检查entities.yaml"]
 ```
 
-Only append if `docs/consistency-failures.md` exists. If the file is missing,
-skip this step silently — do not create the file from this skill.
+只有当 `docs/consistency-failures.md` 存在时才追加。如果文件缺失，静默跳过此步骤 — 不要从此技能创建文件。
 
 ---
 
-## Next Steps
+## 后续步骤
 
-- **If PASS**: Run `/review-all-gdds` for holistic design-theory review, or
-  `/create-architecture` if all MVP GDDs are complete.
-- **If CONFLICTS FOUND**: Fix the flagged GDDs, then re-run
-  `/consistency-check` to confirm resolution.
-- **If STALE REGISTRY**: Update the registry (Phase 6), then re-run to verify.
-- Run `/consistency-check` after writing each new GDD to catch issues early,
-  not at architecture time.
+- **如果PASS**：运行 `/review-all-gdds` 进行整体设计理论审查，或者如果所有MVP GDD都完成，运行 `/create-architecture`。
+- **如果CONFLICTS FOUND**：修复标记的GDD，然后重新运行 `/consistency-check` 确认解决。
+- **如果STALE REGISTRY**：更新注册表（阶段6），然后重新运行以验证。
+- 写入每个新GDD后运行 `/consistency-check` 以尽早发现问题，而不是在架构时。

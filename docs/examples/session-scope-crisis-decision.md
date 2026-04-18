@@ -1,360 +1,358 @@
-# Example Session: Scope Crisis - Strategic Decision Making
+# 示例会话：范围危机 — 战略决策制定
 
-**Context:** Solo indie dev, week 8 of project (month 2), approaching Alpha milestone.
+**上下文：** 独立开发者，项目第 8 周（第 2 个月），接近 Alpha 里程碑。
 
-**Crisis:**
-- Alpha milestone is in 2 weeks
-- Crafting system (Pillar 2) not yet implemented
-- Lead programmer says full crafting will take 3 weeks
-- Investor demo at Alpha - must show all pillars
+**危机：**
+- Alpha 里程碑还有 2 周
+- 制作系统（Pillar 2）尚未实现
+- 首席程序员说完整制作需要 3 周
+- Alpha 有投资者演示 — 必须展示所有支柱
 
-**Session Duration:** ~25 minutes
-**Turns:** 8
-**Outcome:** Strategic scope decision with documented ADR
+**会话时长：** ~25 分钟
+**轮次：** 8
+**结果：** 有文档记录 ADR 的战略范围决策
 
 ---
 
-## Turn 1: User Escalates Problem to Creative Director
+## Turn 1：用户将问题上报给创意总监
 
-**User:**
-> We have a problem. Alpha is in 2 weeks. The crafting system (Pillar 2 "Emergent Discovery") isn't implemented yet. Lead programmer says it'll take 3 weeks to implement fully. But the investor demo is at Alpha and they need to see both pillars (Combat + Crafting). What should I do?
+**用户：**
+> 我们有个问题。Alpha 还有 2 周。制作系统（Pillar 2 "涌现发现"）还没实现。首席程序员说完整制作需要 3 周。但 Alpha 的投资者演示需要看到两个支柱（战斗 + 制作）。我该怎么办？
 
-## Turn 2: Creative Director Gathers Full Context
+## Turn 2：创意总监收集完整上下文
 
-**Agent (creative-director):**
-> This is a classic pillar vs. schedule conflict - exactly what I'm here to help resolve. Let me gather the full context before recommending options.
+**Agent（creative-director）：**
+> 这是经典的支柱 vs. 进度冲突 — 正是我帮助解决的那种。在推荐选项前，让我收集完整上下文。
 >
-> First, let me review the relevant documents:
-> - `production/milestones/alpha.md` (milestone definition)
-> - `design/pillars.md` (what's non-negotiable)
-> - `design/gdd/crafting-system.md` (what was designed)
-> - `production/sprints/sprint-current.md` (current work)
+> 首先，让我审阅相关文档：
+> - `production/milestones/alpha.md`（里程碑定义）
+> - `design/pillars.md`（什么是不可协商的）
+> - `design/gdd/crafting-system.md`（已设计的内容）
+> - `production/sprints/sprint-current.md`（当前工作）
 >
-> [Reads documents]
+> [读取文档]
 >
-> **Context Understood:**
-> - Pillar 2: "Emergent Discovery Through Experimentation" (crafting is primary expression)
-> - Alpha success criteria: "All pillars demonstrated in playable form"
-> - Investor demo purpose: Validate vision and secure next funding round
-> - Current crafting design: Tag-based deduction system with 12 tags, ~50 recipes, progressive hint unlocking
+> **上下文已理解：**
+> - Pillar 2："通过实验的涌现发现"（制作是主要表达）
+> - Alpha 成功标准："所有支柱以可玩形式展示"
+> - 投资者演示目的：验证愿景并确保下一轮资金
+> - 当前制作设计：标签推理系统，含 12 个标签、~50 个配方、渐进提示解锁
 >
-> **Clarifying Questions:**
-> 1. Is the Alpha date **hard** (investor won't reschedule) or **soft** (we could ask for 1 more week)?
-> 2. What's the **minimum crafting** that still demonstrates Pillar 2? (One recipe? Ten recipes? Full tag system?)
-> 3. What **breaks** if crafting is cut entirely from Alpha? (Does the game still make sense?)
-> 4. How **critical** is this investor relationship? (Nice-to-have funding vs. make-or-break for project survival?)
-> 5. What's the **team status**? (Burned out from crunch? Fresh and could push if needed?)
+> **澄清问题：**
+> 1. Alpha 日期是**硬性**（投资者不会重新安排）还是**软性**（我们可以要求多 1 周）？
+> 2. **最小制作**是什么仍能展示 Pillar 2？（一个配方？十个配方？完整标签系统？）
+> 3. 如果完全砍掉制作，**什么会崩溃**？（游戏还有意义吗？）
+> 4. 这位投资者关系有多**关键**？（锦上添花 vs. 项目生存成败？）
+> 5. **团队状态**如何？（因赶工精疲力尽？状态良好，可以再加把劲？）
 
-## Turn 3: User Provides Decision Context
+## Turn 3：用户提供决策上下文
 
-**User:**
-> 1. Hard date - investor flying in specifically for demo, can't reschedule
-> 2. I think minimum is: discovery mechanic working (tag system) + 10 recipes. Doesn't need polish.
-> 3. Without crafting, Alpha only shows combat. That's 50% of the vision - investor might think it's just another combat game
-> 4. Make-or-break. This investor is our only lead. No funding = project dies.
-> 5. Just me solo, I'm not burned out yet.
+**用户：**
+> 1. 硬性日期 — 投资者专程飞来演示，无法重新安排
+> 2. 我认为最小是：发现机制可用（标签系统）+ 10 个配方。不需要打磨。
+> 3. 没有制作，Alpha 只展示战斗。那是 50% 的愿景 — 投资者可能认为这只是另一个战斗游戏
+> 4. 成败关键。这位投资者是我们唯一的线索。没有资金 = 项目死亡。
+> 5. 就我自己，还没精疲力尽。
 
-## Turn 4: Creative Director Frames the Decision
+## Turn 4：创意总监构建决策框架
 
-**Agent:**
-> Thank you. Now I understand what's truly at stake. Let me frame this decision properly:
+**Agent：**
+> 谢谢。现在我理解真正利害攸关的是什么了。让我正确构建这个决策：
 >
-> **The Core Question:**
-> Do we deliver full crafting and slip Alpha, deliver simplified crafting and make Alpha, or cut crafting and risk the investor not seeing our full vision?
+> **核心问题：**
+> 我们是交付完整制作并推迟 Alpha，交付简化制作并赶上 Alpha，还是砍掉制作并冒着投资者看不到我们完整愿景的风险？
 >
-> **What's Really at Stake:**
-> - **Vision Integrity**: Can investor see Pillar 2 at all?
-> - **Schedule Trust**: Do we keep our commitment to Alpha date?
-> - **Project Survival**: No funding = no game
-> - **Quality Standards**: Is "rough but working" acceptable for this demo?
+> **真正利害攸关的是什么：**
+> - **愿景完整性**：投资者能看到 Pillar 2 吗？
+> - **进度信任**：我们信守对 Alpha 日期的承诺吗？
+> - **项目生存**：没有资金 = 没有游戏
+> - **质量标准**："粗糙但可用"对这个演示可接受吗？
 >
-> **Decision Criteria (in priority order for this scenario):**
-> 1. **Investor Confidence** (highest - project survival depends on this)
-> 2. **Pillar Representation** (high - they need to see the full vision)
-> 3. **Schedule Integrity** (medium - matters, but less than funding)
-> 4. **Polish Quality** (lowest - vertical slice can be rough)
+> **决策标准（此场景按优先级排序）：**
+> 1. **投资者信心**（最高 — 项目生存取决于此）
+> 2. **支柱代表性**（高 — 他们需要看到完整愿景）
+> 3. **进度完整性**（中 — 重要，但不如资金重要）
+> 4. **打磨质量**（最低 — 垂直切片可以粗糙）
 >
-> Now let me present three strategic options...
+> 现在让我呈现三个战略选项...
 
-## Turn 5: Creative Director Presents Options with Analysis
+## Turn 5：创意总监呈现选项和分析
 
-**Agent:**
-> **Option A: Implement Full Crafting System (3 weeks, slip Alpha by 1 week)**
+**Agent：**
+> **选项 A：实现完整制作系统（3 周，推迟 Alpha 1 周）**
 >
-> **Execution:**
-> - Implement complete tag-based system with all 50 recipes
-> - Full UI polish, all features from GDD
-> - Miss Alpha date, reschedule investor demo (+1 week)
+> **执行：**
+> - 实现完整标签系统，含全部 50 个配方
+> - 完整 UI 打磨，GDD 中的所有功能
+> - 错过 Alpha 日期，重新安排投资者演示（+1 周）
 >
-> **Pros:**
-> - ✅ Pillar 2 fully represented with production quality
-> - ✅ No design compromises
-> - ✅ First impression is polished
+> **优点：**
+> - ✅ Pillar 2 以生产质量完整展示
+> - ✅ 无设计妥协
+> - ✅ 第一印象是打磨过的
 >
-> **Cons:**
-> - ❌ Breaks investor commitment (they're flying in for the original date)
-> - ❌ Signals schedule management issues ("if they slipped Alpha, will they slip release?")
-> - ❌ May damage investor trust more than rough demo would
+> **缺点：**
+> - ❌ 违背投资者承诺（他们专程飞来参加原定日期）
+> - ❌ 发出进度管理问题信号（"如果他们推迟了 Alpha，发布也会推迟吗？"）
+> - ❌ 可能比粗糙演示更损害投资者信任
 >
-> **Risk: CRITICAL**
-> - Investor may not reschedule (busy schedule, other opportunities)
-> - Even if they do, the slip damages credibility
-> - Unlikely to succeed given hard date constraint
+> **风险：关键**
+> - 投资者可能不会重新安排（日程繁忙，其他机会）
+> - 即使他们重新安排，推迟也会损害信誉
+> - 鉴于硬性日期约束，不太可能成功
 >
-> **Verdict: NOT RECOMMENDED** - The date is hard and non-negotiable
+> **裁决：不推荐** — 日期是硬性且不可协商的
 >
 > ---
 >
-> **Option B: Simplify Crafting to Core Pillar (1.5 weeks, make Alpha)**
+> **选项 B：将制作简化为核心支柱（1.5 周，赶上 Alpha）**
 >
-> **Execution:**
-> - Implement core tag discovery mechanic ONLY
-> - 10 recipes instead of 50 (enough to demonstrate the system)
-> - Basic UI (functional, not polished)
-> - No progressive hint unlock (all tags visible at Skill 0 for demo clarity)
-> - No failed-attempt feedback system (just success/fail)
+> **执行：**
+> - 仅实现核心标签发现机制
+> - 10 个配方代替 50 个（足够演示系统）
+> - 基础 UI（可用，未打磨）
+> - 无渐进提示解锁（为演示清晰，技能 0 时所有标签可见）
+> - 无失败尝试反馈系统（仅成功/失败）
 >
-> **Scope: "Vertical Slice of Pillar 2"**
-> - Players CAN discover recipes by combining tagged ingredients
-> - Players CAN learn tag patterns and deduce new recipes
-> - The SOUL of Pillar 2 is present, just unpolished
+> **范围："Pillar 2 的垂直切片"**
+> - 玩家 CAN 通过组合标签成分发现配方
+> - 玩家 CAN 学习方法模式并推理新配方
+> - Pillar 2 的 SOUL 存在，只是未打磨
 >
-> **Pros:**
-> - ✅ Makes Alpha deadline (schedule integrity maintained)
-> - ✅ Pillar 2 demonstrated (investor sees full vision)
-> - ✅ Core mechanic is playable and provable
-> - ✅ Can use "Alpha → Beta improvement" as narrative ("here's rough, here's polished")
+> **优点：**
+> - ✅ 赶上 Alpha 截止日期（进度完整性保持）
+> - ✅ Pillar 2 已展示（投资者看到完整愿景）
+> - ✅ 核心机制可玩且可证明
+> - ✅ 可以使用"Alpha → Beta 改进"作为叙事（"这是粗糙的，这是打磨过的"）
 >
-> **Cons:**
-> - ⚠️ First impression is "rough" (but vertical slices are expected to be rough)
-> - ⚠️ Investor might think "this feels small" (mitigation: present roadmap showing post-Alpha expansion)
+> **缺点：**
+> - ⚠️ 第一印象是"粗糙"的（但垂直切片预期就是粗糙的）
+> - ⚠️ 投资者可能认为"这感觉很小"（缓解：展示路线图，说明 Alpha 后扩展）
 >
-> **Risk: MEDIUM**
-> - Investor might not "get" the pillar from 10 recipes (mitigation: good demo script explaining the vision)
-> - Might feel incomplete (mitigation: frame as "vertical slice proving the concept")
+> **风险：中等**
+> - 投资者可能无法从 10 个配方中"理解"支柱（缓解：好的演示脚本解释愿景）
+> - 可能感觉不完整（缓解：将其框定为"证明概念的垂直切片"）
 >
-> **Verdict: RECOMMENDED** - Balances all constraints
->
-> ---
->
-> **Option C: Cut Crafting from Alpha, Focus on Combat Polish (0 weeks, make Alpha)**
->
-> **Execution:**
-> - Deliver Alpha with only Pillar 1 (Combat) fully polished
-> - Use extra 2 weeks to super-polish combat, add content, make it shine
-> - Present crafting as "design doc + concept art" (not playable)
->
-> **Pros:**
-> - ✅ Makes deadline with zero stress
-> - ✅ What's there is AAA-polished
-> - ✅ No risk of "half-baked" perception
->
-> **Cons:**
-> - ❌ Pillar 2 not demonstrated (50% of vision missing)
-> - ❌ Investor sees "another combat game" - not differentiated
-> - ❌ Harder to secure funding for "potential" vs. "proven concept"
-> - ❌ If combat alone doesn't wow them, we have no fallback
->
-> **Risk: HIGH**
-> - Investor won't see what makes this game special
-> - They might think "Combat is fine, but where's the hook?"
-> - Competing games have combat - we need to show our differentiator
->
-> **Verdict: NOT RECOMMENDED** - Too risky for make-or-break demo
+> **裁决：推荐** — 平衡所有约束
 >
 > ---
 >
-> ## My Recommendation: Option B (Simplified Crafting Core)
+> **选项 C：从 Alpha 砍掉制作，专注于战斗打磨（0 周，赶上 Alpha）**
 >
-> **Reasoning:**
-> 1. **Investor Confidence**: Making the date we committed to shows reliability
-> 2. **Pillar Visibility**: Rough but working > polished but missing. Investors back VISION, not polish.
-> 3. **Demo Narrative**: "Here's Alpha vs. Beta progression" is compelling - shows trajectory
-> 4. **Risk Mitigation**: If crafting doesn't land, combat is still solid. If we cut crafting (Option C) and combat doesn't wow them alone, we have nothing.
-> 5. **Historical Precedent**: Hades, Dead Cells, Slay the Spire all showed rough Early Access verticals and investors loved the SYSTEMS over polish
+> **执行：**
+> - 仅用 Pillar 1（战斗）完全打磨交付 Alpha
+> - 用额外的 2 周超级打磨战斗、添加内容、让它闪耀
+> - 将制作作为"设计文档 + 概念艺术"呈现（不可玩）
 >
-> **What Option B Sacrifices:**
-> - Polish (acceptable for vertical slice)
-> - Feature completeness (50 recipes → 10)
-> - Progressive unlocks (deferred to post-Alpha)
+> **优点：**
+> - ✅ 零压力赶上截止日期
+> - ✅ 已完成的达到 AAA 级打磨
+> - ✅ 没有"半成品"感知的风险
 >
-> **What Option B Protects:**
-> - Schedule trust
-> - Pillar representation
-> - Vision clarity
-> - Project survival (funding secured)
+> **缺点：**
+> - ❌ Pillar 2 未展示（50% 愿景缺失）
+> - ❌ 投资者看到"另一个战斗游戏" — 没有差异化
+> - ❌ 为"潜力"而非"已证明概念"争取资金更难
+> - ❌ 如果战斗本身不能打动他们，我们没有后备方案
 >
-> **Implementation Plan if you choose Option B:**
-> 1. I'll create an ADR documenting this scope decision
-> 2. I'll update `design/gdd/crafting-system.md` with "Alpha Scope" markers
-> 3. I'll brief gameplay-programmer on simplified implementation
-> 4. I'll create a demo script for you: how to PRESENT the 10-recipe system to show the 50-recipe vision
+> **风险：高**
+> - 投资者看不到是什么让这款游戏特别
+> - 他们可能想"战斗还行，但卖点在哪里？"
+> - 竞争游戏有战斗 — 我们需要展示我们的差异化
 >
-> **But this is your call.** You know this investor better than I do. If you believe they'll value polish over pillar representation, Option C might be right. If you think they'll forgive a 1-week slip, Option A is safest creatively.
+> **裁决：不推荐** — 对成败演示来说太冒险
 >
-> What's your decision?
+> ---
+>
+> ## 我的推荐：选项 B（简化制作核心）
+>
+> **理由：**
+> 1. **投资者信心**：遵守承诺的日期显示可靠性
+> 2. **支柱可见性**：粗糙但可用 > 打磨但缺失。投资者支持愿景，而非打磨。
+> 3. **演示叙事："这是 Alpha vs. Beta 进度"令人信服 — 展示轨迹
+> 4. **风险缓解**：如果制作效果不佳，战斗仍然扎实。如果我们砍掉制作（选项 C）而战斗本身不能打动他们，我们什么都没有。
+> 5. **历史先例**：Hades、Dead Cells、Slay the Spire 都展示了粗糙的 Early Access 垂直切片，投资者喜欢的是系统而非打磨
+>
+> **选项 B 牺牲了什么：**
+> - 打磨（对垂直切片可接受）
+> - 功能完整性（50 个配方 → 10 个）
+> - 渐进解锁（推迟到 Alpha 后）
+>
+> **选项 B 保护了什么：**
+> - 进度信任
+> - 支柱代表性
+> - 愿景清晰度
+> - 项目生存（资金 secured）
+>
+> **如果你选择选项 B，实施计划：**
+> 1. 我会创建一个 ADR 记录此范围决策
+> 2. 我会更新 `design/gdd/crafting-system.md`，添加"Alpha 范围"标记
+> 3. 我会向 gameplay-programmer 简要说明简化实现
+> 4. 我会为你创建一个演示脚本：如何向投资者**展示**10 配方系统以展示 50 配方愿景
+>
+> **但这由你决定。** 你比我更了解这位投资者。如果你相信他们会重视打磨而非支柱代表性，选项 C 可能是正确的。如果你认为他们会原谅 1 周推迟，选项 A 在创意上最安全。
+>
+> 你的决定是什么？
 
-## Turn 6: User Makes Decision
+## Turn 6：用户做出决策
 
-**User:**
-> Option B. The investor is technical and will appreciate the systems thinking even if it's rough. Let's simplify the crafting scope to make Alpha. Can you create the ADR and update the GDD?
+**用户：**
+> 选项 B。这位投资者是技术型的，会欣赏系统思维，即使它粗糙。让我们将制作范围简化为赶上 Alpha。你能创建 ADR 并更新 GDD 吗？
 
-## Turn 7: Creative Director Documents Decision
+## Turn 7：创意总监记录决策
 
-**Agent:**
-> Excellent decision. I'll document this thoroughly so future-you understands why we made this choice.
+**Agent：**
+> 出色的决策。我会彻底记录，以便未来的你理解我们为什么做出这个选择。
 >
-> **Creating:**
-> 1. ADR-007: Alpha Crafting Scope Reduction
-> 2. Updated design/gdd/crafting-system.md with Alpha/Beta scope markers
-> 3. Updated production/milestones/alpha.md success criteria
-> 4. Demo script guidance for investor presentation
+> **正在创建：**
+> 1. ADR-007：Alpha 制作范围缩减
+> 2. 更新的 design/gdd/crafting-system.md，含 Alpha/Beta 范围标记
+> 3. 更新的 production/milestones/alpha.md 成功标准
+> 4. 投资者演示的演示脚本指导
 >
-> [Creates documents]
+> [创建文档]
 >
-> **ADR Summary:**
+> **ADR 摘要：**
 > ```markdown
 > ## Decision
-> Simplify crafting system to core tag discovery mechanic (10 recipes)
-> for Alpha milestone. Defer full implementation (50 recipes + progressive
-> unlocks) to post-Alpha.
+> 为 Alpha 里程碑将制作系统简化为核心标签发现机制（10 个配方）。
+> 将完整实现（50 个配方 + 渐进解锁）推迟到 Alpha 后。
 >
 > ## Context
-> - Alpha in 2 weeks (hard date, investor demo)
-> - Full crafting requires 3 weeks
-> - Investor demo is make-or-break for funding
+> - Alpha 还有 2 周（硬性日期，投资者演示）
+> - 完整制作需要 3 周
+> - 投资者演示是资金的成败关键
 >
 > ## Consequences
-> Positive:
-> - Makes Alpha deadline, preserves investor trust
-> - Both pillars demonstrated (rough but playable)
-> - Can show Alpha→Beta improvement narrative
+> 正面：
+> - 赶上 Alpha 截止日期，保留投资者信任
+> - 两个支柱都已展示（粗糙但可玩）
+> - 可以展示 Alpha→Beta 改进叙事
 >
-> Negative:
-> - First impression is "rough"
-> - Limited recipe variety
-> - Missing progressive unlock system
+> 负面：
+> - 第一印象是"粗糙"的
+> - 配方种类有限
+> - 缺失渐进解锁系统
 >
 > ## Validation Criteria
-> We'll know this was the right choice if:
-> - Investor demo successfully shows both pillars
-> - Funding secured for next development phase
-> - Post-Alpha sprint can implement full system without rework
+> 如果以下情况发生，我们将知道这是正确的选择：
+> - 投资者演示成功展示两个支柱
+> - 为下一阶段开发 secured 资金
+> - Alpha 后冲刺可以在无返工的情况下实现完整系统
 > ```
 >
-> **Updated GDD Markers:**
+> **更新的 GDD 标记：**
 > ```markdown
 > ## Detailed Rules
 >
-> ### Core Loop (**ALPHA SCOPE**)
-> [Core mechanic description]
+> ### 核心循环（**ALPHA 范围**）
+> [核心机制描述]
 >
-> ### Progressive Unlocks (**POST-ALPHA**)
-> [Skill-based hint system - deferred]
+> ### 渐进解锁（**ALPHA 后**）
+> [基于技能的提示系统 — 已推迟]
 >
-> ### Recipe Catalog
-> - Alpha: 10 recipes (demonstrates tag variety)
-> - Beta: 50 recipes (full content)
+> ### 配方目录
+> - Alpha：10 个配方（展示标签多样性）
+> - Beta：50 个配方（完整内容）
 > ```
 >
-> **Demo Script Guidance:**
+> **演示脚本指导：**
 > ```markdown
-> ## Presenting Crafting to Investor (10-recipe Alpha)
+> ## 向投资者展示制作（10 配方 Alpha）
 >
-> **Frame it as proof-of-concept:**
-> "This is a vertical slice of the crafting pillar. You'll see 10 recipes
-> here, but the SYSTEM supports unlimited recipes through tag combinations.
-> Watch how players deduce patterns..."
+> **将其框定为概念验证：**
+> "这是制作支柱的垂直切片。你在这里会看到 10 个配方，但 SYSTEM
+> 通过标签组合支持无限配方。注意玩家如何推理模式..."
 >
-> **Show, don't tell:**
-> - Live demo: Discover 2 recipes on the fly
-> - Explain: "Notice Fire+Water made Steam Potion. Now the player knows
->   Fire+Water is valid. They can deduce that Fire+Earth might work..."
-> - Connect to pillar: "This is Emergent Discovery - the game teaches rules,
->   players become scientists."
+> **展示，而非讲述：**
+> - 现场演示：即时发现 2 个配方
+> - 解释："注意火+水制作了蒸汽药水。现在玩家知道
+>   火+水是有效的。他们可以推理火+土可能有效..."
+> - 连接到支柱："这就是涌现发现 — 游戏教授规则，
+>   玩家成为科学家。"
 >
-> **Roadmap slide:**
-> "Alpha: 10 recipes (proof of concept)
->  Beta: 50 recipes (content expansion)
->  Release: 100+ recipes (includes community-designed recipes)"
+> **路线图幻灯片：**
+> "Alpha：10 个配方（概念验证）
+>  Beta：50 个配方（内容扩展）
+>  发布：100+ 配方（包括社区设计的配方）"
 >
-> **Emphasize systems:**
-> "We're not making a content game, we're making a systems game. The tag
-> system can generate endless combinations. We're building a platform for
-> discovery, not a recipe database."
+> **强调系统：**
+> "我们不是在做内容游戏，我们在做系统游戏。标签
+> 系统可以生成无尽组合。我们在为发现构建一个平台，
+> 而非配方数据库。"
 > ```
 >
-> May I proceed to write these documents?
+> 我可以继续写入这些文档吗？
 
-## Turn 8: User Approves and Agent Completes
+## Turn 8：用户批准，Agent 完成
 
-**User:**
-> Yes, create all those documents and also notify the gameplay-programmer about the scope change.
+**用户：**
+> 是的，创建所有这些文档，还要通知 gameplay-programmer 关于范围变更。
 
-**Agent:**
-> ✅ Complete! Created/Updated:
+**Agent：**
+> ✅ 完成！已创建/更新：
 > - `docs/architecture/adr-007-alpha-crafting-scope.md`
-> - `design/gdd/crafting-system.md` (added Alpha/Beta scope markers)
-> - `production/milestones/alpha.md` (updated success criteria)
-> - `production/demo-script-investor-alpha.md` (new file with presentation guide)
+> - `design/gdd/crafting-system.md`（添加了 Alpha/Beta 范围标记）
+> - `production/milestones/alpha.md`（更新了成功标准）
+> - `production/demo-script-investor-alpha.md`（新的演示指南文件）
 >
-> **Notifications Sent:**
+> **已发送通知：**
 >
-> To `gameplay-programmer`:
-> > "Crafting scope simplified for Alpha: Core tag mechanic + 10 recipes only.
-> > Progressive unlocks and full recipe set deferred to post-Alpha. Updated
-> > GDD has implementation guidance. Estimated 1.5 weeks to implement Alpha scope."
+> 致 `gameplay-programmer`：
+> > "制作范围已简化为 Alpha：仅核心标签机制 + 10 个配方。
+> > 渐进解锁和完整配方集推迟到 Alpha 后。已更新
+> > GDD 包含实现指导。预计 Alpha 范围需要 1.5 周实现。"
 >
-> To `producer`:
-> > "Strategic decision made: Simplified crafting to make Alpha deadline.
-> > ADR-007 documents rationale. Sprint plan needs updating to reflect new scope."
+> 致 `producer`：
+> > "已做出战略决策：简化制作以赶上 Alpha 截止日期。
+> > ADR-007 记录依据。冲刺计划需要更新以反映新范围。"
 >
-> **Next Steps:**
-> 1. Gameplay-programmer can start implementing simplified crafting
-> 2. You can practice demo script before investor meeting
-> 3. Producer will update sprint plan with new task breakdown
+> **后续步骤：**
+> 1. Gameplay-programmer 可以开始实现简化制作
+> 2. 你可以在投资者会议前练习演示脚本
+> 3. Producer 将用新任务分解更新冲刺计划
 >
-> **Validation:**
-> We'll know this decision was correct when:
-> - Alpha ships on time with both pillars playable
-> - Investor demo successfully communicates the vision
-> - Funding secured for continued development
+> **验证：**
+> 当以下情况发生时，我们将知道此决策是正确的：
+> - Alpha 按时发布，两个支柱都可玩
+> - 投资者演示成功传达愿景
+> - Secured 持续开发资金
 >
-> Good luck with the demo! This was the right call - vision over polish for this audience.
+> 演示好运！对这位受众来说，这是正确的决定 — 愿景优于打磨。
 
 ---
 
-## Session Summary
+## 会话摘要
 
-**What Worked Well:**
-- Creative director read context docs before proposing solutions
-- Asked 5 clarifying questions to understand constraints
-- Framed decision properly (what's at stake, evaluation criteria)
-- Presented 3 distinct options with honest pros/cons
-- Made clear recommendation with reasoning, but deferred to user
-- Documented decision thoroughly with ADR and updated all affected docs
-- Provided demo script to help user present the decision positively
+**效果良好的方面：**
+- 创意总监在提出解决方案前阅读上下文文档
+- 提出 5 个澄清问题以理解决策约束
+- 正确构建决策（利害攸关、评估标准）
+- 呈现 3 个不同选项，附带诚实优缺点
+- 提出明确建议并说明理由，但交由用户决定
+- 用 ADR 彻底记录决策并更新所有受影响文档
+- 提供演示脚本帮助用户积极展示决策
 
-**Key Collaborative Moments:**
-- Turn 2: Agent gathered full context before jumping to solutions
-- Turn 3: User provided decision criteria priority (funding > schedule > polish)
-- Turn 5: Agent presented 3 options, made recommendation, but explicitly "this is your call"
-- Turn 6: User made strategic decision
-- Turn 7: Agent provided demo script to support user's presentation
-- Turn 8: Agent cascaded decision to affected parties
+**关键协作时刻：**
+- Turn 2：Agent 在跳到解决方案前收集完整上下文
+- Turn 3：用户提供决策标准优先级（资金 > 进度 > 打磨）
+- Turn 5：Agent 呈现 3 个选项，提出建议，但明确"由你决定"
+- Turn 6：用户做出战略决策
+- Turn 7：Agent 提供演示脚本支持用户展示
+- Turn 8：Agent 将决策级联到受影响方
 
-**Strategic Decision Quality:**
-- User made the final call
-- Agent provided expert analysis using game dev theory and precedent
-- Trade-offs were explicit and honest
-- Decision was documented for future reference
-- Success criteria defined for validation
+**战略决策质量：**
+- 用户做出最终决定
+- Agent 使用游戏开发理论和先例提供专业分析
+- 权衡是明确且诚实的
+- 决策被记录供未来参考
+- 定义了成功标准用于验证
 
-**Files Created/Updated:**
-- ADR-007 (decision record)
-- Updated crafting GDD with scope markers
-- Updated Alpha milestone definition
-- Demo script for investor presentation
+**创建/更新的文件：**
+- ADR-007（决策记录）
+- 更新的制作 GDD，含范围标记
+- 更新的 Alpha 里程碑定义
+- 投资者演示的演示脚本
 
-**Context Usage:** ~30%
-**User Satisfaction:** High - confident decision made with full information
+**上下文使用：** ~30%
+**用户满意度：** 高 — 在完整信息下做出自信决策

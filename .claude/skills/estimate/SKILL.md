@@ -1,6 +1,6 @@
 ---
 name: estimate
-description: "Estimates task effort by analyzing complexity, dependencies, historical velocity, and risk factors. Produces a structured estimate with confidence levels."
+description: "通过分析复杂度、依赖关系、历史速率和风险因素来估算任务工作量。生成带有置信水平的结构化估算。"
 argument-hint: "[task-description]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep
@@ -8,45 +8,45 @@ allowed-tools: Read, Glob, Grep
 
 ## Phase 1: Understand the Task
 
-Read the task description from the argument. If the description is too vague to estimate meaningfully, ask for clarification before proceeding.
+从参数中读取任务描述。如果描述太模糊而无法进行有意义的估算，在继续之前要求澄清。
 
-Read CLAUDE.md for project context: tech stack, coding standards, architectural patterns, and any estimation guidelines.
+读取 CLAUDE.md 获取项目上下文：技术栈、编码标准、架构模式和任何估算指南。
 
-Read relevant design documents from `design/gdd/` if the task relates to a documented feature or system.
+如果任务与文档化的功能或系统相关，从 `design/gdd/` 读取相关的设计文档。
 
 ---
 
 ## Phase 2: Scan Affected Code
 
-Identify files and modules that would need to change:
+识别需要更改的文件和模块：
 
-- Assess complexity (size, dependency count, cyclomatic complexity)
-- Identify integration points with other systems
-- Check for existing test coverage in the affected areas
-- Read past sprint data from `production/sprints/` for similar completed tasks and historical velocity
+- 评估复杂度（大小、依赖项数量、圈复杂度）
+- 识别与其他系统的集成点
+- 检查受影响区域的现有测试覆盖率
+- 从 `production/sprints/` 读取过去的冲刺数据，获取类似已完成的任务和历史速度
 
 ---
 
 ## Phase 3: Analyze Complexity Factors
 
 **Code Complexity:**
-- Lines of code in affected files
-- Number of dependencies and coupling level
-- Whether this touches core/engine code vs leaf/feature code
-- Whether existing patterns can be followed or new patterns are needed
+- 受影响文件中的代码行数
+- 依赖项数量和耦合级别
+- 这是接触核心/引擎代码还是叶子/功能代码
+- 是可以遵循现有模式还是需要新模式
 
 **Scope:**
-- Number of systems touched
-- New code vs modification of existing code
-- Amount of new test coverage required
-- Data migration or configuration changes needed
+- 接触的系统数量
+- 新代码与修改现有代码
+- 需要的新测试覆盖范围
+- 需要的数据迁移或配置更改
 
 **Risk:**
-- New technology or unfamiliar libraries
-- Unclear or ambiguous requirements
-- Dependencies on unfinished work
-- Cross-system integration complexity
-- Performance sensitivity
+- 新技术或不熟悉的库
+- 不清晰或模糊的需求
+- 对未完成工作的依赖
+- 跨系统集成复杂度
+- 性能敏感度
 
 ---
 
@@ -57,7 +57,7 @@ Identify files and modules that would need to change:
 Generated: [Date]
 
 ### Task Description
-[Restate the task clearly in 1-2 sentences]
+[用1-2句话清楚地重述任务]
 
 ### Complexity Assessment
 
@@ -77,15 +77,15 @@ Generated: [Date]
 
 | Scenario | Days | Assumption |
 |----------|------|------------|
-| Optimistic | [X] | Everything goes right, no surprises |
-| Expected | [Y] | Normal pace, minor issues, one round of review |
-| Pessimistic | [Z] | Significant unknowns surface, blocked for a day |
+| Optimistic | [X] | 一切顺利，没有意外 |
+| Expected | [Y] | 正常节奏，小问题，一轮审查 |
+| Pessimistic | [Z] | 出现重大未知，阻塞一天 |
 
 **Recommended budget: [Y days]**
 
 ### Confidence: [High / Medium / Low]
 
-[Explain which factors drive the confidence level for this specific task.]
+[解释哪些因素决定了此特定任务的置信水平。]
 
 ### Risk Factors
 
@@ -107,25 +107,25 @@ Generated: [Date]
 | | **Total** | **[Y days]** | |
 
 ### Notes and Assumptions
-- [Key assumption that affects the estimate]
-- [Any caveats about scope boundaries]
+- [影响估算的关键假设]
+- [关于范围边界的任何注意事项]
 ```
 
-Output the estimate with a brief summary: recommended budget, confidence level, and the single biggest risk factor.
+输出估算并附带简要摘要：推荐预算、置信水平和最大的单一风险因素。
 
-This skill is read-only — no files are written. Verdict: **COMPLETE** — estimate generated.
+这个技能是只读的 — 不写入文件。Verdict: **COMPLETE** — 估算已生成。
 
 ---
 
 ## Phase 5: Next Steps
 
-- If confidence is Low: recommend a time-boxed spike (`/prototype`) before committing.
-- If the task is > 10 days: recommend breaking it into smaller stories via `/create-stories`.
-- To schedule the task: run `/sprint-plan update` to add it to the next sprint.
+- 如果置信度低：建议在提交之前进行有时间限制的原型制作 (`/prototype`)。
+- 如果任务 > 10 天：建议通过 `/create-stories` 将其拆分为更小的 story。
+- 要安排任务：运行 `/sprint-plan update` 将其添加到下一个冲刺。
 
 ### Guidelines
 
-- Always give a range (optimistic / expected / pessimistic), never a single number
-- The recommended budget should be the expected estimate, not the optimistic one
-- Round to half-day increments — estimating in hours implies false precision for tasks longer than a day
-- Do not pad estimates silently — call out risk explicitly so the team can decide
+- 始终给出一个范围（optimistic / expected / pessimistic），而不是单个数字
+- 推荐预算应该是预期估算，而不是乐观估算
+- 四舍五入到半天增量 — 以小时为单位估算意味着对超过一天的任务有虚假的精确度
+- 不要悄悄地增加估算 — 明确标出风险以便团队决定

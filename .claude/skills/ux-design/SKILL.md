@@ -1,145 +1,145 @@
 ---
 name: ux-design
-description: "Guided, section-by-section UX spec authoring for a screen, flow, or HUD. Reads game concept, player journey, and relevant GDDs to provide context-aware design guidance. Produces ux-spec.md (per screen/flow) or hud-design.md using the studio templates."
-argument-hint: "[screen/flow name] or 'hud' or 'patterns'"
+description: "引导式、逐节编写屏幕、流程或 HUD 的 UX 规范。读取游戏概念、玩家旅程和相关 GDD 以提供上下文感知的设计指导。使用工作室模板生成 ux-spec.md（每个屏幕/流程）或 hud-design.md。"
+argument-hint: "[screen/flow name] 或 'hud' 或 'patterns'"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, AskUserQuestion, Task
 agent: ux-designer
 ---
 
-When this skill is invoked:
+当此 Skill 被调用时：
 
-## 1. Parse Arguments & Determine Mode
+## 1. 解析参数并确定模式
 
-Three authoring modes exist based on the argument:
+根据参数存在三种编写模式：
 
-| Argument | Mode | Output file |
+| 参数 | 模式 | 输出文件 |
 |----------|------|-------------|
-| `hud` | HUD design | `design/ux/hud.md` |
-| `patterns` | Interaction pattern library | `design/ux/interaction-patterns.md` |
-| Any other value (e.g., `main-menu`, `inventory`) | UX spec for a screen or flow | `design/ux/[argument].md` |
-| No argument | Ask the user | (see below) |
+| `hud` | HUD 设计 | `design/ux/hud.md` |
+| `patterns` | 交互模式库 | `design/ux/interaction-patterns.md` |
+| 任何其他值（例如 `main-menu`, `inventory`） | 屏幕或流程的 UX 规范 | `design/ux/[argument].md` |
+| 无参数 | 询问用户 | （见下文） |
 
-**If no argument is provided**, do not fail — ask instead. Use `AskUserQuestion`:
-- "What are we designing today?"
-  - Options: "A specific screen or flow (I'll name it)", "The game HUD", "The interaction pattern library", "I'm not sure — help me figure it out"
+**如果未提供参数**，不要失败 — 而是询问。使用 `AskUserQuestion`：
+- "今天我们要设计什么？"
+  - 选项："一个特定的屏幕或流程（我来命名）", "游戏 HUD", "交互模式库", "我不确定 — 帮我确定"
 
-If the user selects "I'll name it" or types a screen name, normalize it to kebab-case
-for the filename (e.g., "Main Menu" becomes `main-menu`).
+如果用户选择"我来命名"或输入屏幕名称，将其规范化为 kebab-case
+作为文件名（例如，"Main Menu" 变为 `main-menu`）。
 
 ---
 
-## 2. Gather Context (Read Phase)
+## 2. 收集上下文（读取阶段）
 
-Read all relevant context **before** asking the user anything. The skill's value
-comes from arriving informed.
+在询问用户任何问题之前，先读取所有相关上下文。此 Skill 的价值
+来自于有备而来。
 
-### 2a: Required Reads
+### 2a: 必需读取
 
-- **Game concept**: Read `design/gdd/game-concept.md` — if missing, warn:
-  > "No game concept found. Run `/brainstorm` first to establish the game's
-  > foundation before designing UX."
-  > Continue anyway if the user asks.
+- **游戏概念**：读取 `design/gdd/game-concept.md` — 如果缺失，警告：
+  > "未找到游戏概念。请先运行 `/brainstorm` 来确立游戏的
+  > 基础，然后再设计 UX。"
+  > 如果用户要求，则继续。
 
-### 2b: Player Journey
+### 2b: 玩家旅程
 
-Read `design/player-journey.md` if it exists. For each relevant section, extract:
-- Which journey phase(s) does this screen appear in?
-- What is the player's emotional state on arrival at this screen?
-- What player need is this screen serving in the journey?
-- What critical moments (from the journey map) does this screen deliver?
+如果存在，读取 `design/player-journey.md`。对于每个相关部分，提取：
+- 此屏幕出现在哪些旅程阶段？
+- 玩家到达此屏幕时的情绪状态是什么？
+- 此屏幕在旅程中服务于玩家的什么需求？
+- 此屏幕实现了哪些关键时刻（来自旅程图）？
 
-If the player journey file does not exist, note the gap and proceed:
-> "No player journey map found at `design/player-journey.md`. Designing without it
-> means we'll be making assumptions about player context. Consider running a player
-> journey session after this spec is drafted."
+如果玩家旅程文件不存在，记录此缺口并继续：
+> "在 `design/player-journey.md` 未找到玩家旅程图。没有它进行设计
+> 意味着我们将对玩家上下文做出假设。考虑在此规范起草后运行一次玩家
+> 旅程会话。"
 
-### 2c: GDD UI Requirements
+### 2c: GDD UI 需求
 
-Glob `design/gdd/*.md` and grep for `UI Requirements` sections. Read any GDD whose
-UI Requirements section references this screen by name or category.
+使用 Glob 查找 `design/gdd/*.md` 并使用 Grep 搜索 `UI Requirements` 部分。读取任何
+GDD，其 UI Requirements 部分按名称或类别引用了此屏幕。
 
-These GDD UI Requirements are the **requirements input** to this spec. Collect them
-as a list of constraints the spec must satisfy.
+这些 GDD UI Requirements 是此规范的**需求输入**。将它们收集为
+规范必须满足的约束列表。
 
-If designing the HUD, read ALL GDD UI Requirements sections — the HUD aggregates
-requirements from every system.
+如果设计 HUD，读取所有 GDD 的 UI Requirements 部分 — HUD 聚合了
+每个系统的需求。
 
-### 2d: Existing UX Specs
+### 2d: 现有 UX 规范
 
-Glob `design/ux/*.md` and note which screens already have specs. For screens that
-will link to or from the current screen, read their navigation/flow sections to
-find the entry and exit points this spec must match.
+使用 Glob 查找 `design/ux/*.md` 并记录哪些屏幕已有规范。对于将
+链接到当前屏幕或从当前屏幕链接的屏幕，读取它们的导航/流程部分以
+找到此规范必须匹配的入口和出口点。
 
-### 2e: Interaction Pattern Library
+### 2e: 交互模式库
 
-If `design/ux/interaction-patterns.md` exists, read the pattern catalog index
-(the list of pattern names and their one-line descriptions). Do not read full
-pattern details — just the catalog. This tells you which patterns already exist
-so you can reference them rather than reinvent them.
+如果 `design/ux/interaction-patterns.md` 存在，读取模式目录索引
+（模式名称及其单行描述的列表）。不要读取完整的
+模式详情 — 只需目录。这告诉你哪些模式已经存在，
+以便你可以引用它们而不是重新发明。
 
-### 2f: Art Bible
+### 2f: 艺术圣经
 
-Check for `design/art/art-bible.md`. If found, read the visual direction
-section. UX layout must align with the aesthetic commitments already made.
+检查 `design/art/art-bible.md`。如果找到，读取视觉方向
+部分。UX 布局必须与已做出的美学承诺保持一致。
 
-### 2g: Accessibility Requirements
+### 2g: 无障碍需求
 
-Check for `design/accessibility-requirements.md`. If found, read it. The spec
-must satisfy the accessibility tier committed to there.
+检查 `design/accessibility-requirements.md`。如果找到，读取它。规范
+必须满足那里承诺的无障碍等级。
 
-### 2h: Input Method (from Project Config)
+### 2h: 输入方法（来自项目配置）
 
-Read `.claude/docs/technical-preferences.md` and extract the `## Input & Platform`
-section. Store these values for use throughout the skill — they drive the
-Interaction Map and inform accessibility requirements:
+读取 `.claude/docs/technical-preferences.md` 并提取 `## Input & Platform`
+部分。存储这些值以便在整个 Skill 中使用 — 它们驱动
+交互图并告知无障碍需求：
 
-- **Input Methods** — e.g., Keyboard/Mouse, Gamepad, Touch, Mixed
-- **Primary Input** — the dominant input for this game
+- **Input Methods** — 例如，Keyboard/Mouse, Gamepad, Touch, Mixed
+- **Primary Input** — 此游戏的主要输入方式
 - **Gamepad Support** — Full / Partial / None
 - **Touch Support** — Full / Partial / None
-- **Target Platforms** — for safe zone and aspect ratio decisions
+- **Target Platforms** — 用于安全区和宽高比决策
 
-If the section is unconfigured (`[TO BE CONFIGURED]`), ask once:
-> "Input methods aren't configured yet. What does this game target?"
-> Options: "Keyboard/Mouse only", "Gamepad only", "Both (PC + Console)", "Touch (mobile)", "All of the above"
+如果该部分未配置（`[TO BE CONFIGURED]`），询问一次：
+> "输入方法尚未配置。此游戏的目标是什么？"
+> 选项："仅 Keyboard/Mouse", "仅 Gamepad", "两者（PC + Console）", "Touch（移动设备）", "以上全部"
 >
-> (Run `/setup-engine` to save this permanently so you won't be asked again.)
+> （运行 `/setup-engine` 以永久保存此设置，这样就不会再被询问。）
 
-Store the answer for the rest of this session. Do **not** ask again per section
-or per screen.
+为本次会话的剩余部分存储答案。**不要**每个部分
+或每个屏幕都再次询问。
 
-### 2i: Present Context Summary
+### 2i: 呈现上下文摘要
 
-Before any design work, present a brief summary to the user:
+在进行任何设计工作之前，向用户呈现一个简要摘要：
 
-> **Designing: [Screen/Flow Name]**
-> - Mode: [UX Spec / HUD Design / Pattern Library]
-> - Journey phase(s): [from player-journey.md, or "unknown — no journey map"]
-> - GDD requirements feeding this spec: [count and names, or "none found"]
-> - Related screens already specced: [list, or "none yet"]
-> - Known patterns available: [count, or "no pattern library yet"]
-> - Accessibility tier: [from requirements doc, or "not yet defined"]
-> - Input methods: [from technical-preferences.md, or "asked above"]
+> **正在设计：[屏幕/流程名称]**
+> - 模式：[UX 规范 / HUD 设计 / 模式库]
+> - 旅程阶段：[来自 player-journey.md，或"未知 — 无旅程图"]
+> - 输入此规范的 GDD 需求：[数量和名称，或"未找到"]
+> - 已规范的关联屏幕：[列表，或"尚无"]
+> - 已知可用模式：[数量，或"尚无模式库"]
+> - 无障碍等级：[来自需求文档，或"尚未定义"]
+> - 输入方法：[来自 technical-preferences.md，或"上面已询问"]
 
-Then ask: "Anything else I should read before we start, or shall we proceed?"
+然后询问："在开始之前，还有什么我应该阅读的吗，还是我们继续？"
 
 ---
 
-## 2b. Retrofit Mode Detection
+## 2b. 改造模式检测
 
-Before creating a skeleton, check if the target output file already exists.
+在创建骨架之前，检查目标输出文件是否已存在。
 
-Glob `design/ux/[filename].md` (where `[filename]` is the resolved output path from Phase 1).
+使用 Glob 查找 `design/ux/[filename].md`（其中 `[filename]` 是来自阶段 1 的解析输出路径）。
 
-**If the file exists — retrofit mode:**
-- Read the file in full
-- For each expected section, check whether the body has real content (more than a `[To be designed]` placeholder) or is empty/placeholder
-- Present a section status summary to the user:
+**如果文件存在 — 改造模式：**
+- 完整读取文件
+- 对于每个预期部分，检查正文是否有实际内容（多于 `[To be designed]` 占位符）或为空/占位符
+- 向用户呈现部分状态摘要：
 
-> "Found existing UX spec at `design/ux/[filename].md`. Here's what's already done:
+> "在 `design/ux/[filename].md` 找到现有 UX 规范。以下是已完成的内容：
 >
-> | Section | Status |
+> | 部分 | 状态 |
 > |---------|--------|
 > | Overview & Context | [Complete / Empty / Placeholder] |
 > | Player Journey Integration | ... |
@@ -150,826 +150,816 @@ Glob `design/ux/[filename].md` (where `[filename]` is the resolved output path f
 > | Edge Cases & Error States | ... |
 > | Open Questions | ... |
 >
-> I'll work on the [N] incomplete sections only — existing content will not be overwritten."
+> 我将仅处理 [N] 个未完成的部分 — 现有内容不会被覆盖。"
 
-- Skip Section 3 (skeleton creation) — the file already exists
-- In Phase 4 (Section Authoring), only work on sections with Status: Empty or Placeholder
-- Use `Edit` to fill placeholders in-place rather than creating a new skeleton
+- 跳过第 3 节（骨架创建）— 文件已存在
+- 在第 4 阶段（部分编写）中，仅处理状态为 Empty 或 Placeholder 的部分
+- 使用 `Edit` 就地填充占位符，而不是创建新骨架
 
-**If the file does not exist — fresh authoring mode:**
-Proceed to Phase 3 (Create File Skeleton) as normal.
-
----
-
-## 3. Create File Skeleton
-
-Once the user confirms, **immediately** create the output file with empty section
-headers. This ensures incremental writes have a target and work survives interruptions.
-
-Ask: "May I create the skeleton file at `design/ux/[filename].md`?"
+**如果文件不存在 — 全新编写模式：**
+按正常流程进入第 3 阶段（创建文件骨架）。
 
 ---
 
-### Skeleton for UX Spec (screen or flow)
+## 3. 创建文件骨架
+
+用户确认后，**立即**创建带有空节标题的输出文件。这确保增量写入有目标，且工作不会因中断而丢失。
+
+询问："我可以在 `design/ux/[filename].md` 创建骨架文件吗？"
+
+---
+
+### UX 规范骨架（屏幕或流程）
 
 ```markdown
-# UX Spec: [Screen/Flow Name]
+# UX 规范：[屏幕/流程名称]
 
-> **Status**: In Design
-> **Author**: [user + ux-designer]
-> **Last Updated**: [today's date]
-> **Journey Phase(s)**: [from context]
-> **Template**: UX Spec
-
----
-
-## Purpose & Player Need
-
-[To be designed]
+> **状态**：设计中
+> **作者**：[用户 + ux-designer]
+> **最后更新**：[今日日期]
+> **旅程阶段**：[来自上下文]
+> **模板**：UX 规范
 
 ---
 
-## Player Context on Arrival
+## 目的与玩家需求
 
-[To be designed]
-
----
-
-## Navigation Position
-
-[To be designed]
+[待设计]
 
 ---
 
-## Entry & Exit Points
+## 玩家到达时的上下文
 
-[To be designed]
-
----
-
-## Layout Specification
-
-### Information Hierarchy
-
-[To be designed]
-
-### Layout Zones
-
-[To be designed]
-
-### Component Inventory
-
-[To be designed]
-
-### ASCII Wireframe
-
-[To be designed]
+[待设计]
 
 ---
 
-## States & Variants
+## 导航位置
 
-[To be designed]
-
----
-
-## Interaction Map
-
-[To be designed]
+[待设计]
 
 ---
 
-## Events Fired
+## 入口与出口点
 
-[To be designed]
-
----
-
-## Transitions & Animations
-
-[To be designed]
+[待设计]
 
 ---
 
-## Data Requirements
+## 布局规范
 
-[To be designed]
+### 信息层级
 
----
+[待设计]
 
-## Accessibility
+### 布局区域
 
-[To be designed]
+[待设计]
 
----
+### 组件清单
 
-## Localization Considerations
+[待设计]
 
-[To be designed]
+### ASCII 线框图
 
----
-
-## Acceptance Criteria
-
-[To be designed]
+[待设计]
 
 ---
 
-## Open Questions
+## 状态与变体
 
-[To be designed]
+[待设计]
+
+---
+
+## 交互图
+
+[待设计]
+
+---
+
+## 触发的事件
+
+[待设计]
+
+---
+
+## 过渡与动画
+
+[待设计]
+
+---
+
+## 数据需求
+
+[待设计]
+
+---
+
+## 无障碍
+
+[待设计]
+
+---
+
+## 本地化考虑
+
+[待设计]
+
+---
+
+## 验收标准
+
+[待设计]
+
+---
+
+## 待解决问题
+
+[待设计]
 ```
 
 ---
 
-### Skeleton for HUD Design
+### HUD 设计骨架
 
 ```markdown
-# HUD Design
+# HUD 设计
 
-> **Status**: In Design
-> **Author**: [user + ux-designer]
-> **Last Updated**: [today's date]
-> **Template**: HUD Design
-
----
-
-## HUD Philosophy
-
-[To be designed]
+> **状态**：设计中
+> **作者**：[用户 + ux-designer]
+> **最后更新**：[今日日期]
+> **模板**：HUD 设计
 
 ---
 
-## Information Architecture
+## HUD 理念
 
-### Full Information Inventory
-
-[To be designed]
-
-### Categorization
-
-[To be designed]
+[待设计]
 
 ---
 
-## Layout Zones
+## 信息架构
 
-[To be designed]
+### 完整信息清单
 
----
+[待设计]
 
-## HUD Elements
+### 分类
 
-[To be designed]
-
----
-
-## Dynamic Behaviors
-
-[To be designed]
+[待设计]
 
 ---
 
-## Platform & Input Variants
+## 布局区域
 
-[To be designed]
-
----
-
-## Accessibility
-
-[To be designed]
+[待设计]
 
 ---
 
-## Open Questions
+## HUD 元素
 
-[To be designed]
+[待设计]
+
+---
+
+## 动态行为
+
+[待设计]
+
+---
+
+## 平台与输入变体
+
+[待设计]
+
+---
+
+## 无障碍
+
+[待设计]
+
+---
+
+## 待解决问题
+
+[待设计]
 ```
 
 ---
 
-### Skeleton for Interaction Pattern Library
+### 交互模式库骨架
 
 ```markdown
-# Interaction Pattern Library
+# 交互模式库
 
-> **Status**: In Design
-> **Author**: [user + ux-designer]
-> **Last Updated**: [today's date]
-> **Template**: Interaction Pattern Library
-
----
-
-## Overview
-
-[To be designed]
+> **状态**：设计中
+> **作者**：[用户 + ux-designer]
+> **最后更新**：[今日日期]
+> **模板**：交互模式库
 
 ---
 
-## Pattern Catalog
+## 概述
 
-[To be designed]
-
----
-
-## Patterns
-
-[Individual pattern entries added here as they are defined]
+[待设计]
 
 ---
 
-## Gaps & Patterns Needed
+## 模式目录
 
-[To be designed]
+[待设计]
 
 ---
 
-## Open Questions
+## 模式
 
-[To be designed]
+[各个模式条目在定义时添加到这里]
+
+---
+
+## 缺口与所需模式
+
+[待设计]
+
+---
+
+## 待解决问题
+
+[待设计]
 ```
 
 ---
 
-After writing the skeleton, update `production/session-state/active.md` with:
-- Task: Designing [screen/flow name] UX spec
-- Current section: Starting (skeleton created)
-- File: design/ux/[filename].md
+写入骨架后，更新 `production/session-state/active.md`：
+- 任务：设计 [屏幕/流程名称] UX 规范
+- 当前部分：开始（骨架已创建）
+- 文件：design/ux/[filename].md
 
 ---
 
-## 4. Section-by-Section Authoring
+## 4. 逐节编写
 
-Walk through each section in order. For **each section**, follow this cycle:
+按顺序遍历每个部分。对于**每个部分**，遵循以下循环：
 
 ```
-Context  ->  Questions  ->  Options  ->  Decision  ->  Draft  ->  Approval  ->  Write
+上下文 -> 问题 -> 选项 -> 决策 -> 草稿 -> 批准 -> 写入
 ```
 
-1. **Context**: State what this section needs to contain and surface any relevant
-   constraints from context gathered in Phase 2.
-2. **Questions**: Ask what is needed to draft this section. Use `AskUserQuestion`
-   for constrained choices, conversational text for open-ended exploration.
-3. **Options**: Where design choices exist, present 2-4 approaches with pros/cons.
-   Explain reasoning in conversation, then use `AskUserQuestion` to capture the decision.
-4. **Decision**: User picks an approach or provides custom direction.
-5. **Draft**: Write the section content in conversation for review. Flag provisional
-   assumptions explicitly.
-6. **Approval**: "Does this capture it? Any changes before I write it to the file?"
-7. **Write**: Use `Edit` to replace the `[To be designed]` placeholder with approved
-   content. Confirm the write.
+1. **上下文**：说明此部分需要包含什么，并呈现第 2 阶段收集的任何相关
+   约束。
+2. **问题**：询问起草此部分需要什么。使用 `AskUserQuestion`
+   进行受限选择，使用对话文本进行开放式探索。
+3. **选项**：存在设计选择的地方，呈现 2-4 种方法及其优缺点。
+   在对话中解释推理，然后使用 `AskUserQuestion` 捕获决策。
+4. **决策**：用户选择一种方法或提供自定义方向。
+5. **草稿**：在对话中编写部分内容以供审查。明确标记临时
+   假设。
+6. **批准**："这能概括吗？在写入文件之前有什么要修改的吗？"
+7. **写入**：使用 `Edit` 将 `[To be designed]` 占位符替换为已批准的
+   内容。确认写入。
 
-After writing each section, update `production/session-state/active.md`.
-
----
-
-### Section Guidance: UX Spec Mode
-
-#### Section A: Purpose & Player Need
-
-This section is the foundation. Every other decision flows from it.
-
-**Questions to ask**:
-- "What player goal does this screen serve? What is the player trying to DO here?"
-- "What would go wrong if this screen didn't exist or was hard to use?"
-- "Complete this sentence: 'The player arrives at this screen wanting to ___.' "
-
-Cross-reference the player journey context gathered in Phase 2. The stated purpose
-must align with the journey phase and emotional state.
+每写入一个部分后，更新 `production/session-state/active.md`。
 
 ---
 
-#### Section B: Player Context on Arrival
+### 部分指导：UX 规范模式
 
-**Questions to ask**:
-- "When in the game does a player first encounter this screen?"
-- "What were they just doing immediately before reaching this screen?"
-- "What emotional state should the design assume? (calm, stressed, curious, time-pressured)"
-- "Do players arrive at this screen voluntarily, or are they sent here by the game?"
+#### 部分 A：目的与玩家需求
 
-Offer to map this against the journey phases if the player journey doc exists.
+此部分是基础。所有其他决策都由此产生。
 
----
+**要问的问题**：
+- "此屏幕服务于什么玩家目标？玩家在这里想做什么？"
+- "如果此屏幕不存在或难以使用，会出现什么问题？"
+- "完成这个句子：'玩家到达此屏幕想要 ___。'"
 
-#### Section B2: Navigation Position
-
-Where does this screen sit in the game's navigation hierarchy? This is a one-paragraph orientation map — not a full flow diagram.
-
-**Questions to ask**:
-- "Is this screen accessed from the main menu, from pause, from within gameplay, or from another screen?"
-- "Is it a top-level destination (always reachable) or a context-dependent one (only accessible in certain states)?"
-- "Can the player reach this screen from more than one place in the game?"
-
-Present as: "This screen lives at: [root] → [parent] → [this screen]" plus any alternate entry paths.
+与第 2 阶段收集的玩家旅程上下文交叉参考。所述目的
+必须与旅程阶段和情绪状态保持一致。
 
 ---
 
-#### Section B3: Entry & Exit Points
+#### 部分 B：玩家到达时的上下文
 
-Map every way the player can arrive at and leave this screen.
+**要问的问题**：
+- "玩家在游戏中何时首次遇到此屏幕？"
+- "在到达此屏幕之前，他们刚刚在做什么？"
+- "设计应该假设什么情绪状态？（平静、紧张、好奇、时间紧迫）"
+- "玩家是自愿到达此屏幕，还是被游戏发送到这里？"
 
-**Questions to ask**:
-- "What are all the ways a player can reach this screen?" (List each trigger: button press, game event, redirect from another screen, etc.)
-- "What can the player do to exit? What happens when they do?" (Back button, confirm action, timeout, game event)
-- "Are there any exits that are one-way — where the player cannot return to this screen without starting over?"
+如果玩家旅程文档存在，提供针对旅程阶段的映射。
 
-Present as two tables:
+---
 
-| Entry Source | Trigger | Player carries this context |
+#### 部分 B2：导航位置
+
+此屏幕位于游戏导航层级中的什么位置？这是一个单段落的定位图 — 不是完整的流程图。
+
+**要问的问题**：
+- "此屏幕是从主菜单、暂停菜单、游戏内还是另一个屏幕访问的？"
+- "它是顶级目的地（始终可达）还是上下文相关的（仅在特定状态下可访问）？"
+- "玩家可以从游戏中的多个位置到达此屏幕吗？"
+
+呈现为："此屏幕位于：[根] -> [父级] -> [此屏幕]" 加上任何替代入口路径。
+
+---
+
+#### 部分 B3：入口与出口点
+
+映射玩家到达和离开此屏幕的每种方式。
+
+**要问的问题**：
+- "玩家可以通过哪些方式到达此屏幕？"（列出每个触发器：按钮按下、游戏事件、从另一个屏幕重定向等）
+- "玩家可以做什么来退出？当他们退出时会发生什么？"（返回按钮、确认操作、超时、游戏事件）
+- "是否有任何出口是单向的 — 玩家无法返回此屏幕除非重新开始？"
+
+呈现为两个表格：
+
+| 入口来源 | 触发器 | 玩家携带的上下文 |
 |---|---|---|
-| [screen/event] | [how] | [state/data they arrive with] |
+| [屏幕/事件] | [方式] | [他们到达时的状态/数据] |
 
-| Exit Destination | Trigger | Notes |
+| 出口目的地 | 触发器 | 备注 |
 |---|---|---|
-| [screen/event] | [how] | [any irreversible state changes] |
+| [屏幕/事件] | [方式] | [任何不可逆的状态变更] |
 
 ---
 
-#### Section C: Layout Specification
+#### 部分 C：布局规范
 
-This is the largest and most interactive section. Work through it in sub-sections:
+这是最大且交互性最强的部分。按子部分逐步完成：
 
-**Sub-section 1 — Information Hierarchy** (establish this before any layout):
-- Ask the user to list every piece of information this screen must communicate.
-- Then ask them to rank the items: "What is the single most important thing a player
-  needs to see first? What is second? What can be discovered rather than immediately visible?"
-- Present the resulting hierarchy for approval before moving to zones.
+**子部分 1 — 信息层级**（在任何布局之前先确定）：
+- 要求用户列出此屏幕必须传达的每条信息。
+- 然后要求他们对项目排序："玩家需要首先看到的最重要的东西是什么？
+  第二重要的是什么？什么可以被发现而不是立即可见？"
+- 在转到区域之前，呈现结果层级以供批准。
 
-**Sub-section 2 — Layout Zones**:
-- Based on the information hierarchy, propose rough screen zones (header, content
-  area, action bar, sidebar, etc.).
-- Offer 2-3 zone arrangements with rationale for each. Reference platform and
-  input context gathered from game concept.
-- Ask: "Do any of these match your mental image, or shall we build a custom arrangement?"
+**子部分 2 — 布局区域**：
+- 基于信息层级，提出粗略的屏幕区域（页眉、内容
+  区域、操作栏、侧边栏等）。
+- 提供 2-3 种区域排列及其原理。参考从游戏概念收集的
+  平台和输入上下文。
+- 询问："这些中有符合你脑海中的图像的，还是我们应该构建自定义排列？"
 
-**Sub-section 3 — Component Inventory**:
-- For each zone, list the UI components it contains. For each component, note:
-  - Component type (button, list, card, stat display, input field, etc.)
-  - Content it displays
-  - Whether it is interactive
-  - If it uses an existing pattern from the library (reference by pattern name)
-  - If it introduces a new pattern (flag for later addition to the library)
+**子部分 3 — 组件清单**：
+- 对于每个区域，列出它包含的 UI 组件。对于每个组件，记录：
+  - 组件类型（按钮、列表、卡片、状态显示、输入字段等）
+  - 它显示的内容
+  - 它是否是交互式的
+  - 是否使用库中的现有模式（按模式名称引用）
+  - 是否引入新模式（标记为稍后添加到库）
 
-**Sub-section 4 — ASCII Wireframe**:
-- Offer to generate an ASCII wireframe based on the zone layout and component list.
-- Use `AskUserQuestion`: "Want an ASCII wireframe as part of this spec?"
-  - Options: "Yes, include one", "No, I'll attach a separate file"
-- If yes, produce the wireframe in conversation first. Ask for feedback before
-  writing it to file.
+**子部分 4 — ASCII 线框图**：
+- 基于区域布局和组件列表，提供生成 ASCII 线框图。
+- 使用 `AskUserQuestion`："想要 ASCII 线框图作为此规范的一部分吗？"
+  - 选项："是的，包含一个", "不，我会附加一个单独的文件"
+- 如果是，先在对话中生成线框图。在写入文件之前
+  征求反馈。
 
 ---
 
-#### Section D: States & Variants
+#### 部分 D：状态与变体
 
-Guide the user to think beyond the happy path.
+引导用户超越快乐路径进行思考。
 
-**Questions to ask** (work through these one at a time):
-- "What does this screen look like the very first time a player sees it, when there
-  is no data yet? (empty state)"
-- "What happens when something goes wrong — an error, a failed action, a missing
-  resource? (error state)"
-- "Is there ever a loading wait on this screen? If so, what does it show? (loading state)"
-- "Are there any player progression states that change what this screen shows? For
-  example, locked content, premium content, or tutorial-mode overlays?"
-- "Does this screen behave differently on any supported platform? (platform variant)"
+**要问的问题**（逐个进行）：
+- "玩家第一次看到此屏幕时，没有数据时是什么样子？（空状态）"
+- "当出现问题时会发生什么 — 错误、失败的操作、缺失的
+  资源？（错误状态）"
+- "此屏幕上是否有加载等待？如果有，显示什么？（加载状态）"
+- "是否有任何玩家进度状态会改变此屏幕显示的内容？例如，
+  锁定内容、高级内容或教程模式覆盖层？"
+- "此屏幕在任何支持的平台上表现是否不同？（平台变体）"
 
-Present the collected states as a table for approval:
+将收集的状态呈现为表格以供批准：
 
-| State / Variant | Trigger | What Changes |
+| 状态 / 变体 | 触发器 | 变更内容 |
 |-----------------|---------|--------------|
-| Default | Normal load | — |
-| Empty | No data available | [content area description] |
-| [etc.] | [trigger] | [changes] |
+| 默认 | 正常加载 | — |
+| 空 | 无数据可用 | [内容区域描述] |
+| [等等] | [触发器] | [变更] |
 
 ---
 
-#### Section E: Interaction Map
+#### 部分 E：交互图
 
-For each interactive component identified in the Layout Specification, define:
-- The action (tap, click, press, hold, scroll, drag)
-- The platform input(s) that trigger it (mouse click, gamepad A, keyboard Enter)
-- The immediate feedback (visual, audio, haptic)
-- The outcome (navigation target, state change, data write)
+对于布局规范中识别的每个交互组件，定义：
+- 操作（点击、单击、按下、按住、滚动、拖动）
+- 触发它的平台输入（鼠标点击、手柄 A、键盘回车）
+- 即时反馈（视觉、音频、触觉）
+- 结果（导航目标、状态变更、数据写入）
 
-Use the input methods loaded from `technical-preferences.md` in Phase 2h — do
-not ask the user again. State them upfront: "Mapping interactions for:
-[Input Methods from tech-prefs]. Covering [Gamepad Support] gamepad support."
+使用第 2h 阶段从 `technical-preferences.md` 加载的输入方法 — 不要
+再次询问用户。预先说明："正在为以下输入方法映射交互：
+[来自 tech-prefs 的输入方法]。涵盖 [手柄支持] 手柄支持。"
 
-Work through components one at a time rather than asking for all at once.
-For navigation actions (going to another screen), verify the target matches
-an existing UX spec or note it as a spec dependency.
+逐个处理组件，而不是一次性询问所有。
+对于导航操作（前往另一个屏幕），验证目标是否匹配
+现有 UX 规范，或将其记录为规范依赖项。
 
 ---
 
-#### Section E2: Events Fired
+#### 部分 E2：触发的事件
 
-For every player action in the Interaction Map, document the corresponding event the game or analytics system should fire — or explicitly note "no event" if none applies.
+对于交互图中的每个玩家操作，记录游戏或分析系统应触发的相应事件 — 或明确记录"无事件"（如果不适用）。
 
-**Questions to ask**:
-- "For each action, should the game fire an analytics event, trigger a game-state change, or both?"
-- "Are there any actions that should NOT fire an event — and is that a deliberate choice?"
+**要问的问题**：
+- "对于每个操作，游戏应该触发分析事件、触发游戏状态变更，还是两者都触发？"
+- "是否有任何操作不应该触发事件 — 这是一个深思熟虑的选择吗？"
 
-Present as a table alongside the Interaction Map:
+与交互图一起呈现为表格：
 
-| Player Action | Event Fired | Payload / Data |
+| 玩家操作 | 触发的事件 | 载荷 / 数据 |
 |---|---|---|
-| [action] | [EventName] or none | [data passed with event] |
+| [操作] | [EventName] 或无 | [随事件传递的数据] |
 
-Flag any action that modifies persistent game state (save data, progress, economy) — these need explicit attention from the architecture team.
-
----
-
-#### Section E3: Transitions & Animations
-
-Specify how the screen enters and exits, and how it responds to state changes.
-
-**Questions to ask**:
-- "How does this screen appear? (fade in, slide from right, instant pop, scale from button)"
-- "How does it dismiss? (fade out, slide back, cut)"
-- "Are there any in-screen state transitions that need animation? (loading spinner, success state, error flash)"
-- "Is there any animation that could cause motion sickness — and does the game have a reduced-motion option?"
-
-Minimum required:
-- Screen enter transition
-- Screen exit transition
-- At least one state-change animation if the screen has multiple states
+标记任何修改持久游戏状态的操作（存档数据、进度、经济）— 这些需要架构团队的明确关注。
 
 ---
 
-#### Section F: Data Requirements
+#### 部分 E3：过渡与动画
 
-Cross-reference the GDD UI Requirements sections gathered in Phase 2.
+指定屏幕如何进入和退出，以及如何响应状态变更。
 
-For each piece of information the screen displays, ask:
-- "Where does this data come from? Which system owns it?"
-- "Does this screen need to write data back, or is it read-only?"
-- "Is any of this data time-sensitive or real-time? (health bars, cooldown timers)"
+**要问的问题**：
+- "此屏幕如何出现？（淡入、从右侧滑入、即时弹出、从按钮缩放）"
+- "它如何消失？（淡出、滑回、切换）"
+- "是否有任何屏幕内状态过渡需要动画？（加载旋转器、成功状态、错误闪烁）"
+- "是否有任何动画可能导致晕动症 — 游戏是否有减少运动的选项？"
 
-Flag any case where the UI would need to own or manage game state as an architectural
-concern. UX specs define what the UI needs; they do not dictate how the data is
-delivered. That is an architecture decision.
+最低要求：
+- 屏幕进入过渡
+- 屏幕退出过渡
+- 如果屏幕有多个状态，至少一个状态变更动画
 
-Present the data requirements as a table:
+---
 
-| Data | Source System | Read / Write | Notes |
+#### 部分 F：数据需求
+
+与第 2 阶段收集的 GDD UI Requirements 部分交叉参考。
+
+对于屏幕显示的每条信息，询问：
+- "这些数据来自哪里？哪个系统拥有它？"
+- "此屏幕需要写回数据，还是只读？"
+- "这些数据是否有时间敏感或实时的？（生命条、冷却计时器）"
+
+标记任何 UI 需要拥有或管理游戏状态的情况作为架构
+关注点。UX 规范定义 UI 需要什么；它们不规定数据如何
+交付。这是一个架构决策。
+
+将数据需求呈现为表格：
+
+| 数据 | 来源系统 | 读 / 写 | 备注 |
 |------|--------------|--------------|-------|
-| [item] | [system] | Read | — |
-| [item] | [system] | Write | [concern if any] |
+| [项目] | [系统] | 读 | — |
+| [项目] | [系统] | 写 | [如有任何关注点] |
 
 ---
 
-#### Section G: Accessibility
+#### 部分 G：无障碍
 
-Cross-reference `design/accessibility-requirements.md` if it exists.
+如果存在，与 `design/accessibility-requirements.md` 交叉参考。
 
-Walk through the ux-designer agent's standard checklist for this screen:
-- Keyboard-only navigation path through all interactive elements
-- Gamepad navigation order (if applicable)
-- Text contrast and minimum readable font sizes
-- Color-independent communication (no information conveyed by color alone)
-- Screen reader considerations for any non-text elements
-- Any motion or animation that needs a reduced-motion alternative
+遍历此屏幕的 ux-designer Agent 标准检查清单：
+- 通过所有交互元素的纯键盘导航路径
+- 手柄导航顺序（如适用）
+- 文本对比度和最小可读字体大小
+- 不依赖颜色的信息传达（不单独通过颜色传达信息）
+- 任何非文本元素的屏幕阅读器考虑
+- 任何需要减少运动替代方案的动画或动效
 
-Use `AskUserQuestion` to surface any open questions on accessibility tier:
-- "Has the accessibility tier been committed to for this project?"
-  - Options: "Yes, read from requirements doc", "Not yet — let's flag it as a question", "Skip accessibility section for now"
-
----
-
-#### Section H: Localization Considerations
-
-Document constraints that affect how this screen behaves when text is translated.
-
-**Questions to ask**:
-- "Which text elements on this screen are the longest? What is the maximum character count that fits the layout?"
-- "Are there any elements where text length is layout-critical — e.g., a button label that must stay on one line?"
-- "Are there any elements that display numbers, dates, or currencies that need locale-specific formatting?"
-
-Note: aim to flag any element where a 40% text expansion (common in translations from English to German or French) would break the layout. Mark those as HIGH PRIORITY for the localization engineer.
+使用 `AskUserQuestion` 提出关于无障碍等级的任何开放问题：
+- "此项目的无障碍等级是否已经确定？"
+  - 选项："是的，从需求文档读取", "还没有 — 让我们标记为问题", "暂时跳过无障碍部分"
 
 ---
 
-#### Section I: Acceptance Criteria
+#### 部分 H：本地化考虑
 
-Write at least 5 specific, testable criteria that a QA tester can verify without reading any other design document. These become the pass/fail conditions for `/story-done`.
+记录影响此屏幕在文本翻译时行为的约束。
 
-**Format**: Use checkboxes. Each criterion must be verifiable by a human tester:
+**要问的问题**：
+- "此屏幕上哪些文本元素最长？布局适合的最大字符数是多少？"
+- "是否有任何元素文本长度对布局至关重要 — 例如，必须保持在一行的按钮标签？"
+- "是否有任何显示数字、日期或货币的元素需要特定于区域的格式？"
+
+注意：目标是标记任何 40% 文本扩展（从英语翻译到德语或法语时常见）会破坏布局的元素。将这些标记为本地化工程师的**高优先级**。
+
+---
+
+#### 部分 I：验收标准
+
+编写至少 5 个具体的、可测试的标准，QA 测试人员无需阅读任何其他设计文档即可验证。这些成为 `/story-done` 的通过/失败条件。
+
+**格式**：使用复选框。每个标准必须可由人工测试人员验证：
 
 ```
-- [ ] Screen opens within [X]ms from [trigger]
-- [ ] [Element] displays correctly at [minimum] and [maximum] values
-- [ ] [Navigation action] correctly routes to [destination screen]
-- [ ] Error state appears when [condition] and shows [specific message or icon]
-- [ ] Keyboard/gamepad navigation reaches all interactive elements in logical order
-- [ ] [Accessibility requirement] is met — e.g., "all interactive elements have focus indicators"
+- [ ] 屏幕在 [X]ms 内从 [触发器] 打开
+- [ ] [元素] 在 [最小值] 和 [最大值] 时正确显示
+- [ ] [导航操作] 正确路由到 [目标屏幕]
+- [ ] 当 [条件] 时出现错误状态并显示 [特定消息或图标]
+- [ ] 键盘/手柄导航按逻辑顺序到达所有交互元素
+- [ ] [无障碍需求] 已满足 — 例如，"所有交互元素都有焦点指示器"
 ```
 
-**Minimum required**:
-- 1 performance criterion (load/open time)
-- 1 navigation criterion (at least one entry or exit path verified)
-- 1 error/empty state criterion
-- 1 accessibility criterion (per committed tier)
-- 1 criterion specific to this screen's core purpose
+**最低要求**：
+- 1 个性能标准（加载/打开时间）
+- 1 个导航标准（至少验证一个入口或出口路径）
+- 1 个错误/空状态标准
+- 1 个无障碍标准（按承诺的等级）
+- 1 个特定于此屏幕核心目的的标准
 
-Ask the user to confirm: "Do these criteria cover what would actually make this screen 'done' for your QA process?"
-
----
-
-### Section Guidance: HUD Design Mode
-
-HUD design follows a different order from UX spec mode. Begin with philosophy;
-do not touch layout until the information architecture is complete.
-
-#### Section A: HUD Philosophy
-
-Ask the user to describe the game's relationship with on-screen information in
-1-2 sentences.
-
-Offer framing examples to help:
-- "Nearly HUD-free — atmosphere requires unobstructed immersion (e.g., Hollow Knight, Firewatch)"
-- "Minimal but present — only critical information visible, everything else contextual (e.g., Dark Souls)"
-- "Information-dense — all decision-relevant data always visible (e.g., Diablo IV, StarCraft II)"
-- "Adaptive — HUD density responds to combat state, exploration mode, menus (e.g., God of War)"
-
-This philosophy becomes the design constraint for every subsequent HUD decision.
-If a proposed element conflicts with the stated philosophy, surface that conflict.
+询问用户确认："这些标准是否涵盖了让你的 QA 流程认为此屏幕'完成'的实际内容？"
 
 ---
 
-#### Section B: Information Architecture
+### 部分指导：HUD 设计模式
 
-Complete this before any layout work. Do not skip it.
+HUD 设计遵循与 UX 规范模式不同的顺序。从理念开始；
+在信息架构完成之前不要触及布局。
 
-**Step 1 — Full information inventory**:
-Pull all information from GDD UI Requirements sections gathered in Phase 2.
-Present the full list: "These are all the things your game systems say they need
-to communicate to the player on screen."
+#### 部分 A：HUD 理念
 
-**Step 2 — Categorization**:
-For each item, ask the user to categorize it:
+要求用户用 1-2 句话描述游戏与屏幕信息的关系。
 
-| Category | Description |
+提供框架示例以帮助：
+- "几乎无 HUD — 氛围需要不受阻碍的沉浸感（例如 Hollow Knight, Firewatch）"
+- "极简但存在 — 仅显示关键信息，其他一切是上下文相关的（例如 Dark Souls）"
+- "信息密集 — 所有与决策相关的数据始终可见（例如 Diablo IV, StarCraft II）"
+- "自适应 — HUD 密度响应战斗状态、探索模式、菜单（例如 God of War）"
+
+此理念成为每个后续 HUD 决策的设计约束。
+如果提议的元素与所述理念冲突，呈现该冲突。
+
+---
+
+#### 部分 B：信息架构
+
+在进行任何布局工作之前完成此部分。不要跳过。
+
+**步骤 1 — 完整信息清单**：
+从第 2 阶段收集的 GDD UI Requirements 部分提取所有信息。
+呈现完整列表："这些是你的游戏系统说它们需要在屏幕上
+传达给玩家的所有内容。"
+
+**步骤 2 — 分类**：
+对于每个项目，要求用户对其进行分类：
+
+| 类别 | 描述 |
 |----------|-------------|
-| **Must Show** | Always visible, player needs it for core decisions |
-| **Contextual** | Visible only when relevant (in combat, near interactable, etc.) |
-| **On Demand** | Player must actively request it (toggle, hold button) |
-| **Hidden** | Communicated through world/audio, never on-screen text |
+| **必须显示** | 始终可见，玩家需要它进行核心决策 |
+| **上下文相关** | 仅在相关时可见（战斗中、靠近可交互对象等） |
+| **按需** | 玩家必须主动请求它（切换、按住按钮） |
+| **隐藏** | 通过世界/音频传达，从不在屏幕上显示文本 |
 
-Use `AskUserQuestion` to step through items in groups of 3-4, not all at once.
-This is the most consequential design decision in the HUD — do not rush it.
+使用 `AskUserQuestion` 一次处理 3-4 个项目，而不是全部。
+这是 HUD 中最关键的设计决策 — 不要急于求成。
 
-**Conflict check**: If the information philosophy (Section A) says "nearly HUD-free"
-but the Must Show list is growing long, surface the conflict explicitly:
-> "The current Must Show list has [N] items. That may conflict with the HUD-free
-> philosophy. Options: reduce the Must Show list, revise the philosophy, or define
-> a hybrid approach where HUD is absent in exploration and present in combat."
-
----
-
-#### Section C: Layout Zones
-
-Only after the information architecture is approved, design layout zones.
-
-Base layout on:
-- Which items are Must Show (they drive the permanent zone decisions)
-- Where player attention naturally goes during gameplay (center-screen for action games,
-  corners for strategy games)
-- Platform and aspect ratio targets
-
-Offer 2-3 zone arrangements. Include rationale based on the HUD philosophy and the
-categorization from Section B.
+**冲突检查**：如果信息理念（部分 A）说"几乎无 HUD"
+但必须显示列表越来越长，明确呈现冲突：
+> "当前必须显示列表有 [N] 个项目。这可能与无 HUD
+> 理念冲突。选项：减少必须显示列表，修改理念，或定义
+> 一种混合方法，在探索中无 HUD，在战斗中有 HUD。"
 
 ---
 
-#### Section D: HUD Elements
+#### 部分 C：布局区域
 
-For each element in the layout, specify:
-- Element name and category (Must Show / Contextual / On Demand)
-- Content displayed
-- Visual form (bar, number, icon, counter, map)
-- Update behavior (real-time, event-driven, player-queried)
-- Contextual trigger (if not always visible)
-- Animation behavior (does it pulse when low? Fade in? Slam in?)
+仅在信息架构获得批准后，设计布局区域。
 
-Work element by element. Reference the interaction pattern library if relevant patterns
-exist for status displays, resource bars, or cooldown indicators.
+布局基于：
+- 哪些项目是必须显示（它们驱动永久性区域决策）
+- 游戏过程中玩家注意力自然去向哪里（动作游戏的屏幕中心，
+  策略游戏的角落）
+- 平台和宽高比目标
 
----
-
-#### Sections E, F, G: Dynamic Behaviors, Platform Variants, Accessibility
-
-These follow the same structure as the UX spec equivalents. See UX Spec section
-guidance for D (States/Variants), E (Interactions), and G (Accessibility).
-
-For the HUD specifically, emphasize:
-- Dynamic Behaviors: what causes the HUD to change density mid-gameplay?
-- Platform Variants: does mobile/console require different element sizes or positions?
+提供 2-3 种区域排列。包括基于 HUD 理念和
+部分 B 分类的原理。
 
 ---
 
-### Section Guidance: Interaction Pattern Library Mode
+#### 部分 D：HUD 元素
 
-Pattern library authoring is additive and catalog-driven, not linear.
+对于布局中的每个元素，指定：
+- 元素名称和类别（必须显示 / 上下文相关 / 按需）
+- 显示的内容
+- 视觉形式（条、数字、图标、计数器、地图）
+- 更新行为（实时、事件驱动、玩家查询）
+- 上下文触发器（如果不是始终可见）
+- 动画行为（低时是否脉冲？淡入？ slam in？）
 
-#### Phase 1: Catalog Existing Patterns
-
-Glob `design/ux/*.md` (excluding `interaction-patterns.md`) and read the Component
-Inventory and Interaction Map sections of each spec. Extract every interaction
-pattern used.
-
-Present the extracted list: "Based on existing UX specs, these patterns are already
-in use in the game:"
-- [Pattern name]: used in [screen], [screen]
-- [etc.]
-
-Ask: "Are there patterns you know exist but aren't in existing specs yet? List any
-additional ones now."
+逐个处理元素。如果存在相关模式，参考交互模式库
+用于状态显示、资源条或冷却指示器。
 
 ---
 
-#### Phase 2: Formalize Each Pattern
+#### 部分 E、F、G：动态行为、平台变体、无障碍
 
-For each pattern (existing or new), document:
+这些遵循与 UX 规范对应部分相同的结构。参见 UX 规范部分
+指导中的 D（状态/变体）、E（交互）和 G（无障碍）。
+
+对于 HUD 特别要强调：
+- 动态行为：什么导致 HUD 在游戏过程中改变密度？
+- 平台变体：移动/主机是否需要不同的元素大小或位置？
+
+---
+
+### 部分指导：交互模式库模式
+
+模式库编写是增量的、目录驱动的，不是线性的。
+
+#### 阶段 1：编目现有模式
+
+使用 Glob 查找 `design/ux/*.md`（排除 `interaction-patterns.md`）并读取每个规范的组件
+清单和交互图部分。提取使用的每个交互
+模式。
+
+呈现提取的列表："基于现有 UX 规范，这些模式已经在
+游戏中使用："
+- [模式名称]：用于 [屏幕], [屏幕]
+- [等等]
+
+询问："你知道存在但尚未在现有规范中的模式吗？现在列出任何
+额外的模式。"
+
+---
+
+#### 阶段 2：规范化每个模式
+
+对于每个模式（现有或新的），记录：
 
 ```markdown
-### [Pattern Name]
+### [模式名称]
 
-**Category**: Navigation / Input / Feedback / Data Display / Modal / Overlay / [other]
-**Used In**: [list of screens]
+**类别**：Navigation / Input / Feedback / Data Display / Modal / Overlay / [其他]
+**用于**：[屏幕列表]
 
-**Description**: [One paragraph explaining what this pattern is and when to use it]
+**描述**：[一段解释此模式是什么以及何时使用]
 
-**Specification**:
-- [Component behavior]
-- [Input mapping]
-- [Visual/audio feedback]
-- [Accessibility requirements for this pattern]
+**规范**：
+- [组件行为]
+- [输入映射]
+- [视觉/音频反馈]
+- [此模式的无障碍需求]
 
-**When to Use**: [Conditions where this pattern is appropriate]
-**When NOT to Use**: [Conditions where another pattern is more appropriate]
+**何时使用**：[此模式适用的条件]
+**何时不使用**：[另一种模式更合适的情况]
 
-**Reference**: [Screenshot path or ASCII example, if available]
+**参考**：[截图路径或 ASCII 示例，如果可用]
 ```
 
-Work through patterns in groups. Offer: "Shall I draft the first batch based on what
-I've found in the existing specs, or do you want to define them one by one?"
+分组处理模式。提供："我应该根据我在现有规范中发现的内容起草第一批，
+还是你想逐个定义它们？"
 
 ---
 
-#### Phase 3: Identify Gaps
+#### 阶段 3：识别缺口
 
-After cataloging known patterns, ask:
-- "Are there screens or interactions planned that would need patterns not yet
-  in this library?"
-- "Are there any patterns in existing specs that feel inconsistent with each
-  other and should be consolidated?"
+编目已知模式后，询问：
+- "是否有计划中的屏幕或交互需要此库中尚未存在的模式？"
+- "现有规范中是否有任何模式彼此之间感觉不一致，应该整合？"
 
-Document gaps in the Gaps section for follow-up.
+在缺口部分记录缺口以供后续跟进。
 
 ---
 
-## 5. Cross-Reference Check
+## 5. 交叉引用检查
 
-Before marking the spec as ready for review, run these checks:
+在将规范标记为准备审查之前，运行以下检查：
 
-**1. GDD requirement coverage**: Does every GDD UI Requirement that references
-this screen have a corresponding element in this spec? Present any gaps.
+**1. GDD 需求覆盖**：每个引用此屏幕的 GDD UI Requirement 是否在此规范中都有对应的元素？呈现任何缺口。
 
-**2. Pattern library alignment**: Are all interaction patterns used in this spec
-referenced by name? If a new pattern was invented during this spec session, flag
-it for addition to the pattern library:
-> "This spec uses [pattern name], which isn't in the pattern library yet.
-> Want to add it now, or flag it as a gap?"
+**2. 模式库对齐**：此规范中使用的所有交互模式是否都按名称引用？如果在此规范会话期间发明了一个新模式，标记它以供添加到模式库：
+> "此规范使用 [模式名称]，该名称尚未在模式库中。
+> 想现在添加它，还是标记为缺口？"
 
-**3. Navigation consistency**: Do the entry/exit points in this spec match the
-navigation map in any related specs? Flag mismatches.
+**3. 导航一致性**：此规范中的入口/出口点是否与任何相关规范中的
+导航图匹配？标记不匹配。
 
-**4. Accessibility coverage**: Does the spec address the accessibility tier
-committed to in `design/accessibility-requirements.md`? If not, flag open questions.
+**4. 无障碍覆盖**：规范是否解决了 `design/accessibility-requirements.md` 中承诺的
+无障碍等级？如果没有，标记开放问题。
 
-**5. Empty states**: Does every data-dependent element have an empty state defined?
-Flag any that don't.
+**5. 空状态**：每个数据依赖元素是否都定义了空状态？
+标记任何没有的。
 
-Present the check results:
-> **Cross-Reference Check: [Screen Name]**
-> - GDD requirements: [N of M covered / all covered]
-> - New patterns to add to library: [list or "none"]
-> - Navigation mismatches: [list or "none"]
-> - Accessibility gaps: [list or "none"]
-> - Missing empty states: [list or "none"]
+呈现检查结果：
+> **交叉引用检查：[屏幕名称]**
+> - GDD 需求：[N of M 已覆盖 / 全部已覆盖]
+> - 要添加到库的新模式：[列表或"无"]
+> - 导航不匹配：[列表或"无"]
+> - 无障碍缺口：[列表或"无"]
+> - 缺失的空状态：[列表或"无"]
 
 ---
 
-## 6. Handoff
+## 6. 交接
 
-When all sections are approved and written:
+当所有部分都获得批准并写入后：
 
-### 6a: Update Session State
+### 6a：更新会话状态
 
-Update `production/session-state/active.md` with:
-- Task: [screen-name] UX spec
-- Status: Complete (or In Review)
-- File: design/ux/[filename].md
-- Sections: All written
-- Next: [suggestion]
+更新 `production/session-state/active.md`：
+- 任务：[屏幕名称] UX 规范
+- 状态：完成（或审查中）
+- 文件：design/ux/[filename].md
+- 部分：全部已写入
+- 下一步：[建议]
 
-### 6b: Suggest Next Step
+### 6b：建议下一步
 
-Before presenting options, state clearly:
+在呈现选项之前，明确说明：
 
-> "This spec should be validated with `/ux-review` before it enters the
-> implementation pipeline. The Pre-Production gate requires all key screen specs
-> to have a review verdict."
+> "此规范应在进入实施流水线之前通过 `/ux-review` 进行验证。
+> Pre-Production 门要求所有关键屏幕规范都有审查裁决。"
 
-Then use `AskUserQuestion`:
-- "Run `/ux-review [filename]` now, or do something else first?"
-  - Options:
-    - "Run `/ux-review` now — validate this spec"
-    - "Design another screen first, then review all specs together"
-    - "Update the interaction pattern library with new patterns from this spec"
-    - "Stop here for this session"
+然后使用 `AskUserQuestion`：
+- "现在运行 `/ux-review [filename]`，还是先做其他事情？"
+  - 选项：
+    - "现在运行 `/ux-review` — 验证此规范"
+    - "先设计另一个屏幕，然后一起审查所有规范"
+    - "用此规范中的新模式更新交互模式库"
+    - "本次会话到此为止"
 
-If the user picks "Design another screen first", add a note: "Reminder: run
-`/ux-review` on all completed specs before running `/gate-check pre-production`."
+如果用户选择"先设计另一个屏幕"，添加一条备注："提醒：在运行 `/gate-check pre-production` 之前，对所有已完成的规范运行 `/ux-review`。"
 
-### 6c: Cross-Link Related Specs
+### 6c：交叉链接相关规范
 
-If other UX specs link to or from this screen, note which ones should reference
-this spec. Do not edit those files without asking — just name them.
+如果其他 UX 规范链接到或从此屏幕链接，记录哪些规范应该引用
+此规范。不要未经询问就编辑这些文件 — 只需命名它们。
 
 ---
 
-## 7. Recovery & Resume
+## 7. 恢复与继续
 
-If the session is interrupted (compaction, crash, new session):
+如果会话中断（压缩、崩溃、新会话）：
 
-1. Read `production/session-state/active.md` — it records the current screen
-   and which sections are complete.
-2. Read `design/ux/[filename].md` — sections with real content are done;
-   sections with `[To be designed]` still need work.
-3. Resume from the next incomplete section — no need to re-discuss completed ones.
+1. 读取 `production/session-state/active.md` — 它记录了当前屏幕
+   和哪些部分已完成。
+2. 读取 `design/ux/[filename].md` — 有实际内容的部分已完成；
+   有 `[To be designed]` 的部分仍需要处理。
+3. 从下一个未完成的部分继续 — 无需重新讨论已完成的部分。
 
-This is why incremental writing matters: every approved section survives any
-disruption.
+这就是增量写入的重要性：每个已批准的部分都能在任何
+中断中幸存。
 
 ---
 
-## 8. Specialist Agent Routing
+## 8. 专家 Agent 路由
 
-This skill uses `ux-designer` as the primary agent (set in frontmatter). For
-specific sub-topics, additional context or coordination may be needed:
+此 Skill 使用 `ux-designer` 作为主要 Agent（在 frontmatter 中设置）。对于
+特定子主题，可能需要额外的上下文或协调：
 
-| Topic | Coordinate with |
+| 主题 | 协调对象 |
 |-------|----------------|
-| Visual aesthetics, color, layout feel | `art-director` — UX spec defines zones; art defines how they look |
-| Implementation feasibility (engine constraints) | `ui-programmer` — before finalizing component inventory |
-| Gameplay data requirements | `game-designer` — when data ownership is unclear |
-| Narrative/lore visible in the UI | `narrative-director` — for flavor text, item names, lore panels |
-| Accessibility tier decisions | Handled by this session — owned by ux-designer |
+| 视觉美学、颜色、布局感觉 | `art-director` — UX 规范定义区域；艺术定义它们的外观 |
+| 实现可行性（引擎约束） | `ui-programmer` — 在最终确定组件清单之前 |
+| 游戏玩法数据需求 | `game-designer` — 当数据所有权不明确时 |
+| UI 中可见的叙事/传说 | `narrative-director` — 用于风味文本、物品名称、传说面板 |
+| 无障碍等级决策 | 由此会话处理 — 由 ux-designer 拥有 |
 
-When delegating to another agent via the Task tool:
-- Provide: screen name, game concept summary, the specific question needing expert input
-- The agent returns analysis to this session
-- This session presents the agent's output to the user
-- The user decides; this session writes to file
-- Agents do NOT write to files directly — this session owns all file writes
-
----
-
-## Collaborative Protocol
-
-This skill follows the collaborative design principle at every step:
-
-1. **Question -> Options -> Decision -> Draft -> Approval** for every section
-2. **AskUserQuestion** at every decision point (Explain -> Capture pattern):
-   - Phase 2: "Ready to start, or need more context?"
-   - Phase 3: "May I create the skeleton?"
-   - Phase 4 (each section): design questions, approach options, draft approval
-   - Phase 5: "Run cross-reference check? What's next?"
-3. **"May I write to [filepath]?"** before the skeleton and before each section write
-4. **Incremental writing**: Each section is written to file immediately after approval
-5. **Session state updates**: After every section write
-
-**Aesthetic deference**: When layout or visual choices come down to personal taste,
-present the options and ask. Do not select a layout because it is "standard" — always
-confirm. The user is the creative director.
-
-**Conflict surfacing**: When a GDD requirement and the available screen real estate
-conflict, surface the conflict and present resolution options. Never silently drop
-a requirement. Never silently expand the layout without flagging it.
-
-**Never** auto-generate the full spec and present it as a fait accompli.
-**Never** write a section without user approval.
-**Never** contradict an existing approved UX spec without flagging the conflict.
-**Always** show where decisions come from (GDD requirements, player journey, user choices).
-
-Verdict: **COMPLETE** — UX spec written and approved section by section.
+当通过 Task 工具委派给另一个 Agent 时：
+- 提供：屏幕名称、游戏概念摘要、需要专家输入的具体问题
+- Agent 将分析返回给此会话
+- 此会话向用户呈现 Agent 的输出
+- 用户做出决定；此会话写入文件
+- Agent 不直接写入文件 — 此会话拥有所有文件写入
 
 ---
 
-## Recommended Next Steps
+## 协作协议
 
-- Run `/ux-review [filename]` to validate this spec before it enters the implementation pipeline
-- Run `/ux-design [next-screen]` to continue designing remaining screens or flows
-- Run `/gate-check pre-production` once all key screens have approved UX specs
+此 Skill 在每一步都遵循协作设计原则：
+
+1. 对于每个部分遵循 **问题 -> 选项 -> 决策 -> 草稿 -> 批准**
+2. 在每个决策点使用 **AskUserQuestion**（解释 -> 捕获模式）：
+   - 阶段 2："准备好开始，还是需要更多上下文？"
+   - 阶段 3："我可以创建骨架吗？"
+   - 阶段 4（每个部分）：设计问题、方法选项、草稿批准
+   - 阶段 5："运行交叉引用检查？接下来做什么？"
+3. 在骨架和每个部分写入之前 **"我可以写入 [filepath] 吗？"**
+4. **增量写入**：每个部分在批准后立即写入文件
+5. **会话状态更新**：每次部分写入后
+
+**美学尊重**：当布局或视觉选择归结为个人品味时，
+呈现选项并询问。不要因为它"标准"就选择一种布局 — 始终
+确认。用户是创意总监。
+
+**冲突呈现**：当 GDD 需求和可用屏幕空间
+冲突时，呈现冲突并提供解决方案选项。永远不要默默放弃
+需求。永远不要默默扩展布局而不标记它。
+
+**绝不**自动生成完整规范并将其作为既成事实呈现。
+**绝不**未经用户批准就写入部分。
+**绝不**在未经标记冲突的情况下与现有已批准 UX 规范矛盾。
+**始终**展示决策的来源（GDD 需求、玩家旅程、用户选择）。
+
+裁决：**完成** — UX 规范逐节编写并获得批准。
+
+---
+
+## 建议的下一步
+
+- 运行 `/ux-review [filename]` 以在进入实施流水线之前验证此规范
+- 运行 `/ux-design [next-screen]` 以继续设计剩余屏幕或流程
+- 一旦所有关键屏幕都有已批准的 UX 规范，运行 `/gate-check pre-production`

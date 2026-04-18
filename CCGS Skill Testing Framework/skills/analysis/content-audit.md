@@ -1,164 +1,157 @@
 # Skill Test Spec: /content-audit
 
-## Skill Summary
+## 技能概述
 
-`/content-audit` reads GDDs in `design/gdd/` and checks whether all content
-items specified there (enemies, items, levels, etc.) are accounted for in
-`assets/`. It produces a gap table: Content Type → Specified Count → Found Count
-→ Missing Items. No director gates are invoked. The skill does not write without
-user approval. Verdicts: COMPLETE, GAPS FOUND, or MISSING CRITICAL CONTENT.
+`/content-audit` 读取 `design/gdd/` 中的 GDD 文件，检查其中指定的所有内容项（敌人、物品、关卡等）是否在 `assets/` 中都有对应。它生成一个差距表：内容类型 → 指定数量 → 找到数量 → 缺失项。不调用任何 director gate。该技能在未经用户批准的情况下不会写入文件。裁决结果：COMPLETE、GAPS FOUND 或 MISSING CRITICAL CONTENT。
 
 ---
 
-## Static Assertions (Structural)
+## 静态断言（结构）
 
-Verified automatically by `/skill-test static` — no fixture needed.
+由 `/skill-test static` 自动验证 — 无需测试夹具。
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
-- [ ] Has ≥2 phase headings
-- [ ] Contains verdict keywords: COMPLETE, GAPS FOUND, MISSING CRITICAL CONTENT
-- [ ] Does NOT require "May I write" language (read-only output; write is optional report)
-- [ ] Has a next-step handoff (what to do after gap table is reviewed)
-
----
-
-## Director Gate Checks
-
-None. Content audit is a read-only analysis skill; no gates are invoked.
+- [ ] 具有必需的前置元数据字段：`name`、`description`、`argument-hint`、`user-invocable`、`allowed-tools`
+- [ ] 具有 ≥2 个阶段标题
+- [ ] 包含裁决关键词：COMPLETE、GAPS FOUND、MISSING CRITICAL CONTENT
+- [ ] 不需要 "May I write" 语言（只读输出；写入是可选的报告）
+- [ ] 具有下一步交接（差距表审查后要做什么）
 
 ---
 
-## Test Cases
+## Director Gate 检查
 
-### Case 1: Happy Path — All specified content present
-
-**Fixture:**
-- `design/gdd/enemies.md` specifies 4 enemy types: Grunt, Sniper, Tank, Boss
-- `assets/art/characters/` contains folders: `grunt/`, `sniper/`, `tank/`, `boss/`
-- `design/gdd/items.md` specifies 3 item types; all 3 found in `assets/data/items/`
-
-**Input:** `/content-audit`
-
-**Expected behavior:**
-1. Skill reads all GDDs in `design/gdd/`
-2. Skill scans `assets/` for each specified content item
-3. All 4 enemy types and 3 item types are found
-4. Gap table shows: all rows have Found Count = Specified Count, no missing items
-5. Verdict is COMPLETE
-
-**Assertions:**
-- [ ] Gap table covers all content types found in GDDs
-- [ ] Each row shows Specified Count and Found Count
-- [ ] No missing items when counts match
-- [ ] Verdict is COMPLETE
-- [ ] No files are written
+无。Content audit 是一个只读分析技能；不调用任何 gate。
 
 ---
 
-### Case 2: Gaps Found — Enemy type missing from assets
+## 测试用例
 
-**Fixture:**
-- `design/gdd/enemies.md` specifies 3 enemy types: Grunt, Sniper, Boss
-- `assets/art/characters/` contains: `grunt/`, `sniper/` only (Boss folder missing)
+### 用例 1：理想路径 — 所有指定内容都存在
 
-**Input:** `/content-audit`
+**测试夹具：**
+- `design/gdd/enemies.md` 指定 4 种敌人类型：Grunt、Sniper、Tank、Boss
+- `assets/art/characters/` 包含文件夹：`grunt/`、`sniper/`、`tank/`、`boss/`
+- `design/gdd/items.md` 指定 3 种物品类型；所有 3 种都在 `assets/data/items/` 中找到
 
-**Expected behavior:**
-1. Skill reads GDD — finds 3 enemy types specified
-2. Skill scans `assets/art/characters/` — finds only 2
-3. Gap table row for enemies: Specified 3, Found 2, Missing: Boss
-4. Verdict is GAPS FOUND
+**输入：** `/content-audit`
 
-**Assertions:**
-- [ ] Gap table row identifies "Boss" as the missing item by name
-- [ ] Specified Count (3) and Found Count (2) are both shown
-- [ ] Verdict is GAPS FOUND when any content item is missing
-- [ ] Skill does not assume the asset will be added later — it flags it now
+**预期行为：**
+1. 技能读取 `design/gdd/` 中的所有 GDD 文件
+2. 技能扫描 `assets/` 中的每个指定内容项
+3. 找到所有 4 种敌人类型和 3 种物品类型
+4. 差距表显示：所有行的找到数量 = 指定数量，无缺失项
+5. 裁决结果为 COMPLETE
 
----
-
-### Case 3: No GDD Content Specs Found — Guidance given
-
-**Fixture:**
-- `design/gdd/` contains only `core-loop.md` which has no content inventory section
-- No other GDDs exist with content specifications
-
-**Input:** `/content-audit`
-
-**Expected behavior:**
-1. Skill reads all GDDs — finds no content inventory sections
-2. Skill outputs: "No content specifications found in GDDs — run /design-system first to define content lists"
-3. No gap table is produced
-4. Verdict is GAPS FOUND (cannot confirm completeness without specs)
-
-**Assertions:**
-- [ ] Skill does not produce a gap table when no GDD content specs exist
-- [ ] Output recommends running `/design-system`
-- [ ] Verdict reflects inability to confirm completeness
+**断言：**
+- [ ] 差距表涵盖 GDD 中找到的所有内容类型
+- [ ] 每行显示指定数量和找到数量
+- [ ] 当数量匹配时无缺失项
+- [ ] 裁决结果为 COMPLETE
+- [ ] 未写入任何文件
 
 ---
 
-### Case 4: Edge Case — Asset in wrong format for target platform
+### 用例 2：发现差距 — 敌人类型在 assets 中缺失
 
-**Fixture:**
-- `design/gdd/audio.md` specifies audio assets as OGG format
-- `assets/audio/sfx/jump.wav` exists (WAV format, not OGG)
-- `assets/audio/sfx/land.ogg` exists (correct format)
-- `technical-preferences.md` specifies audio format: OGG
+**测试夹具：**
+- `design/gdd/enemies.md` 指定 3 种敌人类型：Grunt、Sniper、Boss
+- `assets/art/characters/` 包含：仅 `grunt/`、`sniper/`（Boss 文件夹缺失）
 
-**Input:** `/content-audit`
+**输入：** `/content-audit`
 
-**Expected behavior:**
-1. Skill reads GDD audio spec and technical preferences for format requirements
-2. Skill finds `jump.wav` — present but in wrong format
-3. Gap table row for audio: Specified 2, Found 2 (by name), but `jump.wav` flagged as FORMAT ISSUE
-4. Verdict is GAPS FOUND (format compliance is part of content completeness)
+**预期行为：**
+1. 技能读取 GDD — 找到 3 种指定的敌人类型
+2. 技能扫描 `assets/art/characters/` — 仅找到 2 种
+3. 敌人行的差距表：指定 3，找到 2，缺失：Boss
+4. 裁决结果为 GAPS FOUND
 
-**Assertions:**
-- [ ] Skill checks asset format against GDD or technical preferences when format is specified
-- [ ] `jump.wav` is flagged as FORMAT ISSUE with expected format (OGG) noted
-- [ ] Format issues are distinct from missing content in the gap table
-- [ ] Verdict is GAPS FOUND when format issues exist
+**断言：**
+- [ ] 差距表行通过名称标识 "Boss" 为缺失项
+- [ ] 显示指定数量（3）和找到数量（2）
+- [ ] 当任何内容项缺失时，裁决结果为 GAPS FOUND
+- [ ] 技能不假设资产稍后会添加 — 立即标记
 
 ---
 
-### Case 5: Gate Compliance — Read-only; no gate; gap table for human review
+### 用例 3：未找到 GDD 内容规范 — 提供指导
 
-**Fixture:**
-- GDDs specify 10 content items; 9 are found in assets; 1 is missing
-- `review-mode.txt` contains `full`
+**测试夹具：**
+- `design/gdd/` 仅包含 `core-loop.md`，其中没有内容清单部分
+- 不存在其他包含内容规范的 GDD 文件
 
-**Input:** `/content-audit`
+**输入：** `/content-audit`
 
-**Expected behavior:**
-1. Skill reads GDDs and scans assets; produces gap table
-2. No director gate is invoked regardless of review mode
-3. Skill presents gap table to user as read-only output
-4. Verdict is GAPS FOUND
-5. Skill offers to write an audit report but does not write automatically
+**预期行为：**
+1. 技能读取所有 GDD — 未找到内容清单部分
+2. 技能输出："No content specifications found in GDDs — run /design-system first to define content lists"
+3. 不生成差距表
+4. 裁决结果为 GAPS FOUND（没有规范无法确认完整性）
 
-**Assertions:**
-- [ ] No director gate is invoked in any review mode
-- [ ] Gap table is presented without auto-writing any file
-- [ ] Optional report write is offered but not forced
-- [ ] Skill does not modify any asset files
+**断言：**
+- [ ] 当不存在 GDD 内容规范时，技能不生成差距表
+- [ ] 输出建议运行 `/design-system`
+- [ ] 裁决反映无法确认完整性
 
 ---
 
-## Protocol Compliance
+### 用例 4：边界情况 — 资产格式与目标平台不匹配
 
-- [ ] Reads GDDs and asset directory before producing gap table
-- [ ] Gap table shows Content Type, Specified Count, Found Count, Missing Items
-- [ ] Does not write files without explicit user approval
-- [ ] No director gates are invoked
-- [ ] Verdict is one of: COMPLETE, GAPS FOUND, MISSING CRITICAL CONTENT
+**测试夹具：**
+- `design/gdd/audio.md` 指定音频资产为 OGG 格式
+- `assets/audio/sfx/jump.wav` 存在（WAV 格式，非 OGG）
+- `assets/audio/sfx/land.ogg` 存在（正确格式）
+- `technical-preferences.md` 指定音频格式：OGG
+
+**输入：** `/content-audit`
+
+**预期行为：**
+1. 技能读取 GDD 音频规范和格式要求的技术偏好
+2. 技能找到 `jump.wav` — 存在但格式错误
+3. 音频行的差距表：指定 2，找到 2（按名称），但 `jump.wav` 标记为 FORMAT ISSUE
+4. 裁决结果为 GAPS FOUND（格式合规性是内容完整性的一部分）
+
+**断言：**
+- [ ] 当指定格式时，技能根据 GDD 或技术偏好检查资产格式
+- [ ] `jump.wav` 标记为 FORMAT ISSUE，并注明预期格式（OGG）
+- [ ] 格式问题在差距表中与缺失内容区分开
+- [ ] 当存在格式问题时，裁决结果为 GAPS FOUND
 
 ---
 
-## Coverage Notes
+### 用例 5：Gate 合规性 — 只读；无 gate；差距表供人工审查
 
-- MISSING CRITICAL CONTENT verdict (vs. GAPS FOUND) is triggered when the
-  missing item is tagged as critical in the GDD; this is not explicitly tested
-  but follows the same detection path.
-- The case where `assets/` directory does not exist is not tested; the skill
-  would produce a MISSING CRITICAL CONTENT verdict for all specified items.
+**测试夹具：**
+- GDD 指定 10 个内容项；在 assets 中找到 9 个；缺失 1 个
+- `review-mode.txt` 包含 `full`
+
+**输入：** `/content-audit`
+
+**预期行为：**
+1. 技能读取 GDD 并扫描 assets；生成差距表
+2. 无论审查模式如何，都不调用 director gate
+3. 技能将差距表作为只读输出呈现给用户
+4. 裁决结果为 GAPS FOUND
+5. 技能提供写入审计报告的选项，但不自动写入
+
+**断言：**
+- [ ] 在任何审查模式下都不调用 director gate
+- [ ] 差距表呈现时不自动写入任何文件
+- [ ] 提供可选报告写入但不强制
+- [ ] 技能不修改任何资产文件
+
+---
+
+## 协议合规性
+
+- [ ] 在生成差距表之前读取 GDD 和资产目录
+- [ ] 差距表显示内容类型、指定数量、找到数量、缺失项
+- [ ] 未经明确用户批准不写入文件
+- [ ] 不调用任何 director gate
+- [ ] 裁决结果为以下之一：COMPLETE、GAPS FOUND、MISSING CRITICAL CONTENT
+
+---
+
+## 覆盖范围说明
+
+- MISSING CRITICAL CONTENT 裁决（相对于 GAPS FOUND）在缺失项在 GDD 中被标记为关键时触发；这未明确测试但遵循相同的检测路径。
+- 未测试 `assets/` 目录不存在的情况；技能将为所有指定项生成 MISSING CRITICAL CONTENT 裁决。

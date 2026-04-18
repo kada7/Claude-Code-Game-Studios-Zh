@@ -1,6 +1,6 @@
 ---
 name: architecture-review
-description: "Validates completeness and consistency of the project architecture against all GDDs. Builds a traceability matrix mapping every GDD technical requirement to ADRs, identifies coverage gaps, detects cross-ADR conflicts, verifies engine compatibility consistency across all decisions, and produces a PASS/CONCERNS/FAIL verdict. The architecture equivalent of /design-review."
+description: "针对所有GDD验证项目架构的完整性和一致性。构建可追溯性矩阵，将每个GDD技术要求映射到ADR，识别覆盖差距，检测跨ADR冲突，验证所有决策中的引擎兼容性一致性，并生成通过/关注/不通过的裁决。相当于/design-review的架构版本。"
 argument-hint: "[focus: full | coverage | consistency | engine | single-gdd path/to/gdd.md]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Task, AskUserQuestion

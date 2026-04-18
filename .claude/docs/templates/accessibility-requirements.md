@@ -1,10 +1,10 @@
-# Accessibility Requirements: [Game Title]
+# 可访问性需求: [游戏标题]
 
-> **Status**: Draft | Committed | Audited | Certified
-> **Author**: [ux-designer / producer]
-> **Last Updated**: [Date]
-> **Accessibility Tier Target**: [Basic / Standard / Comprehensive / Exemplary]
-> **Platform(s)**: [PC / Xbox / PlayStation 5 / Nintendo Switch / iOS / Android]
+> **状态**: 草案 | 已承诺 | 已审核 | 已认证
+> **作者**: [ux-designer / producer]
+> **最后更新**: [日期]
+> **可访问性层级目标**: [基本 | 标准 | 全面 | 典范]
+> **平台**: [PC / Xbox / PlayStation 5 / Nintendo Switch / iOS / Android]
 > **External Standards Targeted**:
 > - WCAG 2.1 Level [A / AA / AAA]
 > - AbleGamers CVAA Guidelines

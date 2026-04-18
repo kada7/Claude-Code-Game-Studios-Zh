@@ -1,25 +1,21 @@
-# Director Gates — Shared Review Pattern
+# Director Gates — 共享审查模式
 
-This document defines the standard gate prompts for all director and lead reviews
-across every workflow stage. Skills reference gate IDs from this document instead
-of embedding full prompts inline — eliminating drift when prompts need updating.
+本文档定义了所有总监和负责人在每个工作流程阶段的标准门控提示。技能引用本文档中的门控ID，而不是内嵌完整的提示语——消除提示语需要更新时的偏差。
 
-**Scope**: All 7 production stages (Concept → Release), all 3 Tier 1 directors,
-all key Tier 2 leads. Any skill, team orchestrator, or workflow may invoke these gates.
+**范围**: 所有7个生产阶段（概念 → 发布），所有3个一级总监，所有关键的二级负责人。任何技能、团队协调器或工作流程都可以调用这些门。
 
 ---
 
-## How to Use This Document
+## 如何使用本文档
 
-In any skill, replace an inline director prompt with a reference:
+在任何技能中，将内联的总监提示替换为引用：
 
 ```
 Spawn `creative-director` via Task using gate **CD-PILLARS** from
 `.claude/docs/director-gates.md`.
 ```
 
-Pass the context listed under that gate's **Context to pass** field, then handle
-the verdict using the **Verdict handling** rules below.
+传递该门控**待传递上下文**字段下列出的上下文，然后使用下面的**裁决处理**规则处理裁决。
 
 ---
 

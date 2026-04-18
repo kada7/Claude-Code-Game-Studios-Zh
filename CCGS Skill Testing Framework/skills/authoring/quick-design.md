@@ -1,176 +1,162 @@
 # Skill Test Spec: /quick-design
 
-## Skill Summary
+## 技能摘要
 
-`/quick-design` produces a lightweight design spec for features too small to
-warrant a full 8-section GDD. The target scope is under 4 hours of design time
-for a single-system feature. Instead of the full 8-section GDD format, the
-quick-design spec uses a streamlined 3-section format: Overview, Rules, and
-Acceptance Criteria.
+`/quick-design` 为规模过小、不值得进行完整8部分 GDD（游戏设计文档）的特性生成轻量级设计规范。目标范围是单个系统特性，设计时间少于4小时。该技能不使用完整的8部分 GDD 格式，而是采用简化的3部分格式：概述、规则和验收标准。
 
-The skill has no director gates — adding gate overhead would defeat the purpose
-of a lightweight design tool. The skill asks "May I write" before writing the
-design note to `design/quick-notes/[name].md`. If the feature scope is too large
-for a quick-design, the skill redirects to `/design-system` instead.
+该技能没有导演关卡——添加关卡开销会违背轻量级设计工具的初衷。该技能在将设计笔记写入 `design/quick-notes/[name].md` 之前会询问“我可以写入吗”。如果特性范围对于快速设计来说过大，该技能会重定向到 `/design-system`。
 
 ---
 
-## Static Assertions (Structural)
+## 静态断言（结构）
 
-Verified automatically by `/skill-test static` — no fixture needed.
+由 `/skill-test static` 自动验证——无需 Fixture。
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
-- [ ] Has ≥2 phase headings
-- [ ] Contains verdict keywords: CREATED, BLOCKED, REDIRECTED
-- [ ] Contains "May I write" collaborative protocol language (for quick-note file)
-- [ ] Has a next-step handoff at the end
-- [ ] Explicitly notes: no director gates (lightweight skill by design)
-- [ ] Mentions scope check: redirects to `/design-system` if scope exceeds sub-4h threshold
-
----
-
-## Director Gate Checks
-
-No director gates — this skill spawns no director gate agents. The lightweight
-nature of quick-design means director gate overhead is intentionally absent.
-Full GDD review is not needed for sub-4-hour single-system features.
+- [ ] 具有必需的前言字段：`name`、`description`、`argument-hint`、`user-invocable`、`allowed-tools`
+- [ ] 具有≥2个阶段标题
+- [ ] 包含判定关键词：CREATED、BLOCKED、REDIRECTED
+- [ ] 包含“我可以写入”协作协议语言（用于快速笔记文件）
+- [ ] 末尾有下一步交接
+- [ ] 明确注明：无导演关卡（按设计为轻量级技能）
+- [ ] 提及范围检查：如果范围超过4小时阈值，则重定向到 `/design-system`
 
 ---
 
-## Test Cases
+## 导演关卡检查
 
-### Case 1: Happy Path — Small UI change produces a 3-section spec
+无导演关卡——该技能不生成任何导演关卡代理。快速设计的轻量级特性意味着特意避免了导演关卡的开销。对于设计时间少于4小时的单个系统特性，不需要完整的 GDD 评审。
+
+---
+
+## 测试用例
+
+### 用例 1：Happy Path —— 小型 UI 变更生成3部分规范
 
 **Fixture:**
-- No existing quick-note for the target feature
-- Feature is clearly scoped: a single UI element change with no cross-system impact
+- 目标特性没有现有的快速笔记
+- 特性范围明确：单个 UI 元素变更，无跨系统影响
 
-**Input:** `/quick-design [feature-name]`
+**输入:** `/quick-design [feature-name]`
 
-**Expected behavior:**
-1. Skill asks scoping questions: what system, what change, what is the acceptance signal
-2. Skill determines scope is within the sub-4h threshold
-3. Skill drafts a 3-section spec: Overview, Rules, Acceptance Criteria
-4. Draft is shown to user
-5. "May I write `design/quick-notes/[name].md`?" is asked
-6. File is written after approval
+**预期行为:**
+1. 技能询问范围问题：哪个系统、什么变更、验收信号是什么
+2. 技能确定范围在4小时阈值内
+3. 技能起草包含3部分的规范：概述、规则、验收标准
+4. 草案展示给用户
+5. 询问“我可以写入 `design/quick-notes/[name].md` 吗？”
+6. 批准后写入文件
 
-**Assertions:**
-- [ ] Spec contains exactly 3 sections: Overview, Rules, Acceptance Criteria
-- [ ] Draft is shown to user before "May I write" ask
-- [ ] "May I write `design/quick-notes/[name].md`?" is asked before writing
-- [ ] File is written to the correct path: `design/quick-notes/[name].md`
-- [ ] Verdict is CREATED after successful write
+**断言:**
+- [ ] 规范恰好包含3部分：概述、规则、验收标准
+- [ ] 草案在询问“我可以写入”之前展示给用户
+- [ ] 在写入前询问“我可以写入 `design/quick-notes/[name].md` 吗？”
+- [ ] 文件被写入到正确路径：`design/quick-notes/[name].md`
+- [ ] 成功写入后判定为 CREATED
 
 ---
 
-### Case 2: Failure Path — Scope check fails; redirected to /design-system
+### 用例 2：失败路径 —— 范围检查失败；重定向到 /design-system
 
 **Fixture:**
-- Feature described spans multiple systems or would take more than 4 hours of design time
-  (e.g., "redesign the entire combat system" or "new progression mechanic affecting all classes")
+- 描述的特性跨越多个系统或需要超过4小时的设计时间（例如，“重新设计整个战斗系统”或“影响所有职业的新进度机制”）
 
-**Input:** `/quick-design [large-feature]`
+**输入:** `/quick-design [large-feature]`
 
-**Expected behavior:**
-1. Skill asks scoping questions
-2. Skill determines scope exceeds the sub-4h / single-system threshold
-3. Skill outputs: "This feature is too large for a quick-design. Use `/design-system [name]` for a full GDD."
-4. Skill does NOT write a quick-note file
-5. Verdict is REDIRECTED
+**预期行为:**
+1. 技能询问范围问题
+2. 技能确定范围超过4小时/单个系统阈值
+3. 技能输出：“此特性对于快速设计来说过大。请使用 `/design-system [name]` 进行完整的 GDD。”
+4. 技能不写入快速笔记文件
+5. 判定为 REDIRECTED
 
-**Assertions:**
-- [ ] Skill detects the scope excess and stops before drafting
-- [ ] Message explicitly names `/design-system` as the correct alternative
-- [ ] No quick-note file is written
-- [ ] Verdict is REDIRECTED (not CREATED or BLOCKED)
+**断言:**
+- [ ] 技能检测到范围过大并在起草前停止
+- [ ] 消息明确命名 `/design-system` 作为正确的替代方案
+- [ ] 未写入快速笔记文件
+- [ ] 判定为 REDIRECTED（非 CREATED 或 BLOCKED）
 
 ---
 
-### Case 3: Edge Case — File already exists; offered to update
+### 用例 3：边缘案例 —— 文件已存在；提供更新选项
 
 **Fixture:**
-- `design/quick-notes/[name].md` already exists from a previous session
+- `design/quick-notes/[name].md` 已存在，来自之前的会话
 
-**Input:** `/quick-design [name]`
+**输入:** `/quick-design [name]`
 
-**Expected behavior:**
-1. Skill detects existing quick-note file and reads its current content
-2. Skill asks: "[name].md already exists. Update it, or create a new version?"
-3. User selects update
-4. Skill shows the existing spec and asks which section to revise
-5. Updated spec is shown, "May I write?" asked, file updated after approval
+**预期行为:**
+1. 技能检测到现有的快速笔记文件并读取其当前内容
+2. 技能询问：“[name].md 已存在。更新它，还是创建新版本？”
+3. 用户选择更新
+4. 技能展示现有的规范并询问要修订哪个部分
+5. 更新后的规范被展示，询问“我可以写入吗？”，批准后更新文件
 
-**Assertions:**
-- [ ] Skill detects and reads the existing file before offering to update
-- [ ] User is offered update or create-new options — not auto-overwritten
-- [ ] Only the revised section is updated (or the whole spec if user chooses full rewrite)
-- [ ] "May I write" is asked before overwriting the existing file
+**断言:**
+- [ ] 技能在提供更新选项之前检测并读取现有文件
+- [ ] 为用户提供更新或创建新版本的选项——而非自动覆盖
+- [ ] 仅更新修订的部分（或如果用户选择完全重写，则更新整个规范）
+- [ ] 在覆盖现有文件之前询问“我可以写入”
 
 ---
 
-### Case 4: Edge Case — No argument provided
+### 用例 4：边缘案例 —— 未提供参数
 
 **Fixture:**
-- `design/quick-notes/` directory may or may not exist
+- `design/quick-notes/` 目录可能存在，也可能不存在
 
-**Input:** `/quick-design` (no argument)
+**输入:** `/quick-design` （无参数）
 
-**Expected behavior:**
-1. Skill detects no argument is provided
-2. Skill outputs a usage error: "No feature name specified. Usage: /quick-design [feature-name]"
-3. Skill provides an example: `/quick-design pause-menu-settings`
-4. No file is created
+**预期行为:**
+1. 技能检测到未提供参数
+2. 技能输出使用错误：“未指定特性名称。用法：/quick-design [feature-name]”
+3. 技能提供一个示例：`/quick-design pause-menu-settings`
+4. 不创建文件
 
-**Assertions:**
-- [ ] Skill outputs a usage error when no argument is given
-- [ ] A usage example is shown with the correct format
-- [ ] No quick-note file is written
-- [ ] Skill does NOT silently pick a feature name or default to any action
+**断言:**
+- [ ] 未提供参数时技能输出使用错误
+- [ ] 显示正确格式的使用示例
+- [ ] 未写入快速笔记文件
+- [ ] 技能不会静默选择特性名称或默认为任何操作
 
 ---
 
-### Case 5: Director Gate — No gate spawned; explicitly noted for sub-4h features
+### 用例 5：导演关卡 —— 未生成关卡；明确注明适用于4小时内特性
 
 **Fixture:**
-- Feature is within scope for quick-design
-- `production/session-state/review-mode.txt` exists with `full`
+- 特性在快速设计的范围内
+- `production/session-state/review-mode.txt` 存在且内容为 `full`
 
-**Input:** `/quick-design [feature-name]`
+**输入:** `/quick-design [feature-name]`
 
-**Expected behavior:**
-1. Skill asks scoping questions and determines scope is within threshold
-2. Skill does NOT read `production/session-state/review-mode.txt`
-3. Skill does NOT spawn any director gate agent
-4. Spec is drafted, "May I write" asked, file written after approval
-5. Output explicitly notes: "No director gate review — quick-design is for sub-4h features"
+**预期行为:**
+1. 技能询问范围问题并确定范围在阈值内
+2. 技能不读取 `production/session-state/review-mode.txt`
+3. 技能不生成任何导演关卡代理
+4. 规范被起草，询问“我可以写入吗？”，批准后写入文件
+5. 输出明确注明：“无导演关卡评审——快速设计适用于设计时间少于4小时的特性”
 
-**Assertions:**
-- [ ] No director gate agents are spawned (no CD-, TD-, PR-, AD- prefixed gates)
-- [ ] Skill does NOT read `production/session-state/review-mode.txt`
-- [ ] Output contains a note explaining why no gate review is needed
-- [ ] Review mode has no effect on this skill's behavior
-- [ ] Full GDD review path (`/design-system`) is mentioned as the alternative for larger features
-
----
-
-## Protocol Compliance
-
-- [ ] Scope check runs before drafting (redirects to `/design-system` if scope too large)
-- [ ] 3-section format used (Overview, Rules, Acceptance Criteria) — NOT the 8-section GDD format
-- [ ] Draft shown to user before "May I write" ask
-- [ ] "May I write `design/quick-notes/[name].md`?" asked before writing
-- [ ] No director gates — no review-mode.txt read
-- [ ] Ends with next-step handoff (e.g., proceed to implementation or `/dev-story`)
+**断言:**
+- [ ] 未生成任何导演关卡代理（无 CD-、TD-、PR-、AD- 前缀的关卡）
+- [ ] 技能不读取 `production/session-state/review-mode.txt`
+- [ ] 输出包含说明为何不需要关卡评审的注释
+- [ ] 评审模式对该技能的行为无影响
+- [ ] 提及完整的 GDD 评审路径 (`/design-system`) 作为大型特性的替代方案
 
 ---
 
-## Coverage Notes
+## 协议合规性
 
-- The scope threshold heuristic (sub-4h, single-system) is a judgment call —
-  the skill's internal check is the authoritative definition and is not
-  independently tested by counting hours.
-- The `design/quick-notes/` directory is created automatically if it does not
-  exist — this filesystem behavior is not independently tested here.
-- Integration with the story pipeline (can a quick-design generate a story
-  directly?) is out of scope for this spec — quick-designs are standalone.
+- [ ] 起草前运行范围检查（如果范围过大，则重定向到 `/design-system`）
+- [ ] 使用3部分格式（概述、规则、验收标准）——非8部分 GDD 格式
+- [ ] 在询问“我可以写入吗”之前向用户展示草案
+- [ ] 在写入前询问“我可以写入 `design/quick-notes/[name].md` 吗？”
+- [ ] 无导演关卡——不读取 review-mode.txt
+- [ ] 以下一步交接结束（例如，继续实施或 `/dev-story`）
+
+---
+
+## 覆盖范围说明
+
+- 范围阈值启发式方法（设计时间少于4小时，单个系统）是基于判断的——技能的内部检查是权威定义，不会通过计算小时数进行独立测试。
+- 如果 `design/quick-notes/` 目录不存在，则自动创建——此文件系统行为不在此独立测试。
+- 与故事流水线的集成（快速设计能否直接生成故事？）超出本规范的范畴——快速设计是独立的。

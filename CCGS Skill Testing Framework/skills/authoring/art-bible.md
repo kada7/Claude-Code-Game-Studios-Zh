@@ -2,17 +2,9 @@
 
 ## Skill Summary
 
-`/art-bible` is a guided, section-by-section art bible authoring skill. It
-produces a comprehensive visual direction document covering: Visual Style overview,
-Color Palette, Typography, Character Design Rules, Environment Style, and UI
-Visual Language. The skill follows the skeleton-first pattern: creates the file
-with all section headers immediately, then fills each section through discussion
-and writes each to disk after user approval.
+`/art-bible` 是一个引导式的、逐章节创作的 art bible 技能。它生成一份全面的视觉方向文档，涵盖：视觉风格概览、色彩调色板、字体排版、角色设计规则、环境风格和 UI 视觉语言。该技能遵循骨架优先模式：立即创建包含所有章节标题的文件，然后通过讨论填充每个章节，并在用户批准后将每个章节写入磁盘。
 
-In `full` review mode, the AD-ART-BIBLE director gate (art director) runs after
-the draft is complete and before any section is written. In `lean` and `solo`
-modes, AD-ART-BIBLE is skipped and only user approval is required. The verdict
-is COMPLETE when all sections are written.
+在 `full` 评审模式下，AD-ART-BIBLE 导演门（art director）在草稿完成后、任何章节写入之前运行。在 `lean` 和 `solo` 模式下，AD-ART-BIBLE 被跳过，仅需要用户批准。当所有章节都写入后，裁决为 COMPLETE。
 
 ---
 

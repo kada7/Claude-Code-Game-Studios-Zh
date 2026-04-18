@@ -1,204 +1,198 @@
-# Skill Test Spec: /team-qa
+# 技能测试规范：/team-qa
 
-## Skill Summary
+## 技能摘要
 
-Orchestrates the QA team through a 7-phase structured testing cycle. Coordinates
-qa-lead (strategy, test plan, sign-off report) and qa-tester (test case writing,
-bug report writing). Covers scope detection, story classification, QA plan
-generation, smoke check gate, test case writing, manual QA execution with bug
-filing, and a final sign-off report with an APPROVED / APPROVED WITH CONDITIONS /
-NOT APPROVED verdict. Parallel qa-tester spawning is used in Phase 5 for
-independent stories.
+通过一个 7 阶段结构化测试周期协调 QA 团队。协调 qa-lead（策略、测试计划、签核报告）和 qa-tester（测试用例编写、错误报告编写）。涵盖范围检测、Story 分类、QA 计划生成、冒烟检查关卡、测试用例编写、带错误提交的手动 QA 执行以及带有 APPROVED / APPROVED WITH CONDITIONS / NOT APPROVED 裁决的最终签核报告。阶段 5 中为独立 Story 使用并行 qa-tester 生成。
 
 ---
 
-## Static Assertions (Structural)
+## 静态断言（结构）
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
-- [ ] Has ≥2 phase headings
-- [ ] Contains verdict keywords: COMPLETE, BLOCKED
-- [ ] Contains verdict keywords for sign-off report: APPROVED, APPROVED WITH CONDITIONS, NOT APPROVED
-- [ ] Contains "May I write" language for both the QA plan and the sign-off report
-- [ ] Has an Error Recovery Protocol section
-- [ ] Uses `AskUserQuestion` at phase transitions to capture user approval before proceeding
-- [ ] Phase 4 (smoke check) is a hard gate: FAIL stops the cycle
-- [ ] Bug reports are written to `production/qa/bugs/` with `BUG-[NNN]-[short-slug].md` naming
-- [ ] Next-step guidance differs by verdict (APPROVED / APPROVED WITH CONDITIONS / NOT APPROVED)
-- [ ] Independent qa-tester tasks in Phase 5 are spawned in parallel
-
----
-
-## Test Cases
-
-### Case 1: Happy Path — All stories pass manual QA, APPROVED verdict
-
-**Fixture:**
-- `production/sprints/sprint-03/` exists with 4 story files
-- Stories are a mix of types: 1 Logic, 1 Integration, 2 Visual/Feel
-- All stories have acceptance criteria populated
-- `tests/smoke/` contains a smoke test list; all items are verifiable
-- No existing bugs in `production/qa/bugs/`
-
-**Input:** `/team-qa sprint-03`
-
-**Expected behavior:**
-1. Phase 1: Reads all story files in `production/sprints/sprint-03/`; reads `production/stage.txt`; reports "Found 4 stories. Current stage: [stage]. Ready to begin QA strategy?"
-2. Phase 2: Spawns `qa-lead` via Task; produces strategy table classifying all 4 stories; no blockers flagged; presents to user; AskUserQuestion: user selects "Looks good — proceed to test plan"
-3. Phase 3: Produces QA plan document; asks "May I write the QA plan to `production/qa/qa-plan-sprint-03-[date].md`?"; writes after approval
-4. Phase 4: Spawns `qa-lead` via Task; reviews `tests/smoke/`; returns PASS; reports "Smoke check passed. Proceeding to test case writing."
-5. Phase 5: Spawns `qa-tester` via Task for each Visual/Feel and Integration story (2–3 stories); run in parallel; presents test cases grouped by story; AskUserQuestion per group; user approves
-6. Phase 6: Walks through each approved story; user marks all as PASS; result summary: "Stories PASS: 4, FAIL: 0, BLOCKED: 0"
-7. Phase 7: Spawns `qa-lead` via Task to produce sign-off report; report shows all stories PASS; no bugs filed; Verdict: APPROVED; asks "May I write this QA sign-off report to `production/qa/qa-signoff-sprint-03-[date].md`?"; writes after approval
-8. Verdict: COMPLETE — QA cycle finished
-
-**Assertions:**
-- [ ] Phase 1 correctly counts and reports 4 stories with current stage
-- [ ] Strategy table in Phase 2 classifies all 4 stories with correct types
-- [ ] QA plan written only after "May I write?" approval
-- [ ] Smoke check PASS allows pipeline to continue without user intervention
-- [ ] Phase 5 qa-tester tasks for independent stories are issued in parallel
-- [ ] Sign-off report includes Test Coverage Summary table and Verdict: APPROVED
-- [ ] Sign-off report written only after "May I write?" approval
-- [ ] Verdict: COMPLETE appears in final output
-- [ ] Next step: "Run `/gate-check` to validate advancement."
+- [ ] 具有必需的前置元数据字段：`name`、`description`、`argument-hint`、`user-invocable`、`allowed-tools`
+- [ ] 具有 ≥2 个阶段标题
+- [ ] 包含裁决关键词：COMPLETE、BLOCKED
+- [ ] 包含签核报告的裁决关键词：APPROVED、APPROVED WITH CONDITIONS、NOT APPROVED
+- [ ] 包含 QA 计划和签核报告的 "May I write" 语言
+- [ ] 存在错误恢复协议部分
+- [ ] 在阶段转换时使用 `AskUserQuestion` 获取用户批准
+- [ ] 阶段 4（冒烟检查）是硬关卡：FAIL 停止周期
+- [ ] 错误报告写入 `production/qa/bugs/`，命名约定为 `BUG-[NNN]-[short-slug].md`
+- [ ] 后续步骤指导因裁决而异（APPROVED / APPROVED WITH CONDITIONS / NOT APPROVED）
+- [ ] 阶段 5 中的独立 qa-tester 任务并行生成
 
 ---
 
-### Case 2: Smoke Check Fail — QA cycle stops at Phase 4
+## 测试用例
 
-**Fixture:**
-- `production/sprints/sprint-04/` exists with 3 story files
-- `tests/smoke/` exists with 5 smoke test items; 2 items cannot be verified (e.g., build is unstable, core navigation broken)
+### 用例 1：理想路径 —— 所有 Story 通过手动 QA，APPROVED 裁决
 
-**Input:** `/team-qa sprint-04`
+**测试夹具：**
+- `production/sprints/sprint-03/` 存在并包含 4 个 Story 文件
+- Story 混合类型：1 个 Logic、1 个 Integration、2 个 Visual/Feel
+- 所有 Story 都填充了验收标准
+- `tests/smoke/` 包含冒烟测试列表；所有项目都可验证
+- `production/qa/bugs/` 中不存在现有错误
 
-**Expected behavior:**
-1. Phases 1–3 complete normally; QA plan is written
-2. Phase 4: Spawns `qa-lead` via Task; smoke check returns FAIL; two specific failures are identified
-3. Skill reports: "Smoke check failed. QA cannot begin until these issues are resolved: [list of 2 failures]. Fix them and re-run `/smoke-check`, or re-run `/team-qa` once resolved."
-4. Skill stops immediately after Phase 4 — no Phase 5, 6, or 7 is executed
-5. No sign-off report is produced; no "May I write?" for a sign-off is issued
+**输入：** `/team-qa sprint-03`
 
-**Assertions:**
-- [ ] Smoke check FAIL causes the pipeline to halt at Phase 4 — Phases 5, 6, 7 are NOT executed
-- [ ] Failure list is shown to the user explicitly (not summarized vaguely)
-- [ ] Skill recommends `/smoke-check` and `/team-qa` re-run as remediation steps
-- [ ] No QA sign-off report is written or offered
-- [ ] Skill does NOT produce a COMPLETE verdict
-- [ ] Any QA plan already written in Phase 3 is preserved (not deleted)
+**预期行为：**
+1. 阶段 1：读取 `production/sprints/sprint-03/` 中的所有 Story 文件；读取 `production/stage.txt`；报告"找到 4 个 Story。当前阶段：[stage]。准备开始 QA 策略？"
+2. 阶段 2：通过 Task 生成 `qa-lead`；生成策略表对所有 4 个 Story 进行分类；未标记阻塞项；展示给用户；AskUserQuestion：用户选择"看起来不错 —— 继续测试计划"
+3. 阶段 3：生成 QA 计划文档；询问"May I write the QA plan to `production/qa/qa-plan-sprint-03-[date].md`?"；批准后写入
+4. 阶段 4：通过 Task 生成 `qa-lead`；审查 `tests/smoke/`；返回 PASS；报告"冒烟检查通过。继续编写测试用例。"
+5. 阶段 5：通过 Task 为每个 Visual/Feel 和 Integration Story（2–3 个 Story）生成 `qa-tester`；并行运行；按 Story 分组展示测试用例；每组 AskUserQuestion；用户批准
+6. 阶段 6：遍历每个已批准的 Story；用户将所有标记为 PASS；结果摘要："Stories PASS：4，FAIL：0，BLOCKED：0"
+7. 阶段 7：通过 Task 生成 `qa-lead` 以生成签核报告；报告显示所有 Story PASS；未提交错误；裁决：APPROVED；询问"May I write this QA sign-off report to `production/qa/qa-signoff-sprint-03-[date].md`?"；批准后写入
+8. 裁决：COMPLETE —— QA 周期完成
 
----
-
-### Case 3: Bug Found — Visual/Feel story fails manual QA, bug report filed
-
-**Fixture:**
-- `production/sprints/sprint-05/` exists with 2 story files: 1 Logic (passes automated tests), 1 Visual/Feel
-- `tests/smoke/` smoke check passes
-- The Visual/Feel story's animation timing is visibly wrong (acceptance criterion not met)
-- `production/qa/bugs/` directory exists (empty or with existing bugs)
-
-**Input:** `/team-qa sprint-05`
-
-**Expected behavior:**
-1. Phases 1–5 complete normally; test cases are written for the Visual/Feel story
-2. Phase 6: User marks Visual/Feel story as FAIL; AskUserQuestion collects failure description: "Animation plays at 2x speed — jitter visible on every loop"
-3. Phase 6: Spawns `qa-tester` via Task to write a formal bug report; bug report written to `production/qa/bugs/BUG-001-animation-speed-jitter.md` (or next increment if bugs exist); report includes severity field
-4. Result summary: "Stories PASS: 1, FAIL: 1 — bugs filed: BUG-001"
-5. Phase 7: Spawns `qa-lead` to produce sign-off report; Bugs Found table lists BUG-001 with severity and status Open; Verdict: NOT APPROVED (S1/S2 bug open, or FAIL without documented workaround)
-6. Sign-off report write is offered; writes after approval
-7. Next step: "Resolve S1/S2 bugs and re-run `/team-qa` or targeted manual QA before advancing."
-
-**Assertions:**
-- [ ] FAIL result in Phase 6 triggers AskUserQuestion to collect the failure description before the bug report is written
-- [ ] `qa-tester` is spawned via Task to write the bug report — orchestrator does not write it directly
-- [ ] Bug report follows naming convention: `BUG-[NNN]-[short-slug].md` in `production/qa/bugs/`
-- [ ] Bug report NNN is incremented correctly from existing bugs in the directory
-- [ ] Phase 7 sign-off report Bugs Found table includes the bug ID, story name, severity, and status
-- [ ] Verdict in sign-off report is NOT APPROVED
-- [ ] Next step explicitly mentions re-running `/team-qa`
-- [ ] Verdict: COMPLETE is still issued by the orchestrator (the QA cycle finished — the verdict is NOT APPROVED, but the skill completed its pipeline)
+**断言：**
+- [ ] 阶段 1 正确计数并报告 4 个 Story 及当前阶段
+- [ ] 阶段 2 中的策略表对所有 4 个 Story 进行正确类型分类
+- [ ] QA 计划仅在 "May I write?" 批准后写入
+- [ ] 冒烟检查 PASS 允许流水线无需用户干预即可继续
+- [ ] 阶段 5 中独立 Story 的 qa-tester 任务并行发出
+- [ ] 签核报告包含测试覆盖摘要表和裁决：APPROVED
+- [ ] 签核报告仅在 "May I write?" 批准后写入
+- [ ] 最终输出中存在裁决：COMPLETE
+- [ ] 后续步骤："运行 `/gate-check` 以验证推进。"
 
 ---
 
-### Case 4: No Argument — Skill infers active sprint or asks user
+### 用例 2：冒烟检查失败 —— QA 周期在阶段 4 停止
 
-**Fixture (variant A — state files present):**
-- `production/session-state/active.md` exists and contains a reference to `sprint-06`
-- `production/sprint-status.yaml` exists and identifies `sprint-06` as active
+**测试夹具：**
+- `production/sprints/sprint-04/` 存在并包含 3 个 Story 文件
+- `tests/smoke/` 存在并包含 5 个冒烟测试项目；2 个项目无法验证（例如，构建不稳定，核心导航损坏）
 
-**Fixture (variant B — state files absent):**
-- `production/session-state/active.md` does NOT exist
-- `production/sprint-status.yaml` does NOT exist
+**输入：** `/team-qa sprint-04`
 
-**Input:** `/team-qa` (no argument)
+**预期行为：**
+1. 阶段 1–3 正常完成；QA 计划已写入
+2. 阶段 4：通过 Task 生成 `qa-lead`；冒烟检查返回 FAIL；识别出两个具体失败
+3. 技能报告："冒烟检查失败。在解决这些问题前无法开始 QA：[2 个失败列表]。修复它们并重新运行 `/smoke-check`，或解决后重新运行 `/team-qa`。"
+4. 技能在阶段 4 后立即停止 —— 不执行阶段 5、6 或 7
+5. 不生成签核报告；不发出签核的 "May I write"
 
-**Expected behavior (variant A):**
-1. Phase 1: No argument provided; reads `production/session-state/active.md`; reads `production/sprint-status.yaml`
-2. Detects `sprint-06` as the active sprint from both sources
-3. Proceeds as if `/team-qa sprint-06` was the input; reports "No sprint argument provided — inferred sprint-06 from session state. Found [N] stories."
-
-**Expected behavior (variant B):**
-1. Phase 1: No argument provided; attempts to read `production/session-state/active.md` — file missing; attempts to read `production/sprint-status.yaml` — file missing
-2. Cannot infer sprint; uses AskUserQuestion: "Which sprint or feature should QA cover?" with options to type a sprint identifier or cancel
-
-**Assertions:**
-- [ ] Skill does NOT default to a hardcoded sprint name when no argument is provided
-- [ ] Skill reads both `production/session-state/active.md` AND `production/sprint-status.yaml` before asking the user (variant A)
-- [ ] When both state files are absent, skill uses AskUserQuestion rather than guessing (variant B)
-- [ ] Inferred sprint is reported to the user before proceeding (variant A transparency)
-- [ ] Skill does NOT error out when state files are missing — it falls back to asking (variant B)
+**断言：**
+- [ ] 冒烟检查 FAIL 导致流水线在阶段 4 停止 —— 不执行阶段 5、6、7
+- [ ] 失败列表被明确展示给用户（不是模糊总结）
+- [ ] 技能建议 `/smoke-check` 和 `/team-qa` 重新运行作为修复步骤
+- [ ] 不写入或提供 QA 签核报告
+- [ ] 技能不产生 COMPLETE 裁决
+- [ ] 阶段 3 中已写入的任何 QA 计划被保留（不会被删除）
 
 ---
 
-### Case 5: Mixed Results — Some PASS, one FAIL with S1 bug, one BLOCKED
+### 用例 3：发现错误 —— Visual/Feel Story 未通过手动 QA，提交错误报告
 
-**Fixture:**
-- `production/sprints/sprint-07/` exists with 4 story files
-- Smoke check passes
-- Story A (Logic): automated test passes — PASS
-- Story B (UI): manual QA — PASS WITH NOTES (minor text overflow)
-- Story C (Visual/Feel): manual QA — FAIL; tester identifies S1 crash on ability activation
-- Story D (Integration): cannot test — BLOCKED (dependency system not yet implemented)
+**测试夹具：**
+- `production/sprints/sprint-05/` 存在并包含 2 个 Story 文件：1 个 Logic（通过自动化测试）、1 个 Visual/Feel
+- `tests/smoke/` 冒烟检查通过
+- Visual/Feel Story 的动画时间明显错误（未达到验收标准）
+- `production/qa/bugs/` 目录存在（空或包含现有错误）
 
-**Input:** `/team-qa sprint-07`
+**输入：** `/team-qa sprint-05`
 
-**Expected behavior:**
-1. Phases 1–5 proceed; Phase 5 test cases cover stories B, C, D
-2. Phase 6: User marks Story A as implicitly PASS (automated); Story B: PASS WITH NOTES; Story C: FAIL; Story D: BLOCKED
-3. After Story C FAIL: qa-tester spawned to write bug report `BUG-001-crash-ability-activation.md` with S1 severity
-4. Result summary presented: "Stories PASS: 1, PASS WITH NOTES: 1, FAIL: 1 — bugs filed: BUG-001 (S1), BLOCKED: 1"
-5. Phase 7: qa-lead produces sign-off report covering all 4 stories; BUG-001 listed as S1/Open; Story D listed as BLOCKED; Verdict: NOT APPROVED
-6. Sign-off report written after "May I write?" approval
-7. Next step: "Resolve S1/S2 bugs and re-run `/team-qa` or targeted manual QA before advancing."
+**预期行为：**
+1. 阶段 1–5 正常完成；为 Visual/Feel Story 编写测试用例
+2. 阶段 6：用户将 Visual/Feel Story 标记为 FAIL；AskUserQuestion 收集失败描述："动画以 2 倍速播放 —— 每次循环都可见抖动"
+3. 阶段 6：通过 Task 生成 `qa-tester` 以编写正式错误报告；错误报告写入 `production/qa/bugs/BUG-001-animation-speed-jitter.md`（如果存在错误则为下一个递增）；报告包含严重等级字段
+4. 结果摘要："Stories PASS：1，FAIL：1 —— 提交错误：BUG-001"
+5. 阶段 7：生成 `qa-lead` 以生成签核报告；发现的错误表列出 BUG-001 及严重等级和状态 Open；裁决：NOT APPROVED（S1/S2 错误开放，或 FAIL 无记录变通方法）
+6. 提供签核报告写入；批准后写入
+7. 后续步骤："解决 S1/S2 错误并重新运行 `/team-qa` 或针对性手动 QA 后再推进。"
 
-**Assertions:**
-- [ ] All 4 stories appear in the Phase 7 sign-off report Test Coverage Summary table — none are silently omitted
-- [ ] Story D (BLOCKED) is listed in the report with a BLOCKED status, not silently dropped
-- [ ] S1 bug causes Verdict: NOT APPROVED regardless of the other stories passing
-- [ ] PASS WITH NOTES stories do not downgrade to FAIL — they are tracked separately
-- [ ] BUG-001 severity is listed as S1 in the Bugs Found table
-- [ ] Partial results are preserved — the sign-off report is still produced even with failures and blocks
-- [ ] Verdict: COMPLETE is issued by the orchestrator (pipeline completed); sign-off verdict is NOT APPROVED
-
----
-
-## Protocol Compliance
-
-- [ ] `AskUserQuestion` used at Phase 2 (strategy review), Phase 5 (test case approval per group), and Phase 6 (per-story manual QA result)
-- [ ] Phase 4 smoke check is a hard gate: FAIL halts the pipeline at Phase 4 with no exceptions
-- [ ] "May I write?" asked separately for QA plan (Phase 3) and sign-off report (Phase 7)
-- [ ] Bug reports are always written by `qa-tester` via Task — orchestrator does not write directly
-- [ ] Phase 5 qa-tester tasks for independent stories are issued in parallel where possible
-- [ ] Error recovery: any BLOCKED agent is surfaced immediately with AskUserQuestion options
-- [ ] Partial report always produced — no work is discarded because one story failed or blocked
-- [ ] Sign-off verdict rules are strictly applied: any S1/S2 bug open = NOT APPROVED; no exceptions
-- [ ] Orchestrator-level Verdict: COMPLETE is distinct from the sign-off report's APPROVED/NOT APPROVED verdict
+**断言：**
+- [ ] 阶段 6 中的 FAIL 结果在编写错误报告前触发 AskUserQuestion 以收集失败描述
+- [ ] `qa-tester` 通过 Task 生成以编写错误报告 —— 编排器不直接编写
+- [ ] 错误报告遵循命名约定：`production/qa/bugs/` 中的 `BUG-[NNN]-[short-slug].md`
+- [ ] 错误报告 NNN 根据目录中的现有错误正确递增
+- [ ] 阶段 7 签核报告中的发现的错误表包含错误 ID、Story 名称、严重等级和状态
+- [ ] 签核报告中的裁决为 NOT APPROVED
+- [ ] 后续步骤明确提及重新运行 `/team-qa`
+- [ ] 编排器仍发出裁决：COMPLETE（QA 周期已完成 —— 裁决是 NOT APPROVED，但技能完成了其流水线）
 
 ---
 
-## Coverage Notes
+### 用例 4：无参数 —— 技能推断活动 Sprint 或询问用户
 
-- The "APPROVED WITH CONDITIONS" verdict path (S3/S4 bugs, PASS WITH NOTES) is covered implicitly by Case 5's PASS WITH NOTES story (Story B) — if no S1/S2 bugs existed, that case would produce APPROVED WITH CONDITIONS. A dedicated case is not required as the verdict logic is table-driven.
-- The `feature: [system-name]` argument form is not separately tested — it follows the same Phase 1 logic as the sprint form, using glob instead of directory read. The no-argument inference path (Case 4) provides sufficient coverage of the detection logic.
-- Logic stories with passing automated tests do not need manual QA — this is validated implicitly by Case 5 (Story A) where the Logic story receives no manual QA phase.
-- Parallel qa-tester spawning in Phase 5 is validated implicitly by Case 1 (multiple Visual/Feel stories issued simultaneously); no dedicated parallelism case is required beyond the Static Assertions check.
+**测试夹具（变体 A —— 状态文件存在）：**
+- `production/session-state/active.md` 存在并包含对 `sprint-06` 的引用
+- `production/sprint-status.yaml` 存在并将 `sprint-06` 标识为活动状态
+
+**测试夹具（变体 B —— 状态文件缺失）：**
+- `production/session-state/active.md` 不存在
+- `production/sprint-status.yaml` 不存在
+
+**输入：** `/team-qa`（无参数）
+
+**预期行为（变体 A）：**
+1. 阶段 1：未提供参数；读取 `production/session-state/active.md`；读取 `production/sprint-status.yaml`
+2. 从两个来源检测到 `sprint-06` 为活动 Sprint
+3. 如同输入 `/team-qa sprint-06` 一样进行；报告"未提供 Sprint 参数 —— 从会话状态推断为 sprint-06。找到 [N] 个 Story。"
+
+**预期行为（变体 B）：**
+1. 阶段 1：未提供参数；尝试读取 `production/session-state/active.md` —— 文件缺失；尝试读取 `production/sprint-status.yaml` —— 文件缺失
+2. 无法推断 Sprint；使用 AskUserQuestion："QA 应覆盖哪个 Sprint 或功能？"并提供输入 Sprint 标识符或取消的选项
+
+**断言：**
+- [ ] 未提供参数时，技能不会默认为硬编码的 Sprint 名称
+- [ ] 技能在询问用户前读取 `production/session-state/active.md` 和 `production/sprint-status.yaml`（变体 A）
+- [ ] 当两个状态文件都不存在时，技能使用 AskUserQuestion 而不是猜测（变体 B）
+- [ ] 推断的 Sprint 在继续前被报告给用户（变体 A 透明度）
+- [ ] 当状态文件缺失时，技能不会报错 —— 它会回退到询问（变体 B）
+
+---
+
+### 用例 5：混合结果 —— 一些 PASS，一个 FAIL 含 S1 错误，一个 BLOCKED
+
+**测试夹具：**
+- `production/sprints/sprint-07/` 存在并包含 4 个 Story 文件
+- 冒烟检查通过
+- Story A（Logic）：自动化测试通过 —— PASS
+- Story B（UI）：手动 QA —— PASS WITH NOTES（minor text overflow）
+- Story C（Visual/Feel）：手动 QA —— FAIL；测试员识别出能力激活时的 S1 崩溃
+- Story D（Integration）：无法测试 —— BLOCKED（依赖系统尚未实现）
+
+**输入：** `/team-qa sprint-07`
+
+**预期行为：**
+1. 阶段 1–5 进行；阶段 5 测试用例覆盖 Story B、C、D
+2. 阶段 6：用户将 Story A 标记为隐式 PASS（自动化）；Story B：PASS WITH NOTES；Story C：FAIL；Story D：BLOCKED
+3. Story C FAIL 后：生成 qa-tester 以编写错误报告 `BUG-001-crash-ability-activation.md`，严重等级为 S1
+4. 展示结果摘要："Stories PASS：1，PASS WITH NOTES：1，FAIL：1 —— 提交错误：BUG-001（S1），BLOCKED：1"
+5. 阶段 7：qa-lead 生成覆盖所有 4 个 Story 的签核报告；BUG-001 列为 S1/Open；Story D 列为 BLOCKED；裁决：NOT APPROVED
+6. 在 "May I write?" 批准后写入签核报告
+7. 后续步骤："解决 S1/S2 错误并重新运行 `/team-qa` 或针对性手动 QA 后再推进。"
+
+**断言：**
+- [ ] 所有 4 个 Story 都出现在阶段 7 签核报告的测试覆盖摘要表中 —— 没有被静默省略
+- [ ] Story D（BLOCKED）在报告中以 BLOCKED 状态列出，不是被静默丢弃
+- [ ] S1 错误导致裁决：NOT APPROVED，无论其他 Story 是否通过
+- [ ] PASS WITH NOTES 的 Story 不会降级为 FAIL —— 它们被单独跟踪
+- [ ] BUG-001 严重等级在发现的错误表中列为 S1
+- [ ] 保留部分结果 —— 即使有失败和阻塞，仍生成签核报告
+- [ ] 编排器发出裁决：COMPLETE（流水线已完成）；签核裁决为 NOT APPROVED
+
+---
+
+## 协议合规性
+
+- [ ] 在阶段 2（策略审查）、阶段 5（每组测试用例批准）和阶段 6（每个 Story 的手动 QA 结果）使用 `AskUserQuestion`
+- [ ] 阶段 4 冒烟检查是硬关卡：FAIL 停止流水线，无例外
+- [ ] 分别为 QA 计划（阶段 3）和签核报告（阶段 7）询问 "May I write?"
+- [ ] 错误报告始终由 `qa-tester` 通过 Task 编写 —— 编排器不直接编写
+- [ ] 在可能的情况下，阶段 5 中独立 Story 的 qa-tester 任务并行发出
+- [ ] 错误恢复：任何 BLOCKED 代理都立即通过 AskUserQuestion 选项被展示
+- [ ] 始终生成部分报告 —— 不会因一个 Story 失败或阻塞而丢弃任何工作
+- [ ] 严格应用签核裁决规则：任何开放的 S1/S2 错误 = NOT APPROVED；无例外
+- [ ] 编排器级裁决：COMPLETE 与签核报告的 APPROVED/NOT APPROVED 裁决不同
+
+---
+
+## 覆盖说明
+
+- "APPROVED WITH CONDITIONS"裁决路径（S3/S4 错误、PASS WITH NOTES）通过用例 5 的 PASS WITH NOTES Story（Story B）隐式覆盖 —— 如果不存在 S1/S2 错误，该用例将产生 APPROVED WITH CONDITIONS。不需要专用用例，因为裁决逻辑是表驱动的。
+- `feature: [system-name]` 参数形式未单独测试 —— 它遵循与 Sprint 形式相同的阶段 1 逻辑，使用 glob 而非目录读取。无参数推断路径（用例 4）提供了检测逻辑的充分覆盖。
+- 通过自动化测试的 Logic Story 不需要手动 QA —— 这通过用例 5（Story A）隐式验证，其中 Logic Story 不接受手动 QA 阶段。
+- 阶段 5 中的并行 qa-tester 生成通过用例 1（同时发出多个 Visual/Feel Story）隐式验证；除了静态断言检查外，不需要专用的并行用例。

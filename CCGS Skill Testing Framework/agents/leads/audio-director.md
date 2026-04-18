@@ -1,84 +1,84 @@
-# Agent Test Spec: audio-director
+# Agent 测试规范：audio-director
 
-## Agent Summary
-**Domain owned:** Music direction and palette, sound design philosophy, audio implementation strategy, mix balance, audio aspects of phase gates.
-**Does NOT own:** Visual design (art-director), code implementation (lead-programmer), narrative story content (narrative-director), UX interaction flows (ux-designer).
-**Model tier:** Sonnet (individual system analysis — audio direction and spec review).
-**Gate IDs handled:** AD-VISUAL (audio aspect of the phase gate; may be referenced as part of AD-PHASE-GATE in the audio dimension).
-
----
-
-## Static Assertions (Structural)
-
-Verified by reading the agent's `.claude/agents/audio-director.md` frontmatter:
-
-- [ ] `description:` field is present and domain-specific (references music direction, sound design, mix, audio implementation — not generic)
-- [ ] `allowed-tools:` list is read-focused; no Bash unless audio asset pipeline checks are justified
-- [ ] Model tier is `claude-sonnet-4-6` per coordination-rules.md
-- [ ] Agent definition does not claim authority over visual design, code implementation, or narrative content
+## Agent 概览
+**负责领域：** 音乐方向和调色板、声音设计概念、音频实现策略、混音平衡、阶段门的音频方面。
+**不负责：** 视觉设计（art-director）、代码实现（lead-programmer）、叙事故事内容（narrative-director）、UX交互流程（ux-designer）。
+**模型层级：** Sonnet（单个系统分析 — 音频方向和规范审查）。
+**处理的 Gate ID：** AD-VISUAL（阶段门的音频方面；可能在音频维度中作为 AD-PHASE-GATE 的一部分引用）。
 
 ---
 
-## Test Cases
+## 静态断言（结构）
 
-### Case 1: In-domain request — appropriate output format
-**Scenario:** An audio specification document is submitted for the game's "Exploration" music layer. The spec defines a generative ambient system using layered stems that shift based on environmental density, designed to reinforce the pillar "lived-in world." The tone palette (sparse, organic, slightly melancholic) matches the established design pillars.
-**Expected:** Returns `APPROVED` with rationale confirming the stem-based approach supports dynamic responsiveness and the tone palette aligns with the pillar vocabulary.
-**Assertions:**
-- [ ] Verdict is exactly one of APPROVED / NEEDS REVISION
-- [ ] Rationale references the specific pillar ("lived-in world") and how the audio spec supports it
-- [ ] Output stays within audio scope — does not comment on visual design of the environment or UI layout
-- [ ] Verdict is clearly labeled with context (e.g., "Audio Spec Review: APPROVED")
+通过读取 agent 的 `.claude/agents/audio-director.md` frontmatter 验证：
 
-### Case 2: Out-of-domain request — redirects or escalates
-**Scenario:** A developer asks audio-director to evaluate whether the UI flow for the audio settings menu (the sequence of screens and options) is intuitive and well-organized.
-**Expected:** Agent declines to evaluate UI interaction flow and redirects to ux-designer.
-**Assertions:**
-- [ ] Does not make any binding decision about UI flow or information architecture
-- [ ] Explicitly names `ux-designer` as the correct handler
-- [ ] May note audio-specific requirements for the settings menu (e.g., "must include separate master, music, and SFX sliders"), but defers flow and layout decisions to ux-designer
-
-### Case 3: Gate verdict — correct vocabulary
-**Scenario:** A music cue for the final boss encounter is submitted. The cue is an upbeat, major-key orchestral piece with fast tempo. The game pillars and narrative context for this encounter specify "dread, inevitability, and tragic sacrifice." The audio cue's emotional register directly contradicts the intended emotional beat.
-**Expected:** Returns `NEEDS REVISION` with specific citation of the emotional mismatch: the cue's upbeat/major-key/fast-tempo characteristics versus the intended dread/inevitability/sacrifice emotional targets from the pillars and narrative context.
-**Assertions:**
-- [ ] Verdict is exactly one of APPROVED / NEEDS REVISION — not freeform text
-- [ ] Rationale identifies the specific musical characteristics that conflict with the emotional targets
-- [ ] References the specific emotional targets from the game pillars or narrative context
-- [ ] Provides actionable direction for revision (e.g., "shift to minor key, slower tempo, reduce ensemble density")
-
-### Case 4: Conflict escalation — correct parent
-**Scenario:** sound-designer proposes implementing audio occlusion using real-time raycast-based physics queries (technical approach). technical-artist argues this is too expensive and proposes a zone-based trigger system instead. Both agree the occlusion effect is desirable; the conflict is purely about implementation approach.
-**Expected:** audio-director decides on the desired audio behavior (what occlusion should sound like and when it should activate), then defers the implementation approach decision to technical-artist or lead-programmer as the implementation experts. audio-director does not make the technical implementation choice.
-**Assertions:**
-- [ ] Defines the desired audio behavior clearly (what should the player hear and when)
-- [ ] Explicitly defers the implementation approach (raycast vs. zone-trigger) to `lead-programmer` or `technical-artist`
-- [ ] Does not unilaterally choose the technical implementation method
-- [ ] Frames the handoff clearly: "audio-director owns what, technical lead owns how"
-
-### Case 5: Context pass — uses provided context
-**Scenario:** Agent receives a gate context block that includes the game's three pillars: "emergent stories," "meaningful sacrifice," and "lived-in world." A sound design spec for ambient environmental audio is submitted.
-**Expected:** Assessment evaluates the ambient audio spec against all three pillars specifically — how does the audio support (or undermine) each pillar? Uses the pillar vocabulary directly in the rationale.
-**Assertions:**
-- [ ] References all three provided pillars by name in the assessment
-- [ ] Evaluates the audio spec's contribution to each pillar explicitly
-- [ ] Does not generate generic audio direction advice — all feedback is tied to the provided pillar vocabulary
-- [ ] Identifies if any pillar is not supported by the current audio spec and flags it
+- [ ] `description:` 字段存在且是领域特定的（涵盖音乐方向、声音设计、混音、音频实现 — 非通用描述）
+- [ ] `allowed-tools:` 列表是读取导向的；除非有正当理由用于音频资源流水线检查，否则不包含 Bash
+- [ ] 模型层级为 `claude-sonnet-4-6`（根据 coordination-rules.md）
+- [ ] Agent 定义不宣称对视觉设计、代码实现或叙事内容拥有权限
 
 ---
 
-## Protocol Compliance
+## 测试用例
 
-- [ ] Returns verdicts using APPROVED / NEEDS REVISION vocabulary only
-- [ ] Stays within declared audio domain
-- [ ] Defers implementation approach decisions to technical leads
-- [ ] Does not use gate ID prefix format in the same way as director-tier agents (audio-director uses APPROVED / NEEDS REVISION inline, but should still reference the gate context)
-- [ ] Does not make binding visual design, UX, narrative, or code implementation decisions
+### 测试用例 1：领域内请求 — 适当的输出格式
+**场景：** 提交游戏"探索"音乐层的音频规范文档。该规范定义了一个基于分层音轨的生成环境系统，根据环境密度进行转换，旨在强化"真实世界"支柱。调色板（稀疏、有机、略带忧郁）与已建立的设计支柱匹配。
+**预期：** 返回 `APPROVED`，并给出理由，确认基于音轨的方法支持动态响应性，且调色板与支柱词汇对齐。
+**断言：**
+- [ ] 裁决正好是 APPROVED / NEEDS REVISION
+- [ ] 理由引用特定支柱（"真实世界"）以及音频规范如何支持它
+- [ ] 输出保持在音频领域内 — 不评论环境视觉设计或UI布局
+- [ ] 裁决带有明确的上下文标签（例如，"Audio Spec Review: APPROVED"）
+
+### 测试用例 2：领域外请求 — 重定向或升级
+**场景：** 开发者要求 audio-director 评估音频设置菜单的UI流程（屏幕和选项的顺序）是否直观且组织良好。
+**预期：** Agent 拒绝评估UI交互流程，并重定向到 ux-designer。
+**断言：**
+- [ ] 不做任何关于UI流程或信息架构的约束性决定
+- [ ] 明确命名 `ux-designer` 为正确的处理者
+- [ ] 可以指出设置菜单的音频特定要求（例如，"必须包括独立的主音量、音乐和SFX滑块"），但将流程和布局决策留给 ux-designer
+
+### 测试用例 3：Gate 裁决 — 正确的词汇
+**场景：** 提交最终首领遭遇的音乐提示。该提示是一首欢快、大调、愉快的管弦乐作品。游戏支柱和遭遇的叙事背景要求"恐惧、必然性和悲剧性牺牲"。音频提示的情感状态直接与预期的情感节拍相矛盾。
+**预期：** 返回 `NEEDS REVISION`，并具体引用情感不匹配：提示的欢快/大调/快节奏特征与支柱和叙事背景中预期的恐惧/必然性/牺牲情感目标之间的对比。
+**断言：**
+- [ ] 裁决正好是 APPROVED / NEEDS REVISION — 非自由格式文本
+- [ ] 理由识别与情感目标冲突的特定音乐特征
+- [ ] 引用游戏支柱或叙事背景中的特定情感目标
+- [ ] 提供可操作的修订方向（例如，"转为小调、减慢节奏、减少合奏密度"）
+
+### 测试用例 4：冲突升级 — 正确的升级路径
+**场景：** sound-designer 提议使用实时射线投射物理查询实现音频遮挡（技术方法）。technical-artist 认为这太昂贵，并提出基于区域的触发系统替代方案。双方都同意遮挡效果是可取的；冲突纯粹是关于实现方法。
+**预期：** audio-director 决定期望的音频行为（遮挡应该听起来如何以及何时激活），然后将实现方法决策委托给 technical-artist 或 lead-programmer 作为实现专家。audio-director 不做技术实现选择。
+**断言：**
+- [ ] 清晰地定义期望的音频行为（玩家应该听到什么以及何时听到）
+- [ ] 明确将实现方法（射线投射 vs. 区域触发器）委托给 `lead-programmer` 或 `technical-artist`
+- [ ] 不单方面选择技术实现方法
+- [ ] 清晰地描述交接："audio-director 拥有内容，技术负责人拥有方法"
+
+### 测试用例 5：上下文传递 — 使用提供的上下文
+**场景：** Agent 接收一个包含三个游戏支柱的 gate 上下文块："emergent stories"、"meaningful sacrifice" 和 "lived-in world"。提交环境音频的声音设计规范。
+**预期：** 根据所有三个支柱具体评估环境音频规范 — 音频如何支持（或破坏）每个支柱？在理由中直接使用支柱词汇。
+**断言：**
+- [ ] 在评估中按名称引用所有三个提供的支柱
+- [ ] 明确评估音频规范对每个支柱的贡献
+- [ ] 不生成通用的音频指导建议 — 所有反馈都与提供的支柱词汇相关联
+- [ ] 识别当前音频规范是否不支持任何支柱，并标记它
 
 ---
 
-## Coverage Notes
-- Mix balance review (relative levels between music, SFX, and dialogue) is not covered — a dedicated case should be added.
-- Audio implementation strategy review (middleware choice, streaming approach) is not covered.
-- Interaction between audio-director and the audio specialist agent (if one exists) for implementation delegation is not covered.
-- Localization audio implications (VO recording direction, language-specific music timing) are not covered.
+## 协议合规性
+
+- [ ] 仅使用 APPROVED / NEEDS REVISION 词汇返回裁决
+- [ ] 保持在声明的音频领域内
+- [ ] 将实现方法决策委托给技术负责人
+- [ ] 不使用像director层级agent那样的gate ID前缀格式（audio-director 使用内联的 APPROVED / NEEDS REVISION，但仍应引用gate上下文）
+- [ ] 不做约束性的视觉设计、UX、叙事或代码实现决策
+
+---
+
+## 覆盖范围说明
+- 混音平衡审查（音乐、SFX和对话之间的相对水平）未覆盖 — 应添加专用测试用例。
+- 音频实现策略审查（中间件选择、流媒体方法）未覆盖。
+- audio-director 和音频专家agent之间的实现委托交互（如果存在）未覆盖。
+- 本地化音频影响（VO录制指导、语言特定音乐计时）未覆盖。

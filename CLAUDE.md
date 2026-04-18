@@ -1,54 +1,53 @@
-# Claude Code Game Studios -- Game Studio Agent Architecture
+# Claude Code Game Studios -- 游戏工作室 Agent 架构
 
-Indie game development managed through 48 coordinated Claude Code subagents.
-Each agent owns a specific domain, enforcing separation of concerns and quality.
+由 48 个协同的 Claude Code 子 Agent 管理的独立游戏开发。
+每个 Agent 拥有特定的领域，负责强制执行关注点分离和质量控制。
 
-## Technology Stack
+## 技术栈
 
-- **Engine**: [CHOOSE: Godot 4 / Unity / Unreal Engine 5]
-- **Language**: [CHOOSE: GDScript / C# / C++ / Blueprint]
-- **Version Control**: Git with trunk-based development
-- **Build System**: [SPECIFY after choosing engine]
-- **Asset Pipeline**: [SPECIFY after choosing engine]
+- **引擎**: [CHOOSE: Godot 4 / Unity / Unreal Engine 5]
+- **语言**: [CHOOSE: GDScript / C# / C++ / Blueprint]
+- **版本控制**: Git (主干开发模式)
+- **构建系统**: [SPECIFY after choosing engine]
+- **资源流水线**: [SPECIFY after choosing engine]
 
-> **Note**: Engine-specialist agents exist for Godot, Unity, and Unreal with
-> dedicated sub-specialists. Use the set matching your engine.
+> **注意**: 已为 Godot、Unity 和 Unreal 提供了配备专属子专家的引擎专家 Agent。请使用与你的引擎匹配的集。
 
-## Project Structure
+## 项目结构
 
 @.claude/docs/directory-structure.md
 
-## Engine Version Reference
+## 引擎版本参考
 
 @docs/engine-reference/godot/VERSION.md
 
-## Technical Preferences
+## 技术偏好
 
 @.claude/docs/technical-preferences.md
 
-## Coordination Rules
+## 协同规则
 
 @.claude/docs/coordination-rules.md
 
-## Collaboration Protocol
+## 协作协议
 
-**User-driven collaboration, not autonomous execution.**
-Every task follows: **Question -> Options -> Decision -> Draft -> Approval**
+**由用户驱动协作，而非自主执行。**
+每项任务都遵循：**问题 -> 选项 -> 决策 -> 草稿 -> 批准**
 
-- Agents MUST ask "May I write this to [filepath]?" before using Write/Edit tools
-- Agents MUST show drafts or summaries before requesting approval
-- Multi-file changes require explicit approval for the full changeset
-- No commits without user instruction
+- Agent 在使用 Write/Edit 工具前必须询问：“我可以将其写入 [filepath] 吗？”
+- Agent 在请求批准前必须展示草稿或摘要
+- 多文件变更需要对整个变更集进行明确批准
+- 未经用户指示，不得进行提交 (commits)
 
-See `docs/COLLABORATIVE-DESIGN-PRINCIPLE.md` for full protocol and examples.
+详细协议与示例请参阅 `docs/COLLABORATIVE-DESIGN-PRINCIPLE.md`。
 
-> **First session?** If the project has no engine configured and no game concept,
-> run `/start` to begin the guided onboarding flow.
+> **第一次会话？** 如果项目尚未配置引擎且没有游戏概念，
+> 请运行 `/start` 开始引导式的上手流程。
 
-## Coding Standards
+## 编码标准
 
 @.claude/docs/coding-standards.md
 
-## Context Management
+## 上下文管理
 
 @.claude/docs/context-management.md

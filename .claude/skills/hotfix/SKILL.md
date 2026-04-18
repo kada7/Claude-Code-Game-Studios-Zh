@@ -1,26 +1,26 @@
 ---
 name: hotfix
-description: "Emergency fix workflow that bypasses normal sprint processes with a full audit trail. Creates hotfix branch, tracks approvals, and ensures the fix is backported correctly."
+description: "绕过正常冲刺流程的紧急修复工作流，带有完整审计追踪。创建热修复分支、跟踪审批，并确保修复被正确回溯移植。"
 argument-hint: "[bug-id or description]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task
 ---
 
-> **Explicit invocation only**: This skill should only run when the user explicitly requests it with `/hotfix`. Do not auto-invoke based on context matching.
+> **仅显式调用**: 只有当用户显式使用 `/hotfix` 请求时，此技能才应运行。不要基于上下文匹配自动调用。
 
 ## Phase 1: Assess Severity
 
-Read the bug description or ID. Determine severity:
+读取 bug 描述或 ID。确定严重程度：
 
-- **S1 (Critical)**: Game unplayable, data loss, security vulnerability — hotfix immediately
-- **S2 (Major)**: Significant feature broken, workaround exists — hotfix within 24 hours
-- If severity is S3 or lower, recommend using the normal bug fix workflow instead and stop.
+- **S1 (Critical)**: 游戏无法玩，数据丢失，安全漏洞 — 立即热修复
+- **S2 (Major)**: 重要功能损坏，存在解决方法 — 24 小时内热修复
+- 如果严重性是 S3 或更低，建议改用正常的 bug 修复工作流并停止。
 
 ---
 
 ## Phase 2: Create Hotfix Record
 
-Draft the hotfix record:
+起草热修复记录：
 
 ```markdown
 ## Hotfix: [Short Description]
@@ -30,16 +30,16 @@ Reporter: [Who found it]
 Status: IN PROGRESS
 
 ### Problem
-[Clear description of what is broken and the player impact]
+[清晰描述损坏的内容和玩家影响]
 
 ### Root Cause
-[To be filled during investigation]
+[在调查期间填写]
 
 ### Fix
-[To be filled during implementation]
+[在实现期间填写]
 
 ### Testing
-[What was tested and how]
+[测试内容和方式]
 
 ### Approvals
 - [ ] Fix reviewed by lead-programmer
@@ -47,18 +47,18 @@ Status: IN PROGRESS
 - [ ] Release approved (producer)
 
 ### Rollback Plan
-[How to revert if the fix causes new issues]
+[如果修复导致新问题，如何回滚]
 ```
 
-Ask: "May I write this to `production/hotfixes/hotfix-[date]-[short-name].md`?"
+询问："我可以将此写入 `production/hotfixes/hotfix-[date]-[short-name].md` 吗？"
 
-If yes, write the file, creating the directory if needed.
+如果是，写入文件，如果需要则创建目录。
 
 ---
 
 ## Phase 3: Create Hotfix Branch
 
-If git is initialized, create the hotfix branch:
+如果 git 已初始化，创建热修复分支：
 
 ```
 git checkout -b hotfix/[short-name] [release-tag-or-main]
@@ -68,47 +68,47 @@ git checkout -b hotfix/[short-name] [release-tag-or-main]
 
 ## Phase 4: Investigate and Implement
 
-Focus on the minimal change that resolves the issue. Do NOT refactor, clean up, or add features alongside the hotfix.
+专注于解决问题的最小更改。不要与热修复一起重构、清理或添加功能。
 
-Validate the fix by running targeted tests for the affected system. Check for regressions in adjacent systems.
+通过运行受影响系统的有针对性的测试来验证修复。检查相邻系统的回归。
 
-Update the hotfix record with root cause, fix details, and test results.
+用热修复记录更新根本原因、修复详细信息和测试结果。
 
 ---
 
 ## Phase 5: Collect Approvals
 
-Use the Task tool to request sign-off in parallel:
+使用 Task 工具并行请求签署：
 
-- `subagent_type: lead-programmer` — Review the fix for correctness and side effects
-- `subagent_type: qa-tester` — Run targeted regression tests on the affected system
-- `subagent_type: producer` — Approve deployment timing and communication plan
+- `subagent_type: lead-programmer` — 审查修复的正确性和副作用
+- `subagent_type: qa-tester` — 在受影响系统上运行有针对性的回归测试
+- `subagent_type: producer` — 批准部署时间和沟通计划
 
-All three must return APPROVE before proceeding. If any returns CONCERNS or REJECT, do not deploy — surface the issue and resolve it first.
+在继续之前，所有三个都必须返回 APPROVE。如果任何返回 CONCERNS 或 REJECT，不要部署 — 先显示问题并解决它。
 
 ---
 
 ## Phase 5b: QA Re-Entry Gate
 
-After approvals, determine the QA scope required before deploying the hotfix. Spawn `qa-lead` via Task with:
-- The hotfix description and affected system
-- The regression test results from Phase 5
-- A list of all systems that touch the changed files (use Grep to find callers)
+批准后，确定在部署热修复之前所需的 QA 范围。通过 Task 生成 `qa-lead`：
+- 热修复描述和受影响的系统
+- 来自 Phase 5 的回归测试结果
+- 所有接触更改文件的系统列表（使用 Grep 查找调用者）
 
-Ask qa-lead: **Is a full smoke check sufficient, or does this fix require a targeted team-qa pass?**
+询问 qa-lead：**完整的 smoke check 足够，还是此修复需要有针对性的 team-qa 通过？**
 
-Apply the verdict:
-- **Smoke check sufficient** — run `/smoke-check` against the hotfix build. If PASS, proceed to Phase 6.
-- **Targeted QA pass required** — run `/team-qa [affected-system]` scoped to the changed system only. If QA returns APPROVED or APPROVED WITH CONDITIONS, proceed to Phase 6.
-- **Full QA required** — S1 fixes that touch core systems may require a full `/team-qa sprint`. This delays deployment but prevents a bad patch.
+应用裁决：
+- **Smoke check 足够** — 针对热修复 build 运行 `/smoke-check`。如果 PASS，进入 Phase 6。
+- **需要 Targeted QA pass** — 仅对更改的系统运行 `/team-qa [affected-system]`。如果 QA 返回 APPROVED 或 APPROVED WITH CONDITIONS，进入 Phase 6。
+- **需要 Full QA** — 接触核心系统的 S1 修复可能需要完整的 `/team-qa sprint`。这会延迟部署但防止糟糕的补丁。
 
-Do not skip this gate. A hotfix that breaks something else is worse than the original bug.
+不要跳过此关卡。一个破坏其他东西的热修复比原来的 bug 更糟。
 
 ---
 
 ## Phase 6: Update Bug Status and Deploy
 
-Update the original bug file if one exists:
+如果存在原始 bug 文件则更新它：
 
 ```markdown
 ## Fix Record
@@ -117,9 +117,9 @@ Update the original bug file if one exists:
 **Status**: Fixed — Pending Verification
 ```
 
-Set `**Status**: Fixed — Pending Verification` in the bug file header.
+在 bug 文件头部设置 `**Status**: Fixed — Pending Verification`。
 
-Output a deployment summary:
+输出部署摘要：
 
 ```
 ## Hotfix Ready to Deploy: [short-name]
@@ -131,24 +131,24 @@ Output a deployment summary:
 **Approvals**: lead-programmer ✓ / qa-tester ✓ / producer ✓
 **Rollback plan**: [from Phase 2 record]
 
-Merge to: release branch AND development branch
+合并到: release branch AND development branch
 Next: /bug-report verify [BUG-ID] after deploy to confirm resolution
 ```
 
 ### Rules
-- Hotfixes must be the MINIMUM change to fix the issue — no cleanup, no refactoring
-- Every hotfix must have a rollback plan documented before deployment
-- Hotfix branches merge to BOTH the release branch AND the development branch
-- All hotfixes require a post-incident review within 48 hours
-- If the fix is complex enough to need more than 4 hours, escalate to `technical-director`
+- 热修复必须是修复问题的最小更改 — 不清理，不重构
+- 每个热修复在部署前必须有记录的回滚计划
+- 热修复分支合并到 release branch AND development branch
+- 所有热修复在 48 小时内需要事后审查
+- 如果修复复杂到需要超过 4 小时，升级到 `technical-director`
 
 ---
 
 ## Phase 7: Post-Deploy Verification
 
-After deploying, run `/bug-report verify [BUG-ID]` to confirm the fix resolved the issue in the deployed build.
+部署后，运行 `/bug-report verify [BUG-ID]` 以确认修复在部署的 build 中解决了问题。
 
-If VERIFIED FIXED: run `/bug-report close [BUG-ID]` to formally close it.
-If STILL PRESENT: the hotfix failed — immediately re-open, assess rollback, and escalate.
+如果 VERIFIED FIXED: 运行 `/bug-report close [BUG-ID]` 正式关闭它。
+如果 STILL PRESENT: 热修复失败 — 立即重新打开，评估回滚，并升级。
 
-Schedule a post-incident review within 48 hours using `/retrospective hotfix`.
+使用 `/retrospective hotfix` 在 48 小时内安排事后审查。

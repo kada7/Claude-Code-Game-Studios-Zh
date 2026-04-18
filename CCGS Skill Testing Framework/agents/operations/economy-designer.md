@@ -1,80 +1,80 @@
 # Agent Test Spec: economy-designer
 
-## Agent Summary
-- **Domain**: Resource economy design, loot table design, progression curves (XP, level, unlock), in-game market and shop design, economic balance analysis, sink and faucet mechanics, inflation/deflation risk assessment
-- **Does NOT own**: Live ops event scheduling and structure (live-ops-designer), code implementation, analytics tracking design (analytics-engineer), narrative justification for economy systems (writer)
-- **Model tier**: Sonnet
-- **Gate IDs**: None; escalates economy-breaking design conflicts to creative-director or producer
+## Agent 概述
+- **领域**: 资源经济设计、战利品表设计、进度曲线（经验值、等级、解锁）、游戏内市场和商店设计、经济平衡分析、消耗与产出机制、通货膨胀/通货紧缩风险评估
+- **不负责**: 实时运营活动调度和结构（live-ops-designer）、代码实现、分析跟踪设计（analytics-engineer）、经济系统的叙事合理性（writer）
+- **模型层级**: Sonnet
+- **关卡ID**: 无；将经济破坏性设计冲突上报给 creative-director 或 producer
 
 ---
 
-## Static Assertions (Structural)
+## 静态断言（结构）
 
-- [ ] `description:` field is present and domain-specific (references economy, loot tables, progression curves, balance)
-- [ ] `allowed-tools:` list matches the agent's role (Read/Write for design/balance/ documents; no code or analytics tools)
-- [ ] Model tier is Sonnet (default for design specialists)
-- [ ] Agent definition does not claim authority over live ops scheduling, code, or narrative
-
----
-
-## Test Cases
-
-### Case 1: In-domain request — loot table design for a chest
-**Input**: "Design the loot table for a standard treasure chest in our dungeon game."
-**Expected behavior**:
-- Produces a probability table with distinct rarity tiers: Common, Uncommon, Rare, Epic, Legendary (or project-equivalent tiers)
-- Each tier has: probability percentage, example item categories, and expected gold equivalent value range
-- Probabilities sum to 100%
-- Includes a brief rationale for each tier's probability: why Common is set at its value, why Legendary is set at its value
-- Does NOT produce a single flat list of items — uses tiered probability structure to reflect meaningful rarity
-
-### Case 2: Out-of-domain request — seasonal event schedule
-**Input**: "Design the schedule for our summer event and fall event. When should they run and how long should each last?"
-**Expected behavior**:
-- Does not produce an event schedule or content cadence plan
-- States clearly: "Live ops event scheduling is owned by live-ops-designer; I design the economic structure of rewards within events once the event schedule is defined"
-- Offers to produce the reward value design for events once live-ops-designer defines the structure
-
-### Case 3: Domain boundary — inflation risk from new currency
-**Input**: "We're adding a new 'Prestige Coins' currency earned by completing all seasonal content. Players can spend them in a Prestige Shop."
-**Expected behavior**:
-- Identifies the inflation risk: if Prestige Coins accumulate faster than the shop provides sinks, the shop loses perceived value and players hoard coins without spending
-- Flags the specific risk: seasonal content completion is a finite faucet, but if the shop catalog is exhausted before the season ends, late-season coins have no value
-- Proposes a sink mechanic: rotating limited-time shop items, consumable items in the Prestige Shop, or a currency conversion option to keep coins draining
-- Does NOT approve the design as economically sound without addressing the sink question
-- Produces a structured risk assessment: faucet rate (estimated coins/week), sink capacity (estimated coins required to exhaust catalog), surplus projection
-
-### Case 4: Mid-game progression curve issue
-**Input**: "Players are reporting the mid-game XP grind (levels 20-35) feels like a wall. They need 3x more XP per level but rewards don't increase proportionally."
-**Expected behavior**:
-- Identifies this as a progression curve problem: the XP cost growth rate outpaces the reward growth rate
-- Produces a revised XP formula or curve adjustment: either reduce the XP cost multiplier for levels 20-35, increase reward XP in that range, or introduce a catch-up mechanic (bonus XP for completing content significantly below the player's level)
-- Shows the math: current curve vs. proposed curve, with specific numbers for levels 20, 25, 30, 35
-- Flags that any curve change affects time-to-level-cap projections — notes the downstream impact on end-game content pacing
-
-### Case 5: Context pass — balance analysis using current economy data
-**Input context**: Current economy data: average player earns 450 Gold/hour, average shop item costs 2,000 Gold, average session length is 40 minutes. Premium items cost 5,000 Gold.
-**Input**: "Is our current Gold economy healthy? Should we adjust prices or earn rates?"
-**Expected behavior**:
-- Uses the specific numbers provided: 450 Gold/hour = 300 Gold/40-min session; 2,000 Gold item requires ~4.4 sessions to afford; 5,000 Gold premium item requires ~11 sessions
-- Evaluates whether these ratios feel rewarding or frustrating based on economy design principles
-- Produces a concrete recommendation using the actual numbers: e.g., "At current earn rates, premium items take ~7.3 hours of play to afford — this is at the high end of acceptable; consider either increasing earn rate to 550 Gold/hour or reducing premium item cost to 4,000 Gold"
-- Does NOT produce generic advice ("prices may be too high") without anchoring to the provided data
+- [ ] `description:` 字段存在且具有领域特定性（提及经济、战利品表、进度曲线、平衡）
+- [ ] `allowed-tools:` 列表与 Agent 角色匹配（设计/平衡/文档的读写权限；无代码或分析工具）
+- [ ] 模型层级为 Sonnet（设计专家的默认层级）
+- [ ] Agent 定义不声称对实时运营调度、代码或叙事拥有权限
 
 ---
 
-## Protocol Compliance
+## 测试用例
 
-- [ ] Stays within declared domain (loot tables, progression curves, resource economy, inflation/deflation analysis)
-- [ ] Redirects live ops scheduling requests to live-ops-designer without producing schedules
-- [ ] Flags inflation/deflation risks proactively with quantified sink/faucet analysis
-- [ ] Produces explicit math for progression curves — no vague curve adjustments without numbers
-- [ ] Uses actual economy data from context; does not produce generic benchmarks when specifics are provided
+### 用例 1：领域内请求 — 宝箱的战利品表设计
+**输入**: "为我们地下城游戏中的标准宝箱设计战利品表。"
+**预期行为**:
+- 生成具有不同稀有度层级的概率表：普通、稀有、史诗、传说（或项目等效层级）
+- 每个层级包含：概率百分比、示例物品类别、预期金币等效价值范围
+- 概率总和为 100%
+- 包含每个层级概率的简要理由：为什么普通层级设置为其值，为什么传说层级设置为其值
+- 不生成单一的扁平物品列表 — 使用分层概率结构来反映有意义的稀有度
+
+### 用例 2：领域外请求 — 季节性活动调度
+**输入**: "设计我们夏季活动和秋季活动的调度。它们应该何时运行以及每个活动应该持续多久？"
+**预期行为**:
+- 不生成活动调度或内容节奏计划
+- 明确声明："实时运营活动调度由 live-ops-designer 负责；一旦活动结构定义好，我负责设计活动内的奖励价值结构"
+- 提供在 live-ops-designer 定义结构后生成奖励价值设计的服务
+
+### 用例 3：领域边界 — 新货币的通货膨胀风险
+**输入**: "我们正在添加一种新的'声望币'货币，通过完成所有季节性内容获得。玩家可以在声望商店中花费它们。"
+**预期行为**:
+- 识别通货膨胀风险：如果声望币的积累速度超过商店提供的消耗机制，商店将失去感知价值，玩家会囤积币而不花费
+- 标记特定风险：季节性内容完成是有限的产出源，但如果商店目录在赛季结束前耗尽，赛季后期的币将没有价值
+- 提出消耗机制：轮换限时商店物品、声望商店中的消耗品，或货币转换选项以保持币的消耗
+- 在没有解决消耗问题的情况下，不批准该设计在经济上是合理的
+- 生成结构化风险评估：产出率（估计每周币数）、消耗容量（估计耗尽目录所需币数）、盈余预测
+
+### 用例 4：中期进度曲线问题
+**输入**: "玩家报告中期经验值获取（20-35级）感觉像一堵墙。他们每级需要3倍的经验值，但奖励没有按比例增加。"
+**预期行为**:
+- 识别这是一个进度曲线问题：经验值成本增长率超过了奖励增长率
+- 生成修订的经验值公式或曲线调整：要么降低20-35级的经验值成本乘数，要么增加该范围内的奖励经验值，要么引入追赶机制（为完成远低于玩家等级的内容提供额外经验值）
+- 展示数学计算：当前曲线 vs. 提议曲线，包含20、25、30、35级的特定数值
+- 标记任何曲线变化都会影响达到等级上限的时间预测 — 注意对终局内容节奏的下游影响
+
+### 用例 5：上下文传递 — 使用当前经济数据进行平衡分析
+**输入上下文**: 当前经济数据：玩家平均每小时获得450金币，商店物品平均成本为2000金币，平均会话时长为40分钟。高级物品成本为5000金币。
+**输入**: "我们当前的金币经济健康吗？我们应该调整价格或获取率吗？"
+**预期行为**:
+- 使用提供的具体数值：450金币/小时 = 300金币/40分钟会话；2000金币物品需要约4.4个会话才能购买；5000金币高级物品需要约11个会话
+- 根据经济设计原则评估这些比例感觉是有回报的还是令人沮丧的
+- 使用实际数值生成具体建议：例如，"在当前获取率下，高级物品需要约7.3小时的游戏时间才能购买 — 这处于可接受范围的高端；考虑将获取率增加到550金币/小时或将高级物品成本降低到4000金币"
+- 不生成通用建议（"价格可能太高"）而不基于提供的数据
 
 ---
 
-## Coverage Notes
-- Case 3 (inflation risk) is an economic health test — missed inflation risks cause long-term economy damage in live games
-- Case 4 requires the agent to produce actual numbers, not curve shapes — verify math is present, not just a narrative
-- Case 5 is the most important context-awareness test; agent must use provided data, not placeholder values
-- No automated runner; review manually or via `/skill-test`
+## 协议合规性
+
+- [ ] 保持在声明的领域内（战利品表、进度曲线、资源经济、通货膨胀/通货紧缩分析）
+- [ ] 将实时运营调度请求重定向到 live-ops-designer 而不生成调度
+- [ ] 主动标记通货膨胀/通货紧缩风险，并提供量化的消耗/产出分析
+- [ ] 为进度曲线生成明确的数学计算 — 没有没有数值的模糊曲线调整
+- [ ] 使用上下文中的实际经济数据；当提供具体数据时，不生成通用基准
+
+---
+
+## 覆盖范围说明
+- 用例 3（通货膨胀风险）是一个经济健康测试 — 忽略的通货膨胀风险会导致实时游戏的长期经济损害
+- 用例 4 要求 Agent 生成实际数值，而不仅仅是曲线形状 — 验证数学计算存在，而不仅仅是叙述
+- 用例 5 是最重要的上下文感知测试；Agent 必须使用提供的数据，而不是占位符值
+- 无自动化运行器；通过 `/skill-test` 手动或手动审查

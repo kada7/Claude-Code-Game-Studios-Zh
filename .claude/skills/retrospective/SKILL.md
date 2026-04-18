@@ -1,6 +1,6 @@
 ---
 name: retrospective
-description: "Generates a sprint or milestone retrospective by analyzing completed work, velocity, blockers, and patterns. Produces actionable insights for the next iteration."
+description: "通过分析已完成的工作、速度、阻塞项和模式生成冲刺或里程碑回顾。为下一次迭代产生可操作的见解。"
 argument-hint: "[sprint-N|milestone-name]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write
@@ -8,203 +8,201 @@ context: |
   !git log --oneline --since="2 weeks ago" 2>/dev/null
 ---
 
-## Phase 1: Parse Arguments
+## 阶段 1：解析参数
 
-Determine whether this is a sprint retrospective (`sprint-N`) or a milestone retrospective (`milestone-name`).
+确定这是冲刺回顾（`sprint-N`）还是里程碑回顾（`milestone-name`）。
 
 ---
 
-## Phase 1b: Check for Existing Retrospective
+## 阶段 1b：检查现有回顾
 
-Before loading any data, glob for an existing retrospective file:
+在加载任何数据之前，全局搜索现有回顾文件：
 
-- For sprint retrospectives: `production/retrospectives/retro-[sprint-slug]-*.md`
-  (also check `production/sprints/sprint-[N]-retrospective.md` as an alternate location)
-- For milestone retrospectives: `production/retrospectives/retro-[milestone-name]-*.md`
+- 冲刺回顾：`production/retrospectives/retro-[sprint-slug]-*.md`
+  （同时检查 `production/sprints/sprint-[N]-retrospective.md` 作为备用位置）
+- 里程碑回顾：`production/retrospectives/retro-[milestone-name]-*.md`
 
-If a matching file is found, present the user with:
+如果找到匹配的文件，向用户展示：
 
 ```
-An existing retrospective was found: [filename]
+找到现有回顾：[文件名]
 
-[A] Update existing retrospective — load it and add/revise sections
-[B] Start fresh — generate a new retrospective, archiving the old one
+[A] 更新现有回顾 — 加载它并添加/修订章节
+[B] 重新开始 — 生成新回顾，归档旧的
 ```
 
-Wait for user selection before continuing. If updating, read the existing file and
-carry its content forward into the generation phase, revising sections with new data.
+等待用户选择后再继续。如果正在更新，读取现有文件并在生成阶段将内容带入，用新数据修订章节。
 
 ---
 
-## Phase 2: Load Sprint or Milestone Data
+## 阶段 2：加载冲刺或里程碑数据
 
-Read the sprint or milestone plan from the appropriate location:
+从适当位置读取冲刺或里程碑计划：
 
-- Sprint plans: `production/sprints/`
-- Milestone definitions: `production/milestones/`
+- 冲刺计划：`production/sprints/`
+- 里程碑定义：`production/milestones/`
 
-**If the file does not exist or is empty**, output:
+**如果文件不存在或为空**，输出：
 
-> "No sprint data found for [sprint/milestone]. Run `/sprint-status` to generate
-> sprint data first, or provide the sprint details manually."
+> "未找到 [sprint/milestone] 的冲刺数据。先运行 `/sprint-status` 生成
+> 冲刺数据，或手动提供冲刺详情。"
 
-Then use `AskUserQuestion` to present two options:
+然后使用 `AskUserQuestion` 提供两个选项：
 
-- **[A] Provide data manually** — ask the user to paste or describe the sprint
-  tasks, dates, and outcomes; use that as the source of truth for the retrospective.
-- **[B] Stop** — abort the skill. Verdict: **BLOCKED** — no sprint data available.
+- **[A] 手动提供数据** — 要求用户粘贴或描述冲刺任务、日期和结果；将其作为回顾的真理来源。
+- **[B] 停止** — 中止 skill。裁决：**阻塞** — 无冲刺数据可用。
 
-If the user chooses [A], collect the data and continue to Phase 3 using what they provide.
-If the user chooses [B], stop here.
+如果用户选择 [A]，收集数据并使用用户提供的内容继续到阶段 3。
+如果用户选择 [B]，在此停止。
 
-Extract: planned tasks, estimated effort, owners, and goals.
+提取：计划的任务、估计工作量、负责人和目标。
 
-Read the git log for the period covered by the sprint or milestone to understand what was actually committed and when.
-
----
-
-## Phase 3: Analyze Completion and Trends
-
-Scan for completed and incomplete tasks by comparing the plan against actual deliverables. Check for:
-
-- Tasks completed as planned
-- Tasks completed but modified from the plan
-- Tasks carried over (not completed)
-- Tasks added mid-sprint (unplanned work)
-- Tasks removed or descoped
-
-Scan the codebase for TODO/FIXME trends:
-
-- Count current TODO/FIXME/HACK comments
-- Compare to previous sprint counts if available (check previous retrospectives)
-- Note whether technical debt is growing or shrinking
-
-Read previous retrospectives (if any) from `production/sprints/` or `production/milestones/` to check:
-
-- Were previous action items addressed?
-- Are the same problems recurring?
-- How has velocity trended?
+读取冲刺或里程碑覆盖期间的 git log，以了解实际提交的内容和时间。
 
 ---
 
-## Phase 4: Generate the Retrospective
+## 阶段 3：分析完成情况和趋势
+
+通过比较计划与实际交付物扫描已完成和未完成的任务。检查：
+
+- 按计划完成的任务
+- 已完成但与计划不同的任务
+- 结转（未完成）的任务
+- 冲刺中添加的任务（计划外工作）
+- 移除或降级的任务
+
+扫描代码库中的 TODO/FIXME 趋势：
+
+- 统计当前 TODO/FIXME/HACK 注释数量
+- 如果可用，与先前的冲刺计数比较（检查先前的回顾）
+- 注意技术债务是在增长还是减少
+
+从 `production/sprints/` 或 `production/milestones/` 读取先前的回顾（如果有）以检查：
+
+- 先前的行动项是否已处理？
+- 同样的问题是否在反复出现？
+- 速度趋势如何？
+
+---
+
+## 阶段 4：生成回顾
 
 ```markdown
-## Retrospective: [Sprint N / Milestone Name]
-Period: [Start Date] -- [End Date]
-Generated: [Date]
+## 回顾：[冲刺 N / 里程碑名称]
+期间：[开始日期] — [结束日期]
+生成日期：[日期]
 
-### Metrics
+### 指标
 
-| Metric | Planned | Actual | Delta |
+| 指标 | 计划 | 实际 | 差异 |
 |--------|---------|--------|-------|
-| Tasks | [X] | [Y] | [+/- Z] |
-| Completion Rate | -- | [Z%] | -- |
-| Story Points / Effort Days | [X] | [Y] | [+/- Z] |
-| Bugs Found | -- | [N] | -- |
-| Bugs Fixed | -- | [N] | -- |
-| Unplanned Tasks Added | -- | [N] | -- |
-| Commits | -- | [N] | -- |
+| 任务 | [X] | [Y] | [+/- Z] |
+| 完成率 | -- | [Z%] | -- |
+| Story Points / 工作日 | [X] | [Y] | [+/- Z] |
+| 发现的 Bug | -- | [N] | -- |
+| 修复的 Bug | -- | [N] | -- |
+| 添加的计划外任务 | -- | [N] | -- |
+| 提交 | -- | [N] | -- |
 
-### Velocity Trend
+### 速度趋势
 
-| Sprint | Planned | Completed | Rate |
+| 冲刺 | 计划 | 完成 | 比率 |
 |--------|---------|-----------|------|
 | [N-2] | [X] | [Y] | [Z%] |
 | [N-1] | [X] | [Y] | [Z%] |
-| [N] (current) | [X] | [Y] | [Z%] |
+| [N]（当前） | [X] | [Y] | [Z%] |
 
-**Trend**: [Increasing / Stable / Decreasing]
-[One sentence explaining the trend]
+**趋势**：[增长 / 稳定 / 下降]
+[一句话解释趋势]
 
-### What Went Well
-- [Observation backed by specific data or examples]
-- [Another positive observation]
-- [Recognize specific contributions or decisions that paid off]
+### 做得好的方面
+- [由具体数据或示例支持的观察]
+- [另一个正面观察]
+- [认可有回报的具体贡献或决策]
 
-### What Went Poorly
-- [Specific issue with measurable impact -- e.g., "Feature X took 5 days
-  instead of estimated 2, blocking tasks Y and Z"]
-- [Another issue with impact]
-- [Do not assign blame -- focus on systemic causes]
+### 做得不好的方面
+- [具有可衡量影响的具体问题 — 例如，"功能 X 花了 5 天
+  而不是估计的 2 天，阻塞了任务 Y 和 Z"]
+- [另一个有影响的问题]
+- [不要指责 — 关注系统性原因]
 
-### Blockers Encountered
+### 遇到的阻塞项
 
-| Blocker | Duration | Resolution | Prevention |
+| 阻塞项 | 持续时间 | 解决方案 | 预防 |
 |---------|----------|------------|------------|
-| [What blocked progress] | [How long] | [How it was resolved] | [How to prevent recurrence] |
+| [什么阻塞了进展] | [多长时间] | [如何解决的] | [如何防止再次发生] |
 
-### Estimation Accuracy
+### 估算准确性
 
-| Task | Estimated | Actual | Variance | Likely Cause |
+| 任务 | 估计 | 实际 | 差异 | 可能原因 |
 |------|-----------|--------|----------|--------------|
-| [Most overestimated task] | [X] | [Y] | [+Z] | [Why] |
-| [Most underestimated task] | [X] | [Y] | [-Z] | [Why] |
+| [最过度估计的任务] | [X] | [Y] | [+Z] | [为什么] |
+| [最低估的任务] | [X] | [Y] | [-Z] | [为什么] |
 
-**Overall estimation accuracy**: [X%] of tasks within +/- 20% of estimate
+**总体估算准确性**：[X%] 的任务在估计的 +/- 20% 范围内
 
-[Analysis: Are we consistently over- or under-estimating? For which types of
-tasks? What adjustment should we apply?]
+[分析：我们是否持续过度或低估？对于哪些类型的任务？
+应该应用什么调整？]
 
-### Carryover Analysis
+### 结转分析
 
-| Task | Original Sprint | Times Carried | Reason | Action |
+| 任务 | 原始冲刺 | 结转次数 | 原因 | 行动 |
 |------|----------------|---------------|--------|--------|
-| [Task that was not completed] | [Sprint N-X] | [N] | [Why] | [Complete / Descope / Redesign] |
+| [未完成的任务] | [冲刺 N-X] | [N] | [为什么] | [完成 / 降级 / 重新设计] |
 
-### Technical Debt Status
-- Current TODO count: [N] (previous: [N])
-- Current FIXME count: [N] (previous: [N])
-- Current HACK count: [N] (previous: [N])
-- Trend: [Growing / Stable / Shrinking]
-- [Note any areas of concern]
+### 技术债务状态
+- 当前 TODO 数量：[N]（先前：[N]）
+- 当前 FIXME 数量：[N]（先前：[N]）
+- 当前 HACK 数量：[N]（先前：[N]）
+- 趋势：[增长 / 稳定 / 减少]
+- [注意任何关注领域]
 
-### Previous Action Items Follow-Up
+### 先前行动项跟进
 
-| Action Item (from Sprint N-1) | Status | Notes |
+| 行动项（来自冲刺 N-1） | 状态 | 笔记 |
 |-------------------------------|--------|-------|
-| [Previous action] | [Done / In Progress / Not Started] | [Context] |
+| [先前的行动] | [完成 / 进行中 / 未开始] | [上下文] |
 
-### Action Items for Next Iteration
+### 下一次迭代的行动项
 
-| # | Action | Owner | Priority | Deadline |
-|---|--------|-------|----------|----------|
-| 1 | [Specific, measurable action] | [Who] | [High/Med/Low] | [When] |
-| 2 | [Another action] | [Who] | [Priority] | [When] |
+| # | 行动 | 负责人 | 优先级 | 截止日期 |
+|---|--------|-------|----------|--------|
+| 1 | [具体的、可衡量的行动] | [谁] | [高/中/低] | [何时] |
+| 2 | [另一个行动] | [谁] | [优先级] | [何时] |
 
-### Process Improvements
-- [Specific change to how we work, with expected benefit]
-- [Another improvement -- keep it to 2-3 actionable items, not a wish list]
+### 流程改进
+- [我们工作方式的具体变更，及预期收益]
+- [另一个改进 — 控制在 2-3 个可操作项目，不是愿望清单]
 
-### Summary
-[2-3 sentence overall assessment: Was this a good sprint/milestone? What is
-the single most important thing to change going forward?]
+### 摘要
+[2-3 句总体评估：这是好的冲刺/里程碑吗？
+向前发展的最重要改变是什么？]
 ```
 
 ---
 
-## Phase 5: Save Retrospective
+## 阶段 5：保存回顾
 
-Present the retrospective and top findings to the user (completion rate, velocity trend, top blocker, most important action item).
+向用户展示回顾和主要发现（完成率、速度趋势、主要阻塞项、最重要的行动项）。
 
-Ask: "May I write this to `production/sprints/sprint-[N]-retrospective.md`?" (or the milestone path if applicable)
+询问："我可以将此写入 `production/sprints/sprint-[N]-retrospective.md` 吗？"（或里程碑路径（如果适用））
 
-If yes, write the file, creating the directory if needed. Verdict: **COMPLETE** — retrospective saved.
+如果同意，写入文件，如果需要则创建目录。裁决：**完成** — 回顾已保存。
 
-If no, stop here. Verdict: **BLOCKED** — user declined write.
+如果不同意，在此停止。裁决：**阻塞** — 用户拒绝写入。
 
 ---
 
-## Phase 6: Next Steps
+## 阶段 6：后续步骤
 
-- Run `/sprint-plan` to incorporate the action items and velocity data into the next sprint.
-- If this was a milestone retrospective, run `/gate-check` to formally assess readiness for the next phase.
+- 运行 `/sprint-plan` 将行动项和速度数据纳入下一次冲刺。
+- 如果这是里程碑回顾，运行 `/gate-check` 以正式评估进入下一阶段的准备情况。
 
-### Guidelines
+### 指南
 
-- Be honest and specific. Vague retrospectives ("communication could be better") produce vague improvements. Use data and examples.
-- Focus on systemic issues, not individual blame.
-- Limit action items to 3-5. More than that dilutes focus.
-- Every action item must have an owner and a deadline.
-- Check whether previous action items were completed. Recurring unaddressed items are a process smell.
-- If this is a milestone retrospective, also evaluate whether the milestone goals were achieved and what that means for the overall project timeline.
+- 诚实且具体。模糊的回顾（"沟通可以更好"）产生模糊的改进。使用数据和示例。
+- 关注系统性问题，而不是个人指责。
+- 将行动项限制在 3-5 个。更多会分散注意力。
+- 每个行动项必须有负责人和截止日期。
+- 检查先前的行动项是否已完成。反复未处理的项是流程问题的信号。
+- 如果这是里程碑回顾，还要评估里程碑目标是否实现以及这对整体项目时间表意味着什么。

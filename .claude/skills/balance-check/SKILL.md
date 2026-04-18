@@ -1,118 +1,118 @@
 ---
 name: balance-check
-description: "Analyzes game balance data files, formulas, and configuration to identify outliers, broken progressions, degenerate strategies, and economy imbalances. Use after modifying any balance-related data or design. Use when user says 'balance report', 'check game balance', 'run a balance check'."
+description: "分析游戏平衡数据文件、公式和配置，以识别异常值、损坏的进度、退化策略和经济失衡。在修改任何平衡相关数据或设计后使用。当用户说'平衡报告'、'检查游戏平衡'、'运行平衡检查'时使用。"
 argument-hint: "[system-name|path-to-data-file]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep
 agent: economy-designer
 ---
 
-## Phase 1: Identify Balance Domain
+## 阶段 1: 确定平衡域
 
-Determine the balance domain from `$ARGUMENTS[0]`:
+从 `$ARGUMENTS[0]` 确定平衡域:
 
-- **Combat** → weapon/ability DPS, time-to-kill, damage type interactions
-- **Economy** → resource faucets/sinks, acquisition rates, item pricing
-- **Progression** → XP/power curves, dead zones, power spikes
-- **Loot** → rarity distribution, pity timers, inventory pressure
-- **File path given** → load that file directly and infer domain from content
+- **Combat** → 武器/技能 DPS, time-to-kill, 伤害类型交互
+- **Economy** → 资源水龙头/水槽, 获取速率, 物品定价
+- **Progression** → XP/能力曲线, 死区, 能力峰值
+- **Loot** → 稀有度分布, 保底机制, 库存压力
+- **给定文件路径** → 直接加载该文件并从内容推断域
 
-If no argument, ask the user which system to check.
-
----
-
-## Phase 2: Read Data Files
-
-Read relevant files from `assets/data/` and `design/balance/` for the identified domain.
-Note every file read — they will appear in the Data Sources section of the report.
+如果没有参数，询问用户要检查哪个系统。
 
 ---
 
-## Phase 3: Read Design Document
+## 阶段 2: 读取数据文件
 
-Read the GDD for the system from `design/gdd/` to understand intended design targets,
-tuning knobs, and expected value ranges. This is the baseline for "correct" behaviour.
-
----
-
-## Phase 4: Perform Analysis
-
-Run domain-specific checks:
-
-**Combat balance:**
-- Calculate DPS for all weapons/abilities at each power tier
-- Check time-to-kill at each tier
-- Identify any options that dominate all others (strictly better)
-- Check if defensive options can create unkillable states
-- Verify damage type/resistance interactions are balanced
-
-**Economy balance:**
-- Map all resource faucets and sinks with flow rates
-- Project resource accumulation over time
-- Check for infinite resource loops
-- Verify gold sinks scale with gold generation
-- Check if any items are never worth purchasing
-
-**Progression balance:**
-- Plot the XP curve and power curve
-- Check for dead zones (no meaningful progression for too long)
-- Check for power spikes (sudden jumps in capability)
-- Verify content gates align with expected player power
-- Check if skip/grind strategies break intended pacing
-
-**Loot balance:**
-- Calculate expected time to acquire each rarity tier
-- Check pity timer math
-- Verify no loot is strictly useless at any stage
-- Check inventory pressure vs acquisition rate
+从 `assets/data/` 和 `design/balance/` 读取已识别域的相关文件。
+记录每个读取的文件 — 它们将出现在报告的数据源部分。
 
 ---
 
-## Phase 5: Output the Analysis
+## 阶段 3: 读取设计文档
+
+从 `design/gdd/` 读取系统的 GDD 以了解预期的设计目标、
+调整旋钮和预期值范围。这是"正确"行为的基线。
+
+---
+
+## 阶段 4: 执行分析
+
+运行域特定检查:
+
+**战斗平衡:**
+- 计算每个能力层级所有武器/技能的 DPS
+- 检查每个层级的 time-to-kill
+- 识别任何主导其他所有选项的选择 (严格更好)
+- 检查防御选项是否能创造无敌状态
+- 验证伤害类型/抗性交互是否平衡
+
+**经济平衡:**
+- 映射所有资源水龙头和水槽及其流速
+- 预测随时间的资源积累
+- 检查无限资源循环
+- 验证金币水槽随金币生成而扩展
+- 检查是否有物品永远不值得购买
+
+**进度平衡:**
+- 绘制 XP 曲线和能力曲线
+- 检查死区 (太长时间没有有意义的进度)
+- 检查能力峰值 (能力突然跳跃)
+- 验证内容门槛与预期玩家能力对齐
+- 检查跳过/刷怪策略是否破坏预期节奏
+
+**战利品平衡:**
+- 计算获取每个稀有度层级的预期时间
+- 检查保底机制数学
+- 验证没有任何战利品在任何阶段严格无用
+- 检查库存压力 vs 获取速率
+
+---
+
+## 阶段 5: 输出分析
 
 ```
-## Balance Check: [System Name]
+## 平衡检查: [System Name]
 
-### Data Sources Analyzed
-- [List of files read]
+### 分析的数据源
+- [读取的文件列表]
 
-### Health Summary: [HEALTHY / CONCERNS / CRITICAL ISSUES]
+### 健康摘要: [HEALTHY / CONCERNS / CRITICAL ISSUES]
 
-### Outliers Detected
-| Item/Value | Expected Range | Actual | Issue |
+### 检测到的异常值
+| 物品/值 | 预期范围 | 实际 | 问题 |
 |-----------|---------------|--------|-------|
 
-### Degenerate Strategies Found
-- [Strategy description and why it is problematic]
+### 发现的退化策略
+- [策略描述及其问题原因]
 
-### Progression Analysis
-[Graph description or table showing progression curve health]
+### 进度分析
+[图表描述或显示进度曲线健康状况的表格]
 
-### Recommendations
-| Priority | Issue | Suggested Fix | Impact |
+### 建议
+| 优先级 | 问题 | 建议修复 | 影响 |
 |----------|-------|--------------|--------|
 
-### Values That Need Attention
-[Specific values with suggested adjustments and rationale]
+### 需要注意的值
+[特定值及建议调整和理由]
 ```
 
 ---
 
-## Phase 6: Fix & Verify Cycle
+## 阶段 6: 修复与验证循环
 
-After presenting the report, ask:
+展示报告后，询问:
 
-> "Would you like to fix any of these balance issues now?"
+> "您想现在修复这些平衡问题吗?"
 
-If yes:
-- Ask which issue to address first (refer to the Recommendations table by priority row)
-- Guide the user to update the relevant data file in `assets/data/` or formula in `design/balance/`
-- After each fix, offer to re-run the relevant balance checks to verify no new outliers were introduced
-- If the fix changes a tuning knob defined in a GDD or referenced by an ADR, remind the user:
-  > "This value is defined in a design document. Run `/propagate-design-change [path]` on the affected GDD to find downstream impacts before committing."
+如果同意:
+- 询问首先解决哪个问题 (参考建议表中的优先级行)
+- 引导用户更新 `assets/data/` 中的相关数据文件或 `design/balance/` 中的公式
+- 每次修复后，提供重新运行相关平衡检查以验证没有引入新的异常值
+- 如果修复改变了 GDD 中定义或由 ADR 引用的调整旋钮，提醒用户:
+  > "此值在设计文档中定义。在提交前，对受影响的 GDD 运行 `/propagate-design-change [path]` 以查找下游影响。"
 
-If no:
-- Summarize open issues and suggest saving the report to `design/balance/balance-check-[system]-[date].md` for later
+如果不同意:
+- 总结开放问题并建议将报告保存到 `design/balance/balance-check-[system]-[date].md` 以备后用
 
-End with:
-> "Re-run `/balance-check` after fixes to verify."
+最后:
+> "修复后重新运行 `/balance-check` 以验证。"

@@ -1,215 +1,209 @@
-# Skill Test Spec: /team-release
+# 技能测试规范：/team-release
 
-## Skill Summary
+## 技能摘要
 
-Orchestrates the release team through a 7-phase pipeline from release candidate to
-deployment and post-release monitoring. Coordinates release-manager, qa-lead,
-devops-engineer, producer, security-engineer (optional, required for online/
-multiplayer), network-programmer (optional, required for multiplayer),
-analytics-engineer, and community-manager. Phase 3 agents run in parallel. Ends
-with a go/no-go decision; deployment (Phase 6) is skipped if the producer calls
-NO-GO. Closes with a post-release monitoring plan.
+通过一个从发布候选到部署和发布后监控的7阶段流水线，协调发布团队。协调 release-manager、qa-lead、devops-engineer、producer、security-engineer（可选，在线/多人游戏需要）、network-programmer（可选，多人游戏需要）、analytics-engineer 和 community-manager。第3阶段 Agent 并行运行。以 go/no-go 决策结束；如果 producer 调用 NO-GO，则跳过部署（第6阶段）。以发布后监控计划结束。
 
 ---
 
-## Static Assertions (Structural)
+## 静态断言（结构）
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
-- [ ] Has ≥2 phase headings
-- [ ] Contains verdict keywords: COMPLETE, BLOCKED
-- [ ] Contains "May I write" language in the File Write Protocol section (delegated to sub-agents)
-- [ ] Has a File Write Protocol section stating that the orchestrator does not write files directly
-- [ ] Has an Error Recovery Protocol section with four recovery options (surface / assess / offer options / partial report)
-- [ ] Has a next-step handoff referencing post-release monitoring, `/retrospective`, and `production/stage.txt`
-- [ ] Uses `AskUserQuestion` at phase transitions requiring user approval before proceeding
-- [ ] Phase 3 agents (qa-lead, devops-engineer, and optionally security-engineer, network-programmer) are explicitly stated to run in parallel
-- [ ] Phase 6 (Deployment) is conditional on a GO decision from Phase 5
-- [ ] security-engineer is described as conditional on online features / player data — not always spawned
+- [ ] 拥有必需的前言字段：`name`、`description`、`argument-hint`、`user-invocable`、`allowed-tools`
+- [ ] 拥有≥2个阶段标题
+- [ ] 包含裁决关键词：COMPLETE、BLOCKED
+- [ ] 在文件写入协议部分包含"May I write"语言（委托给子代理）
+- [ ] 拥有一个文件写入协议部分，声明编排器不直接写入文件
+- [ ] 拥有一个错误恢复协议部分，包含四个恢复选项（surface / assess / offer options / partial report）
+- [ ] 拥有一个引用发布后监控、`/retrospective` 和 `production/stage.txt` 的下一步交接
+- [ ] 在需要用户批准才能继续的阶段转换处使用 `AskUserQuestion`
+- [ ] 明确声明第3阶段代理（qa-lead、devops-engineer，以及可选的 security-engineer、network-programmer）并行运行
+- [ ] 第6阶段（部署）以第5阶段的GO决策为条件
+- [ ] security-engineer 被描述为以在线功能/玩家数据为条件——并非总是生成
 
 ---
 
-## Test Cases
+## 测试用例
 
-### Case 1: Happy Path (Single-Player) — All phases complete, version deployed
+### 用例1：顺利路径（单人游戏）——所有阶段完成，版本已部署
 
 **Fixture:**
-- `production/stage.txt` exists and contains a Production-or-later stage
-- Milestone acceptance criteria are all met (producer can confirm)
-- No online features, no multiplayer, no player data collection
-- All CI builds are clean on the current branch
-- No open S1/S2 bugs
-- `production/sprints/` contains the completed sprint stories for this milestone
+- `production/stage.txt` 存在且包含 Production 或更高阶段
+- 里程碑验收标准全部满足（producer 可确认）
+- 无在线功能，无多人游戏，无玩家数据收集
+- 当前分支上的所有 CI 构建均为干净
+- 无未解决的 S1/S2 bug
+- `production/sprints/` 包含此里程碑已完成的冲刺故事
 
 **Input:** `/team-release v1.0.0`
 
-**Expected behavior:**
-1. Phase 1: Spawns `producer` via Task; confirms all milestone acceptance criteria met; identifies any deferred scope; produces release authorization; presents to user; AskUserQuestion: user approves before Phase 2
-2. Phase 2: Spawns `release-manager` via Task; cuts release branch from agreed commit; bumps version numbers; invokes `/release-checklist`; freezes branch; output: branch name and checklist; AskUserQuestion: user approves before Phase 3
-3. Phase 3 (parallel): Issues Task calls simultaneously for `qa-lead` (regression suite, critical path sign-off) and `devops-engineer` (build artifacts, CI verification); security-engineer is NOT spawned (no online features); network-programmer is NOT spawned (no multiplayer); both complete successfully
-4. Phase 4: Verifies localization strings all translated; `analytics-engineer` verifies telemetry fires correctly on the release build; performance benchmarks pass; sign-off produced
-5. Phase 5: Spawns `producer` via Task; collects sign-offs from qa-lead, release-manager, devops-engineer; no open blocking issues; producer declares GO; AskUserQuestion: user sees GO decision and confirms deployment
-6. Phase 6: Spawns `release-manager` + `devops-engineer` (parallel); tags release in version control; invokes `/changelog`; deploys to staging; smoke test passes; deploys to production; simultaneously spawns `community-manager` to finalize patch notes via `/patch-notes v1.0.0` and prepare launch announcement
-7. Phase 7: release-manager generates release report; producer updates milestone tracking; qa-lead begins monitoring for regressions; community-manager publishes communication; analytics-engineer confirms live dashboards healthy
-8. Verdict: COMPLETE — release executed and deployed
+**预期行为:**
+1. 阶段1：通过 Task 生成 `producer`；确认所有里程碑验收标准已满足；识别任何延期范围；生成发布授权；呈现给用户；AskUserQuestion：用户在阶段2开始前批准
+2. 阶段2：通过 Task 生成 `release-manager`；从约定的提交点切出发布分支；提升版本号；调用 `/release-checklist`；冻结分支；输出：分支名称和检查清单；AskUserQuestion：用户在阶段3开始前批准
+3. 阶段3（并行）：同时为 `qa-lead`（回归测试套件、关键路径签核）和 `devops-engineer`（构建工件、CI验证）发出 Task 调用；security-engineer 不被生成（无在线功能）；network-programmer 不被生成（无多人游戏）；两者均成功完成
+4. 阶段4：验证本地化字符串全部翻译；`analytics-engineer` 验证遥测在发布构建上正确触发；性能基准测试通过；生成签核
+5. 阶段5：通过 Task 生成 `producer`；收集来自 qa-lead、release-manager、devops-engineer 的签核；无未解决的阻塞问题；producer 声明 GO；AskUserQuestion：用户看到 GO 决策并确认部署
+6. 阶段6：生成 `release-manager` + `devops-engineer`（并行）；在版本控制中标记发布；调用 `/changelog`；部署到 staging；冒烟测试通过；部署到 production；同时生成 `community-manager`，通过 `/patch-notes v1.0.0` 完成补丁说明并准备发布公告
+7. 阶段7：release-manager 生成发布报告；producer 更新里程碑跟踪；qa-lead 开始监控回归；community-manager 发布沟通；analytics-engineer 确认实时仪表板健康
+8. 裁决：COMPLETE — 发布已执行并部署
 
-**Assertions:**
-- [ ] Phase 3 qa-lead and devops-engineer Task calls are issued simultaneously, not sequentially
-- [ ] security-engineer is NOT spawned when the game has no online features, multiplayer, or player data
-- [ ] Phase 5 producer collects sign-offs from all required parties before declaring GO
-- [ ] Phase 6 deployment only begins after GO decision is confirmed by the user
-- [ ] `/changelog` is invoked by release-manager in Phase 6 (not written directly)
-- [ ] `/patch-notes v1.0.0` is invoked by community-manager in Phase 6
-- [ ] Phase 7 monitoring plan includes a 48-hour post-release monitoring commitment
-- [ ] Next steps recommend updating `production/stage.txt` to `Live` after successful deployment
-- [ ] Verdict: COMPLETE appears in the final output
+**断言:**
+- [ ] 阶段3 qa-lead 和 devops-engineer 的 Task 调用同时发出，而非顺序发出
+- [ ] 当游戏没有在线功能、多人游戏或玩家数据时，security-engineer 不被生成
+- [ ] 阶段5 producer 在声明 GO 之前收集所有必需方的签核
+- [ ] 阶段6 部署仅在用户确认 GO 决策后开始
+- [ ] `/changelog` 由 release-manager 在阶段6调用（不直接写入）
+- [ ] `/patch-notes v1.0.0` 由 community-manager 在阶段6调用
+- [ ] 阶段7 监控计划包含48小时的发布后监控承诺
+- [ ] 下一步建议在成功部署后将 `production/stage.txt` 更新为 `Live`
+- [ ] 裁决：COMPLETE 出现在最终输出中
 
 ---
 
-### Case 2: Go/No-Go: NO — S1 bug found in Phase 3, deployment skipped
+### 用例2：Go/No-Go: NO — 第3阶段发现S1 bug，部署被跳过
 
 **Fixture:**
-- Release candidate branch exists for v0.9.0
-- qa-lead discovers a previously unreported S1 crash in the main menu during Phase 3 regression testing
-- devops-engineer build is clean and artifacts are ready
-- producer is aware of the S1 bug
+- 发布候选分支存在于 v0.9.0
+- qa-lead 在第3阶段回归测试期间发现了一个先前未报告的 S1 崩溃（主菜单中）
+- devops-engineer 构建干净且工件已就绪
+- producer 知晓该 S1 bug
 
 **Input:** `/team-release v0.9.0`
 
-**Expected behavior:**
-1. Phases 1–2 complete normally; release candidate is cut
-2. Phase 3 (parallel): devops-engineer returns clean build sign-off; qa-lead returns with an S1 bug identified and regression suite failing; qa-lead declares quality gate: NOT PASSED
-3. Orchestrator surfaces the qa-lead result immediately: "QA-LEAD: S1 bug found — [crash description]. Quality gate: NOT PASSED."
-4. Phase 4 proceeds cautiously or is paused (AskUserQuestion: continue to Phase 4 or skip to Phase 5 for go/no-go?)
-5. Phase 5: Spawns `producer` via Task; producer receives qa-lead's NOT PASSED verdict; no S1 sign-off available; producer declares NO-GO with rationale: "S1 bug [ID] is open and unresolved. Releasing is not safe."
-6. AskUserQuestion: user is presented with the NO-GO decision and the S1 bug details; options: fix the bug and re-run, defer the release, or override (with documented rationale)
-7. Phase 6 (Deployment) is SKIPPED entirely — no branch tagging, no deploy to staging, no deploy to production
-8. community-manager is NOT spawned in Phase 6 (no deployment to announce)
-9. Skill ends with a partial report summarizing what was completed (Phases 1–5) and what was skipped (Phase 6) and why
-10. Verdict: BLOCKED — release not deployed
+**预期行为:**
+1. 阶段1-2 正常完成；发布候选被切出
+2. 阶段3（并行）：devops-engineer 返回干净的构建签核；qa-lead 返回时标识出一个 S1 bug 且回归测试套件失败；qa-lead 声明质量门：NOT PASSED
+3. 编排器立即呈现 qa-lead 的结果："QA-LEAD: 发现 S1 bug — [崩溃描述]。质量门：NOT PASSED。"
+4. 阶段4 谨慎进行或暂停（AskUserQuestion：继续阶段4还是跳过到阶段5进行 go/no-go？）
+5. 阶段5：通过 Task 生成 `producer`；producer 收到 qa-lead 的 NOT PASSED 裁决；无 S1 签核可用；producer 声明 NO-GO，理由："S1 bug [ID] 未解决且未关闭。发布不安全。"
+6. AskUserQuestion：向用户呈现 NO-GO 决策和 S1 bug 详情；选项：修复 bug 并重新运行、延期发布、或覆盖（需记录理由）
+7. 阶段6（部署）完全跳过 — 无分支标记、无部署到 staging、无部署到 production
+8. community-manager 不在阶段6生成（无部署可公告）
+9. 技能以部分报告结束，总结已完成的内容（阶段1-5）和跳过的内容（阶段6）及原因
+10. 裁决：BLOCKED — 发布未部署
 
-**Assertions:**
-- [ ] qa-lead S1 bug finding is surfaced to the user immediately after Phase 3 completes — not suppressed until Phase 5
-- [ ] producer's NO-GO decision explicitly references the S1 bug and the quality gate result
-- [ ] Phase 6 Deployment is completely skipped when producer declares NO-GO
-- [ ] community-manager is NOT spawned for patch notes or launch announcement on NO-GO
-- [ ] The partial report clearly states which phases completed and which were skipped, with reasons
-- [ ] Verdict: BLOCKED (not COMPLETE) when deployment is skipped due to NO-GO
-- [ ] AskUserQuestion offers the user resolution options (fix and re-run / defer / override with rationale)
-- [ ] Override path (if chosen) requires user to provide a documented rationale before proceeding to Phase 6
+**断言:**
+- [ ] qa-lead 的 S1 bug 发现在阶段3完成后立即呈现给用户 — 不会等到阶段5才显示
+- [ ] producer 的 NO-GO 决策明确引用 S1 bug 和质量门结果
+- [ ] 当 producer 声明 NO-GO 时，阶段6 部署完全跳过
+- [ ] community-manager 不会为补丁说明或发布公告在 NO-GO 时生成
+- [ ] 部分报告清楚说明哪些阶段已完成、哪些被跳过，并附有原因
+- [ ] 当部署因 NO-GO 被跳过时，裁决：BLOCKED（非 COMPLETE）
+- [ ] AskUserQuestion 向用户提供解决选项（修复并重新运行 / 延期 / 覆盖并记录理由）
+- [ ] 覆盖路径（如果选择）要求用户在进行阶段6前提供记录的理由
 
 ---
 
-### Case 3: Security Audit for Online Game — security-engineer is spawned in Phase 3
+### 用例3：在线游戏的安全审计 — security-engineer 在第3阶段被生成
 
 **Fixture:**
-- Game has multiplayer features and stores player account data
-- Release candidate exists for v2.1.0
-- qa-lead and devops-engineer both return clean sign-offs
-- security-engineer audit is required per team composition rules
+- 游戏具有多人游戏功能并存储玩家账户数据
+- 发布候选存在于 v2.1.0
+- qa-lead 和 devops-engineer 均返回干净的签核
+- 根据团队组成规则需要 security-engineer 审计
 
 **Input:** `/team-release v2.1.0`
 
-**Expected behavior:**
-1. Phases 1–2 complete normally
-2. Phase 3 (parallel): Orchestrator detects that the game has online/multiplayer features and player data; issues Task calls simultaneously for `qa-lead`, `devops-engineer`, AND `security-engineer`; also spawns `network-programmer` for netcode stability sign-off
-3. security-engineer conducts pre-release security audit: reviews authentication flows, anti-cheat presence, data privacy compliance; returns sign-off
-4. network-programmer verifies lag compensation, reconnect handling, and bandwidth under load; returns sign-off
-5. All four Phase 3 agents complete; their results are collected before Phase 4 begins
-6. Phase 5: producer collects sign-offs from all four Phase 3 agents (qa-lead, devops-engineer, security-engineer, network-programmer) before making the go/no-go call
-7. Remaining phases proceed normally to COMPLETE
+**预期行为:**
+1. 阶段1-2 正常完成
+2. 阶段3（并行）：编排器检测到游戏具有在线/多人游戏功能和玩家数据；同时为 `qa-lead`、`devops-engineer` 和 `security-engineer` 发出 Task 调用；同时生成 `network-programmer` 以获取网络代码稳定性签核
+3. security-engineer 进行发布前安全审计：审查认证流程、反作弊存在性、数据隐私合规性；返回签核
+4. network-programmer 验证延迟补偿、重连处理、负载下的带宽；返回签核
+5. 所有四个阶段3代理完成；在阶段4开始前收集它们的结果
+6. 阶段5：producer 在做出 go/no-go 决策前，收集所有四个阶段3代理（qa-lead、devops-engineer、security-engineer、network-programmer）的签核
+7. 剩余阶段正常进行至 COMPLETE
 
-**Assertions:**
-- [ ] security-engineer IS spawned in Phase 3 when the game has online features, multiplayer, or player data — this is not skipped
-- [ ] network-programmer IS spawned in Phase 3 when the game has multiplayer
-- [ ] All four Phase 3 Task calls (qa-lead, devops-engineer, security-engineer, network-programmer) are issued simultaneously
-- [ ] security-engineer audit covers authentication, anti-cheat, and data privacy compliance
-- [ ] Phase 5 producer sign-off collection includes security-engineer (four parties, not two)
-- [ ] Phase 6 deployment does not begin until security-engineer has signed off
-- [ ] Skill does NOT treat security-engineer as optional for a game with player data
+**断言:**
+- [ ] 当游戏具有在线功能、多人游戏或玩家数据时，security-engineer 会在阶段3被生成 — 不会跳过
+- [ ] 当游戏具有多人游戏时，network-programmer 会在阶段3被生成
+- [ ] 所有四个阶段3 Task 调用（qa-lead、devops-engineer、security-engineer、network-programmer）同时发出
+- [ ] security-engineer 审计涵盖认证、反作弊和数据隐私合规性
+- [ ] 阶段5 producer 的签核收集包括 security-engineer（四方，而非两方）
+- [ ] 阶段6 部署在 security-engineer 签核前不会开始
+- [ ] 技能不会将 security-engineer 视为具有玩家数据的游戏的可选项
 
 ---
 
-### Case 4: Localization Miss — Untranslated strings block the ship
+### 用例4：本地化缺失 — 未翻译字符串阻碍发布
 
 **Fixture:**
-- Release candidate exists for v1.2.0
-- Phase 3 (qa-lead, devops-engineer) complete with clean sign-offs
-- Phase 4: localization verification detects 47 untranslated strings in the French locale (a supported language in the game's localization scope)
-- localization-lead is available as a delegatable agent
+- 发布候选存在于 v1.2.0
+- 阶段3（qa-lead、devops-engineer）以干净的签核完成
+- 阶段4：本地化验证检测到法语语言环境中的47个未翻译字符串（游戏本地化范围内支持的语言）
+- localization-lead 可作为可委托代理使用
 
 **Input:** `/team-release v1.2.0`
 
-**Expected behavior:**
-1. Phases 1–3 complete with clean sign-offs
-2. Phase 4: Localization verification step detects untranslated strings; identifies 47 strings in French locale; localization-lead (if available) is spawned to assess the severity
-3. Orchestrator surfaces: "LOCALIZATION MISS: 47 untranslated strings found in French locale. Localization sign-off is required before shipping."
-4. AskUserQuestion: options presented — (a) Fix translations and re-run Phase 4, (b) Remove French locale from this release, (c) Ship as-is with a known issues note
-5. If user selects (a): Phase 4 is re-run after translations are provided; skill waits for localization sign-off
-6. Phase 5 go/no-go does NOT proceed while localization sign-off is outstanding
-7. Ship is blocked (Phase 6 not entered) until localization issue is resolved or explicitly waived
+**预期行为:**
+1. 阶段1-3 以干净的签核完成
+2. 阶段4：本地化验证步骤检测到未翻译字符串；识别出法语语言环境中的47个字符串；生成 localization-lead（如果可用）以评估严重性
+3. 编排器呈现："LOCALIZATION MISS: 在法语语言环境中发现47个未翻译字符串。发布前需要本地化签核。"
+4. AskUserQuestion：呈现选项 — (a) 修复翻译并重新运行阶段4, (b) 从本次发布中移除法语语言环境, (c) 按原样发布并添加已知问题说明
+5. 如果用户选择 (a)：在提供翻译后重新运行阶段4；技能等待本地化签核
+6. 当本地化签核未完成时，阶段5 go/no-go 不会进行
+7. 在本地化问题解决或明确豁免之前，发布被阻止（不进入阶段6）
 
-**Assertions:**
-- [ ] Localization verification in Phase 4 detects untranslated strings and counts them (not just "some strings missing")
-- [ ] Untranslated strings for a supported locale block the pipeline before Phase 5
-- [ ] AskUserQuestion is used to offer the user resolution choices — the skill does not auto-waive
-- [ ] Phase 5 go/no-go is NOT called while localization sign-off is pending
-- [ ] If user chooses to re-run Phase 4: the skill does not require restarting from Phase 1
-- [ ] If user explicitly waives (ships as-is): the waiver is documented in the release report (Phase 7) as a known issue
-- [ ] Skill does NOT fabricate translated strings to unblock itself
+**断言:**
+- [ ] 阶段4 中的本地化验证检测未翻译字符串并进行计数（不仅仅是“某些字符串缺失”）
+- [ ] 支持的语言环境的未翻译字符串会在阶段5之前阻塞流水线
+- [ ] 使用 AskUserQuestion 向用户提供解决选项 — 技能不会自动豁免
+- [ ] 当本地化签核待定时，不会调用阶段5 go/no-go
+- [ ] 如果用户选择重新运行阶段4：技能不需要从阶段1重新开始
+- [ ] 如果用户明确豁免（按原样发布）：豁免情况在发布报告（阶段7）中作为已知问题记录
+- [ ] 技能不会伪造翻译字符串以解除阻塞
 
 ---
 
-### Case 5: No Argument — Skill infers version or asks
+### 用例5：无参数 — 技能推断版本或询问
 
 **Fixture (variant A — milestone data present):**
-- `production/milestones/` exists with a milestone file; most recent milestone is "v1.1.0 — Gold"
-- `production/session-state/active.md` references a version or milestone
+- `production/milestones/` 存在且包含里程碑文件；最近的里程碑是 "v1.1.0 — Gold"
+- `production/session-state/active.md` 引用版本或里程碑
 
 **Fixture (variant B — no discoverable version):**
-- `production/milestones/` does not exist
-- `production/session-state/active.md` does not reference a version
-- No git tags are present from which to infer a version
+- `production/milestones/` 不存在
+- `production/session-state/active.md` 不引用版本
+- 不存在可用于推断版本的 git 标签
 
 **Input:** `/team-release` (no argument)
 
-**Expected behavior (variant A):**
-1. Phase 1: No argument provided; reads `production/session-state/active.md`; reads most recent milestone file in `production/milestones/`
-2. Infers v1.1.0 as the target version; reports "No version argument provided — inferred v1.1.0 from milestone data. Proceeding."
-3. Confirms with AskUserQuestion before beginning Phase 1 proper: "Releasing v1.1.0. Is this correct?"
-4. Proceeds as if `/team-release v1.1.0` was the input
+**预期行为 (variant A):**
+1. 阶段1：未提供参数；读取 `production/session-state/active.md`；读取 `production/milestones/` 中最新的里程碑文件
+2. 推断 v1.1.0 为目标版本；报告"未提供版本参数 — 从里程碑数据推断为 v1.1.0。继续。"
+3. 在正式进入阶段1前通过 AskUserQuestion 确认："发布 v1.1.0。是否正确？"
+4. 如同输入 `/team-release v1.1.0` 一样进行
 
-**Expected behavior (variant B):**
-1. Phase 1: No argument provided; reads available state files — no version discoverable
-2. Uses AskUserQuestion: "What version number should be released? (e.g., v1.0.0)"
-3. Waits for user input before proceeding
+**预期行为 (variant B):**
+1. 阶段1：未提供参数；读取可用的状态文件 — 未发现版本
+2. 使用 AskUserQuestion："应发布哪个版本号？（例如，v1.0.0）"
+3. 等待用户输入后再继续
 
-**Assertions:**
-- [ ] Skill does NOT default to a hardcoded version string when no argument is provided
-- [ ] Skill reads `production/session-state/active.md` and milestone files before asking (variant A)
-- [ ] Inferred version is confirmed with the user via AskUserQuestion before proceeding (variant A)
-- [ ] When no version is discoverable, AskUserQuestion is used — skill does not guess (variant B)
-- [ ] Skill does NOT error out when milestone files are absent — it falls back to asking (variant B)
-
----
-
-## Protocol Compliance
-
-- [ ] `AskUserQuestion` used at each phase transition gate (post-Phase 1, post-Phase 2, post-Phase 3/4 if issues, post-Phase 5 go/no-go)
-- [ ] Phase 3 agents are always issued as parallel Task calls — qa-lead and devops-engineer are never sequential
-- [ ] security-engineer is conditionally spawned based on game features — never silently skipped when features are present
-- [ ] File Write Protocol: orchestrator never calls Write/Edit directly — all writes are delegated to sub-agents or sub-skills
-- [ ] Phase 6 Deployment is strictly conditional on a GO verdict from Phase 5 — never auto-triggered
-- [ ] Error recovery: any BLOCKED agent is surfaced immediately before continuing to dependent phases
-- [ ] Partial reports are always produced if any phase fails or the pipeline is halted (Case 2)
-- [ ] Verdict: COMPLETE only when deployment completes; BLOCKED when go/no-go is NO or a hard blocker is unresolved
-- [ ] Next steps always include 48-hour post-release monitoring, `/retrospective` recommendation, and `production/stage.txt` update to `Live`
+**断言:**
+- [ ] 当未提供参数时，技能不会默认为硬编码的版本字符串
+- [ ] 技能在询问前读取 `production/session-state/active.md` 和里程碑文件（variant A）
+- [ ] 推断的版本在继续前通过 AskUserQuestion 与用户确认（variant A）
+- [ ] 当无法发现版本时，使用 AskUserQuestion — 技能不会猜测（variant B）
+- [ ] 当里程碑文件不存在时，技能不会报错 — 它会回退到询问（variant B）
 
 ---
 
-## Coverage Notes
+## 协议合规性
 
-- Phase 7 post-release actions (release report, milestone tracking, community publishing, dashboard monitoring) are validated implicitly by Case 1. No separate edge case is required as Phase 7 is non-gated and does not have a blocking failure mode.
-- The "devops-engineer build fails" path is not separately tested — it would surface as a BLOCKED result in Phase 3 and follow the standard error recovery protocol (surface → assess → AskUserQuestion options). This is validated structurally by the Static Assertions error recovery check.
-- The parallel Phase 4 path (localization + performance + analytics simultaneously with Phase 3) is a documented option in the skill ("can run in parallel with Phase 3 if resources available"). Case 4 tests Phase 4 as a sequential gate; the parallel variant is left to the skill's implementation judgment.
-- The `network-programmer` sign-off path for multiplayer is validated as part of Case 3 rather than a separate case, as it follows the same parallel-spawn pattern as security-engineer.
-- The "override NO-GO with documented rationale" path in Case 2 is referenced but not exhaustively tested — it is an escape hatch that the skill must support, and its existence is validated by the AskUserQuestion options assertion in Case 2.
+- [ ] `AskUserQuestion` 在每个阶段转换关口使用（阶段1后、阶段2后、如果有问题则在阶段3/4后、阶段5 go/no-go后）
+- [ ] 阶段3代理始终作为并行 Task 调用发出 — qa-lead 和 devops-engineer 从不顺序执行
+- [ ] security-engineer 根据游戏功能有条件地生成 — 当功能存在时从不静默跳过
+- [ ] 文件写入协议：编排器从不直接调用 Write/Edit — 所有写入都委托给子代理或子技能
+- [ ] 阶段6 部署严格以阶段5的GO裁决为条件 — 从不自动触发
+- [ ] 错误恢复：任何 BLOCKED 代理在继续到依赖阶段之前立即呈现
+- [ ] 如果任何阶段失败或流水线停止，始终生成部分报告（用例2）
+- [ ] 裁决：仅在部署完成时为 COMPLETE；当 go/no-go 为 NO 或硬阻塞未解决时为 BLOCKED
+- [ ] 下一步始终包含48小时发布后监控、`/retrospective` 推荐，以及将 `production/stage.txt` 更新为 `Live`
+
+---
+
+## 覆盖范围说明
+
+- 阶段7 发布后动作（发布报告、里程碑跟踪、社区发布、仪表板监控）通过用例1隐式验证。由于阶段7非门控且没有阻塞性故障模式，不需要单独的边界用例。
+- "devops-engineer 构建失败"路径未单独测试 — 它将作为阶段3的BLOCKED结果呈现，并遵循标准错误恢复协议（surface → assess → AskUserQuestion options）。这通过静态断言错误恢复检查在结构上验证。
+- 并行阶段4路径（本地化+性能+分析与阶段3同时进行）是技能中记录的选项（"如果资源可用，可以与阶段3并行运行"）。用例4将阶段4作为顺序门进行测试；并行变体留给技能的实现判断。
+- 多人游戏的 `network-programmer` 签核路径作为用例3的一部分进行验证，而非单独用例，因为它遵循与 security-engineer 相同的并行生成模式。
+- 用例2中的"覆盖 NO-GO 并记录理由"路径被引用但未详尽测试 — 它是一个逃生舱口，技能必须支持，其存在通过用例2中的 AskUserQuestion 选项断言验证。

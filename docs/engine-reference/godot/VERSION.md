@@ -1,6 +1,6 @@
-# Godot Engine — Version Reference
+# Godot 引擎 — 版本参考
 
-| Field | Value |
+| 字段 | 值 |
 |-------|-------|
 | **Engine Version** | Godot 4.6 |
 | **Release Date** | January 2026 |
@@ -8,24 +8,22 @@
 | **Last Docs Verified** | 2026-02-12 |
 | **LLM Knowledge Cutoff** | May 2025 |
 
-## Knowledge Gap Warning
+## 知识差距警告
 
-The LLM's training data likely covers Godot up to ~4.3. Versions 4.4, 4.5,
-and 4.6 introduced significant changes that the model does NOT know about.
-Always cross-reference this directory before suggesting Godot API calls.
+LLM 的训练数据可能涵盖 Godot 直到约 4.3 版本。版本 4.4、4.5 和 4.6 引入了模型**未知**的重大变更。在建议 Godot API 调用之前，务必交叉参考本目录。
 
-## Post-Cutoff Version Timeline
+## 截止日期后的版本时间线
 
-| Version | Release | Risk Level | Key Theme |
+| 版本 | 发布日期 | 风险级别 | 关键主题 |
 |---------|---------|------------|-----------|
-| 4.4 | ~Mid 2025 | MEDIUM | Jolt physics option, FileAccess return types, shader texture type changes |
-| 4.5 | ~Late 2025 | HIGH | Accessibility (AccessKit), variadic args, @abstract, shader baker, SMAA |
-| 4.6 | Jan 2026 | HIGH | Jolt default, glow rework, D3D12 default on Windows, IK restored |
+| 4.4 | ~Mid 2025 | MEDIUM | Jolt 物理选项、FileAccess 返回类型、着色器纹理类型变更 |
+| 4.5 | ~Late 2025 | HIGH | 可访问性 (AccessKit)、可变参数、@abstract、着色器烘焙器、SMAA |
+| 4.6 | Jan 2026 | HIGH | Jolt 默认、辉光重做、Windows 上 D3D12 默认、IK 恢复 |
 
-## Verified Sources
+## 已验证的来源
 
-- Official docs: https://docs.godotengine.org/en/stable/
-- 4.5→4.6 migration: https://docs.godotengine.org/en/stable/tutorials/migrating/upgrading_to_godot_4.6.html
-- 4.4→4.5 migration: https://docs.godotengine.org/en/stable/tutorials/migrating/upgrading_to_godot_4.5.html
-- Changelog: https://github.com/godotengine/godot/blob/master/CHANGELOG.md
-- Release notes: https://godotengine.org/releases/4.6/
+- 官方文档：https://docs.godotengine.org/en/stable/
+- 4.5→4.6 迁移：https://docs.godotengine.org/en/stable/tutorials/migrating/upgrading_to_godot_4.6.html
+- 4.4→4.5 迁移：https://docs.godotengine.org/en/stable/tutorials/migrating/upgrading_to_godot_4.5.html
+- 变更日志：https://github.com/godotengine/godot/blob/master/CHANGELOG.md
+- 发布说明：https://godotengine.org/releases/4.6/

@@ -1,6 +1,6 @@
 # Path-Specific Rules
 
-Rules in `.claude/rules/` are automatically enforced when editing files in matching paths:
+`.claude/rules/` 中的规则在编辑匹配路径的文件时自动执行：
 
 | Rule File | Path Pattern | Enforces |
 | ---- | ---- | ---- |

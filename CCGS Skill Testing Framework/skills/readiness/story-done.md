@@ -1,209 +1,195 @@
 # Skill Test Spec: /story-done
 
-## Skill Summary
+## 技能摘要
 
-`/story-done` closes the loop between design and implementation. Run at the
-end of implementing a story, it reads the story file and verifies each
-acceptance criterion against the implementation. It checks for GDD and ADR
-deviations, prompts a code review, updates the story status to `Complete`,
-logs any tech debt, and surfaces the next ready story from the sprint. It
-produces a COMPLETE / COMPLETE WITH NOTES / BLOCKED verdict and writes to
-the story file and optionally to `docs/tech-debt-register.md`.
+`/story-done` 在设计与实现之间完成闭环。在实现一个 story 结束时运行，它读取 story 文件并根据实现验证每个 acceptance criterion。它检查 GDD 和 ADR 偏差，提示进行 code review，将 story 状态更新为 `Complete`，记录任何 tech debt，并从 sprint 中提取下一个就绪的 story。它生成 COMPLETE / COMPLETE WITH NOTES / BLOCKED 裁决，并写入 story 文件，可选地写入 `docs/tech-debt-register.md`。
 
 ---
 
-## Static Assertions (Structural)
+## 静态断言（结构）
 
-Verified automatically by `/skill-test static` — no fixture needed.
+由 `/skill-test static` 自动验证 — 无需 fixture。
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
-- [ ] Has ≥5 phase headings (complex skill warranting `context: fork` if applicable)
-- [ ] Contains verdict keywords: COMPLETE, BLOCKED
-- [ ] Contains "May I write" collaborative protocol language (writes to story file and tech-debt register)
-- [ ] Has a next-step handoff (surfaces next story from sprint)
+- [ ] 具有必需的前置元数据字段：`name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] 具有 ≥5 个阶段标题（复杂技能，如果适用则保证 `context: fork`）
+- [ ] 包含裁决关键词：COMPLETE, BLOCKED
+- [ ] 包含 "May I write" 协作协议语言（写入 story 文件和 tech debt 注册表）
+- [ ] 具有下一步交接（从 sprint 中提取下一个 story）
 
 ---
 
-## Test Cases
+## 测试用例
 
-### Case 1: Happy Path — All acceptance criteria met, no deviations
+### 用例 1：顺利路径 — 所有 acceptance criteria 满足，无偏差
 
 **Fixture:**
-- Story file at `production/epics/core/story-light-pickup.md` with:
-  - 3 acceptance criteria, all implemented as described
-  - `TR-ID: TR-light-001` referencing a GDD requirement
-  - `ADR: docs/architecture/adr-003-inventory.md` (Accepted)
+- Story 文件位于 `production/epics/core/story-light-pickup.md`，包含：
+  - 3 个 acceptance criteria，全部按描述实现
+  - `TR-ID: TR-light-001` 引用 GDD 需求
+  - `ADR: docs/architecture/adr-003-inventory.md`（已接受）
   - `Status: In Progress`
-- Implementation files listed in story exist in `src/`
-- GDD requirement text at TR-light-001 matches how the feature was implemented
-- ADR guidance was followed (no deviations)
+- Story 中列出的实现文件存在于 `src/` 中
+- GDD 需求文本在 TR-light-001 处与功能实现方式匹配
+- ADR 指南已遵循（无偏差）
 
-**Input:** `/story-done production/epics/core/story-light-pickup.md`
+**输入：** `/story-done production/epics/core/story-light-pickup.md`
 
-**Expected behavior:**
-1. Skill reads the story file and extracts all key fields
-2. Skill reads the GDD requirement fresh from `tr-registry.yaml` (not from story's quoted text)
-3. Skill reads the referenced ADR to understand implementation constraints
-4. Skill evaluates each acceptance criterion (auto where possible, manual prompt where not)
-5. Skill checks for GDD requirement deviations
-6. Skill checks for ADR guideline deviations
-7. Skill prompts user: "Please provide the code review outcome for this story"
-8. Skill presents COMPLETE verdict
-9. Skill asks "May I update story Status to Complete and add Completion Notes?"
-10. If yes: skill updates the story file
-11. Skill surfaces the next `Ready for Dev` story from the sprint
+**预期行为：**
+1. 技能读取 story 文件并提取所有关键字段
+2. 技能从 `tr-registry.yaml` 重新读取 GDD 需求（而非来自 story 的引用文本）
+3. 技能读取引用的 ADR 以了解实现约束
+4. 技能评估每个 acceptance criterion（尽可能自动，否则手动提示）
+5. 技能检查 GDD 需求偏差
+6. 技能检查 ADR 指南偏差
+7. 技能提示用户："Please provide the code review outcome for this story"
+8. 技能呈现 COMPLETE 裁决
+9. 技能询问 "May I update story Status to Complete and add Completion Notes?"
+10. 如果同意：技能更新 story 文件
+11. 技能从 sprint 中提取下一个 `Ready for Dev` story
 
-**Assertions:**
-- [ ] Skill reads `docs/architecture/tr-registry.yaml` for TR-ID requirement text (not just story)
-- [ ] Skill reads the referenced ADR file (not just the story reference)
-- [ ] Each acceptance criterion is listed with VERIFIED / DEFERRED / FAILED status
-- [ ] Skill prompts the user for code review outcome (does not skip this step)
-- [ ] Verdict is COMPLETE when all criteria are verified and no deviations exist
-- [ ] Skill asks "May I write" before updating the story file
-- [ ] Skill does NOT auto-update story status without user confirmation
-- [ ] After completion, skill surfaces the next ready story from `production/sprints/`
+**断言：**
+- [ ] 技能从 `docs/architecture/tr-registry.yaml` 读取 TR-ID 需求文本（不仅来自 story）
+- [ ] 技能读取引用的 ADR 文件（不仅来自 story 引用）
+- [ ] 每个 acceptance criterion 都列出 VERIFIED / DEFERRED / FAILED 状态
+- [ ] 技能提示用户获取 code review 结果（不跳过此步骤）
+- [ ] 当所有 criteria 已验证且无偏差存在时，裁决为 COMPLETE
+- [ ] 技能在更新 story 文件前询问 "May I write"
+- [ ] 技能不会在没有用户确认的情况下自动更新 story 状态
+- [ ] 完成后，技能从 `production/sprints/` 中提取下一个就绪的 story
 
 ---
 
-### Case 2: Blocked Path — Acceptance criterion cannot be verified
+### 用例 2：受阻路径 — Acceptance criterion 无法验证
 
 **Fixture:**
-- Story file has an acceptance criterion: "Player sees correct animation on pickup"
-- No automated test for this criterion exists
-- Manual verification has not been performed
-- All other criteria are met
+- Story 文件有一个 acceptance criterion："Player sees correct animation on pickup"
+- 此 criterion 不存在自动化测试
+- 尚未执行手动验证
+- 所有其他 criteria 均已满足
 
-**Input:** `/story-done production/epics/core/story-light-pickup.md`
+**输入：** `/story-done production/epics/core/story-light-pickup.md`
 
-**Expected behavior:**
-1. Skill processes all acceptance criteria
-2. Reaches the animation criterion — cannot auto-verify
-3. Skill asks the user: "Acceptance criterion 'Player sees correct animation on
-   pickup' cannot be auto-verified. Has this been manually tested?"
-4. If user says No: criterion is marked DEFERRED, verdict becomes COMPLETE WITH NOTES
-5. Skill records the deferred criterion in completion notes
-6. Asks "May I write updated story with deferred criterion noted?"
+**预期行为：**
+1. 技能处理所有 acceptance criteria
+2. 到达动画 criterion — 无法自动验证
+3. 技能询问用户："Acceptance criterion 'Player sees correct animation on pickup' cannot be auto-verified. Has this been manually tested?"
+4. 如果用户回答 No：criterion 标记为 DEFERRED，裁决变为 COMPLETE WITH NOTES
+5. 技能在完成记录中记录 deferred criterion
+6. 询问 "May I write updated story with deferred criterion noted?"
 
-**Assertions:**
-- [ ] Skill asks the user about unverifiable criteria rather than assuming PASS
-- [ ] Deferred criteria result in COMPLETE WITH NOTES (not COMPLETE or BLOCKED)
-- [ ] The deferred criterion is explicitly named in the completion notes
-- [ ] Skill still asks "May I write" before updating the story file
+**断言：**
+- [ ] 技能询问用户关于无法验证的 criteria，而非假设 PASS
+- [ ] Deferred criteria 导致 COMPLETE WITH NOTES（非 COMPLETE 或 BLOCKED）
+- [ ] deferred criterion 在完成记录中明确命名
+- [ ] 技能在更新 story 文件前仍询问 "May I write"
 
 ---
 
-### Case 3: Blocked Path — GDD deviation detected
+### 用例 3：受阻路径 — 检测到 GDD 偏差
 
 **Fixture:**
-- Story TR-ID points to requirement: "Player can carry max 3 light sources"
-- Implementation in `src/` uses a variable `MAX_CARRIED_LIGHTS = 5`
-- This is a deliberate deviation from the GDD
+- Story TR-ID 指向需求："Player can carry max 3 light sources"
+- `src/` 中的实现使用变量 `MAX_CARRIED_LIGHTS = 5`
+- 这是与 GDD 的有意偏差
 
-**Input:** `/story-done production/epics/core/story-light-pickup.md`
+**输入：** `/story-done production/epics/core/story-light-pickup.md`
 
-**Expected behavior:**
-1. Skill reads the GDD requirement text (max 3)
-2. Skill detects discrepancy between requirement and implementation value (5)
-3. Skill flags this as a GDD deviation and asks the user to classify it:
-   - INTENTIONAL: document the deviation and reason
-   - ERROR: implementation must be fixed before story can be marked Complete
-   - OUT OF SCOPE: requirement changed and GDD needs updating
-4. If INTENTIONAL: skill records deviation in completion notes, verdict is COMPLETE WITH NOTES
-5. If ERROR: verdict is BLOCKED until implementation is corrected
+**预期行为：**
+1. 技能读取 GDD 需求文本（最大 3）
+2. 技能检测需求与实现值（5）之间的差异
+3. 技能将此标记为 GDD 偏差，并要求用户分类：
+   - INTENTIONAL：记录偏差及原因
+   - ERROR：在 story 标记为 Complete 前必须修复实现
+   - OUT OF SCOPE：需求已更改，GDD 需要更新
+4. 如果 INTENTIONAL：技能在完成记录中记录偏差，裁决为 COMPLETE WITH NOTES
+5. 如果 ERROR：裁决为 BLOCKED，直到实现被纠正
 
-**Assertions:**
-- [ ] Skill detects the mismatch between GDD requirement and implementation value
-- [ ] Skill asks the user to classify the deviation (not auto-assumes either way)
-- [ ] INTENTIONAL deviation → COMPLETE WITH NOTES (not BLOCKED)
-- [ ] ERROR deviation → BLOCKED verdict until fixed
-- [ ] Detected deviations are recorded in completion notes or tech debt register
+**断言：**
+- [ ] 技能检测 GDD 需求与实现值之间的不匹配
+- [ ] 技能要求用户分类偏差（不自动假设任一方）
+- [ ] INTENTIONAL 偏差 → COMPLETE WITH NOTES（非 BLOCKED）
+- [ ] ERROR 偏差 → BLOCKED 裁决，直到修复
+- [ ] 检测到的偏差记录在完成记录或 tech debt 注册表中
 
 ---
 
-### Case 4: Edge Case — No argument, auto-detect current story
+### 用例 4：边界情况 — 无参数，自动检测当前 story
 
 **Fixture:**
-- `production/session-state/active.md` contains a reference to
-  `production/epics/core/story-oxygen-drain.md` as the active story
-- That story file exists with `Status: In Progress`
+- `production/session-state/active.md` 包含对 `production/epics/core/story-oxygen-drain.md` 作为活动 story 的引用
+- 该 story 文件存在且 `Status: In Progress`
 
-**Input:** `/story-done` (no argument)
+**输入：** `/story-done`（无参数）
 
-**Expected behavior:**
-1. Skill reads `production/session-state/active.md`
-2. Skill finds the active story reference
-3. Skill reads that story file and proceeds normally
-4. Output confirms which story was auto-detected
+**预期行为：**
+1. 技能读取 `production/session-state/active.md`
+2. 技能找到活动 story 引用
+3. 技能读取该 story 文件并正常进行
+4. 输出确认自动检测到的 story
 
-**Assertions:**
-- [ ] Skill reads `production/session-state/active.md` when no argument is given
-- [ ] Skill identifies and confirms the auto-detected story before proceeding
-- [ ] If no story is found in session state, skill asks the user to provide a path
-
----
+**断言：**
+- [ ] 当未提供参数时，技能读取 `production/session-state/active.md`
+- [ ] 技能在继续之前识别并确认自动检测到的 story
+- [ ] 如果在会话状态中未找到 story，技能要求用户提供路径
 
 ---
 
-### Case 5: Director Gate — LP-CODE-REVIEW behavior across review modes
+### 用例 5：总监门禁 — LP-CODE-REVIEW 在不同 review 模式下的行为
 
 **Fixture:**
-- Story file at `production/epics/core/story-light-pickup.md`
-- All acceptance criteria verified, no GDD deviations
-- `production/session-state/review-mode.txt` exists
+- Story 文件位于 `production/epics/core/story-light-pickup.md`
+- 所有 acceptance criteria 已验证，无 GDD 偏差
+- `production/session-state/review-mode.txt` 存在
 
-**Case 5a — full mode:**
-- `review-mode.txt` contains `full`
+**用例 5a — full 模式：**
+- `review-mode.txt` 包含 `full`
 
-**Input:** `/story-done production/epics/core/story-light-pickup.md` (full mode)
+**输入：** `/story-done production/epics/core/story-light-pickup.md`（full 模式）
 
-**Expected behavior:**
-1. Skill reads review mode — determines `full`
-2. After implementation verification, skill invokes LP-CODE-REVIEW gate
-3. Lead programmer reviews the implementation
-4. If LP verdict is NEEDS CHANGES → story cannot be marked Complete
-5. If LP verdict is APPROVED → skill proceeds to mark story Complete
+**预期行为：**
+1. 技能读取 review 模式 — 确定 `full`
+2. 实现验证后，技能调用 LP-CODE-REVIEW 门禁
+3. Lead programmer 审查实现
+4. 如果 LP 裁决为 NEEDS CHANGES → story 无法标记为 Complete
+5. 如果 LP 裁决为 APPROVED → 技能继续标记 story 为 Complete
 
-**Assertions (5a):**
-- [ ] Skill reads review mode before deciding whether to invoke LP-CODE-REVIEW
-- [ ] LP-CODE-REVIEW gate is invoked in full mode after implementation check
-- [ ] An LP NEEDS CHANGES verdict prevents story from being marked Complete
-- [ ] Gate result is noted in output: "Gate: LP-CODE-REVIEW — [result]"
-- [ ] Skill still asks "May I write" before updating story status even if LP approved
+**断言（5a）：**
+- [ ] 技能在决定是否调用 LP-CODE-REVIEW 前读取 review 模式
+- [ ] LP-CODE-REVIEW 门禁在 full 模式下实现检查后被调用
+- [ ] LP NEEDS CHANGES 裁决阻止 story 被标记为 Complete
+- [ ] 门禁结果在输出中注明："Gate: LP-CODE-REVIEW — [result]"
+- [ ] 即使 LP 批准，技能在更新 story 状态前仍询问 "May I write"
 
-**Case 5b — lean or solo mode:**
-- `review-mode.txt` contains `lean` or `solo`
+**用例 5b — lean 或 solo 模式：**
+- `review-mode.txt` 包含 `lean` 或 `solo`
 
-**Expected behavior:**
-1. Skill reads review mode — determines `lean` or `solo`
-2. LP-CODE-REVIEW gate is SKIPPED
-3. Output notes the skip: "[LP-CODE-REVIEW] skipped — Lean/Solo mode"
-4. Story completion proceeds based on acceptance criteria check only
+**预期行为：**
+1. 技能读取 review 模式 — 确定 `lean` 或 `solo`
+2. LP-CODE-REVIEW 门禁被跳过
+3. 输出注明跳过："[LP-CODE-REVIEW] skipped — Lean/Solo mode"
+4. story 完成仅基于 acceptance criteria 检查进行
 
-**Assertions (5b):**
-- [ ] LP-CODE-REVIEW gate does NOT spawn in lean or solo mode
-- [ ] Skip is explicitly noted in output
-- [ ] Skill still requires "May I write" approval before marking story Complete
-
----
-
-## Protocol Compliance
-
-- [ ] Uses "May I write" before updating the story file
-- [ ] Uses "May I write" before adding entries to `docs/tech-debt-register.md`
-- [ ] Presents complete findings (criteria check, deviation check) before asking approval
-- [ ] Ends by surfacing the next ready story from the sprint plan
-- [ ] Does not mark a story Complete if any criteria are in ERROR state
-- [ ] Does not skip the code review prompt
+**断言（5b）：**
+- [ ] LP-CODE-REVIEW 门禁在 lean 或 solo 模式下不生成
+- [ ] 跳过在输出中明确注明
+- [ ] 技能在标记 story 为 Complete 前仍需要 "May I write" 批准
 
 ---
 
-## Coverage Notes
+## 协议合规性
 
-- The full 8-phase flow of the skill is exercised across Cases 1-3; not all
-  edge cases within each phase are covered.
-- Tech debt logging (deferred items written to `docs/tech-debt-register.md`)
-  is mentioned in Case 2 but not the primary assertion focus; dedicated
-  coverage deferred.
-- The `sprint-status.yaml` update (Phase 7 in the skill) is implied by Case 1
-  but not the primary assertion; assumed to follow the same "May I write" pattern.
-- Stories with multiple TR-IDs or multiple ADRs are not explicitly tested.
+- [ ] 在更新 story 文件前使用 "May I write"
+- [ ] 在向 `docs/tech-debt-register.md` 添加条目前使用 "May I write"
+- [ ] 在请求批准前呈现完整发现（criteria 检查、偏差检查）
+- [ ] 最后从 sprint 计划中提取下一个就绪的 story
+- [ ] 如果任何 criteria 处于 ERROR 状态，则不标记 story 为 Complete
+- [ ] 不跳过 code review 提示
+
+---
+
+## 覆盖说明
+
+- 技能的完整 8 阶段流程在用例 1-3 中练习；并非每个阶段内的所有边界情况都被覆盖。
+- Tech debt 记录（deferred 项目写入 `docs/tech-debt-register.md`）在用例 2 中提到，但不是主要断言重点；专用覆盖被推迟。
+- `sprint-status.yaml` 更新（技能中的阶段 7）在用例 1 中隐含，但不是主要断言；假设遵循相同的 "May I write" 模式。
+- 具有多个 TR-ID 或多个 ADR 的 story 未明确测试。

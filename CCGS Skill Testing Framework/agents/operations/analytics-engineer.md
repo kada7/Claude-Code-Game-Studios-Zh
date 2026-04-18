@@ -1,83 +1,83 @@
-# Agent Test Spec: analytics-engineer
+# Agent 测试规范: analytics-engineer
 
-## Agent Summary
-- **Domain**: Telemetry architecture and event schema design, A/B test framework design, player behavior analysis methodology, analytics dashboard specification, event naming conventions, data pipeline design (schema → ingestion → dashboard)
-- **Does NOT own**: Game implementation of event tracking (appropriate programmer), economy design decisions informed by analytics (economy-designer), live ops event design (live-ops-designer)
-- **Model tier**: Sonnet
-- **Gate IDs**: None; produces schemas and test designs; defers implementation to programmers
-
----
-
-## Static Assertions (Structural)
-
-- [ ] `description:` field is present and domain-specific (references telemetry, A/B testing, event tracking, analytics)
-- [ ] `allowed-tools:` list matches the agent's role (Read/Write for design/analytics/ and documentation; no game source or CI tools)
-- [ ] Model tier is Sonnet (default for operations specialists)
-- [ ] Agent definition does not claim authority over game implementation, economy design, or live ops scheduling
+## Agent 概述
+- **领域**: 遥测架构和事件模式设计、A/B 测试框架设计、玩家行为分析方法论、分析仪表板规范、事件命名约定、数据流水线设计（模式 → 摄取 → 仪表板）
+- **不负责**: 事件跟踪的游戏实现（由适当的程序员负责）、基于分析的经济设计决策（economy-designer）、实时运营活动设计（live-ops-designer）
+- **模型层级**: Sonnet
+- **关卡 ID**: 无；生成模式和测试设计；将实现推迟给程序员
 
 ---
 
-## Test Cases
+## 静态断言（结构）
 
-### Case 1: In-domain request — tutorial event tracking design
-**Input**: "Design the analytics event tracking for our tutorial. We want to know where players drop off and which steps they complete."
-**Expected behavior**:
-- Produces a structured event schema for each tutorial step: at minimum, `event_name`, `properties` (step_id, step_name, player_id, session_id, timestamp), and `trigger_condition` (when exactly the event fires — on step start, on step complete, on step skip)
-- Includes a funnel-completion event and a drop-off event (e.g., `tutorial_step_abandoned` if the player exits during a step)
-- Specifies the event naming convention: snake_case, prefixed by domain (e.g., `tutorial_step_started`, `tutorial_step_completed`, `tutorial_abandoned`)
-- Does NOT produce implementation code — marks implementation as [TO BE IMPLEMENTED BY PROGRAMMER]
-- Output is a schema table or structured list, not a narrative description
-
-### Case 2: Out-of-domain request — implement the event tracking in code
-**Input**: "Now that the event schema is designed, write the GDScript code to fire these events in our Godot tutorial scene."
-**Expected behavior**:
-- Does not produce GDScript or any implementation code
-- States clearly: "Telemetry implementation in game code is handled by the appropriate programmer (gameplay-programmer or systems-programmer); I provide the event schema and integration requirements"
-- Optionally produces an integration spec: what the programmer needs to know to implement correctly (event name, properties, when to fire, what analytics SDK or endpoint to use)
-
-### Case 3: Domain boundary — A/B test design for a UI change
-**Input**: "We want to A/B test two versions of our HUD: the current version and a minimal version with only a health bar. Design the test."
-**Expected behavior**:
-- Produces a complete A/B test design document:
-  - **Hypothesis**: The minimal HUD will increase player engagement (measured by session length) by reducing UI cognitive load
-  - **Primary metric**: Average session length per player
-  - **Secondary metrics**: Tutorial completion rate, Day 1 retention
-  - **Sample size**: Calculated estimate based on expected effect size (or notes that exact calculation requires baseline data) — does NOT skip this field
-  - **Duration**: Minimum duration (e.g., "at least 2 weeks to capture weekly player behavior patterns")
-  - **Randomization unit**: Player ID (not session ID, to prevent players seeing both versions)
-- Output is structured as a formal test design, not a bullet list of ideas
-
-### Case 4: Conflict — overlapping A/B test player segments
-**Input**: "We have two A/B tests running simultaneously: Test A (HUD variants) affects all players, and Test B (tutorial variants) also affects all players."
-**Expected behavior**:
-- Flags the overlap as a mutual exclusion violation: if both tests affect the same player, their results are confounded — neither test produces clean data
-- Identifies the problem precisely: players in both tests will have HUD and tutorial variants interacting, making it impossible to attribute outcome differences to either variable alone
-- Proposes resolution options: (a) run tests sequentially, (b) split the player population into exclusive segments (50% in Test A, 50% in Test B, 0% in both), or (c) run a factorial design if the interaction effect is also of interest (more complex, requires larger sample)
-- Does NOT recommend continuing both tests on overlapping populations
-
-### Case 5: Context pass — new events consistent with existing schema
-**Input context**: Existing event schema uses the naming convention: `[domain]_[object]_[action]` in snake_case. Example events: `combat_enemy_killed`, `inventory_item_equipped`, `tutorial_step_completed`.
-**Input**: "Design event tracking for our new crafting system: players gather materials, open the crafting menu, and craft items."
-**Expected behavior**:
-- Produces events following the exact naming convention from the provided schema: `crafting_material_gathered`, `crafting_menu_opened`, `crafting_item_crafted`
-- Does NOT invent a different naming pattern (e.g., `gatherMaterial`, `craftingOpened`) even if it might seem natural
-- Properties follow the same structure as existing events: `player_id`, `session_id`, `timestamp` as standard fields; domain-specific fields (material_type, item_id, crafting_time_seconds) as additional properties
-- Output explicitly references the provided naming convention as the standard being followed
+- [ ] `description:` 字段存在且具有领域特定性（引用遥测、A/B 测试、事件跟踪、分析）
+- [ ] `allowed-tools:` 列表与 Agent 角色匹配（用于设计/分析/文档的读/写工具；无游戏源代码或 CI 工具）
+- [ ] 模型层级为 Sonnet（运营专家的默认设置）
+- [ ] Agent 定义不声称对游戏实现、经济设计或实时运营调度具有权限
 
 ---
 
-## Protocol Compliance
+## 测试用例
 
-- [ ] Stays within declared domain (event schema design, A/B test design, analytics methodology)
-- [ ] Redirects implementation requests to appropriate programmers with an integration spec, not code
-- [ ] Produces complete A/B test designs (hypothesis, metric, sample size, duration, randomization unit) — never partial
-- [ ] Flags mutual exclusion violations in overlapping A/B tests as data quality blockers
-- [ ] Follows provided naming conventions exactly; does not invent alternative conventions
+### 用例 1: 领域内请求 — 教程事件跟踪设计
+**输入**: "为我们教程设计分析事件跟踪。我们想知道玩家在哪里流失以及他们完成了哪些步骤。"
+**预期行为**:
+- 为每个教程步骤生成结构化事件模式：至少包括 `event_name`、`properties`（step_id、step_name、player_id、session_id、timestamp）和 `trigger_condition`（事件触发的确切时间 — 步骤开始时、步骤完成时、步骤跳过时）
+- 包含漏斗完成事件和流失事件（例如，如果玩家在步骤中途退出，则为 `tutorial_step_abandoned`）
+- 指定事件命名约定：snake_case，以领域为前缀（例如 `tutorial_step_started`、`tutorial_step_completed`、`tutorial_abandoned`）
+- 不生成实现代码 — 将实现标记为 [TO BE IMPLEMENTED BY PROGRAMMER]
+- 输出为模式表或结构化列表，而非叙述性描述
+
+### 用例 2: 领域外请求 — 在代码中实现事件跟踪
+**输入**: "现在事件模式已设计完成，请编写 GDScript 代码在我们的 Godot 教程场景中触发这些事件。"
+**预期行为**:
+- 不生成 GDScript 或任何实现代码
+- 明确声明："遥测在游戏代码中的实现由适当的程序员（gameplay-programmer 或 systems-programmer）处理；我提供事件模式和集成要求"
+- 可选地生成集成规范：程序员需要了解什么才能正确实现（事件名称、属性、触发时间、使用什么分析 SDK 或端点）
+
+### 用例 3: 领域边界 — UI 变更的 A/B 测试设计
+**输入**: "我们想对我们的 HUD 的两个版本进行 A/B 测试：当前版本和仅包含生命条的最小化版本。设计这个测试。"
+**预期行为**:
+- 生成完整的 A/B 测试设计文档：
+  - **假设**: 最小化 HUD 将通过减少 UI 认知负荷来增加玩家参与度（通过会话长度衡量）
+  - **主要指标**: 每个玩家的平均会话长度
+  - **次要指标**: 教程完成率、第 1 天留存率
+  - **样本量**: 基于预期效应大小的计算估计（或注明精确计算需要基准数据）— 不跳过此字段
+  - **持续时间**: 最短持续时间（例如，"至少 2 周以捕捉每周玩家行为模式"）
+  - **随机化单位**: 玩家 ID（非会话 ID，以防止玩家看到两个版本）
+- 输出结构化为正式的测试设计，而非想法要点列表
+
+### 用例 4: 冲突 — 重叠的 A/B 测试玩家群体
+**输入**: "我们同时运行两个 A/B 测试：测试 A（HUD 变体）影响所有玩家，测试 B（教程变体）也影响所有玩家。"
+**预期行为**:
+- 将重叠标记为互斥违规：如果两个测试影响同一玩家，它们的结果会混淆 — 两个测试都无法产生干净的数据
+- 精确识别问题：同时处于两个测试中的玩家将同时体验 HUD 和教程变体，使得无法将结果差异归因于任一变量
+- 提出解决方案选项：(a) 顺序运行测试，(b) 将玩家群体分割为互斥的段（50% 在测试 A，50% 在测试 B，0% 同时在两个测试中），或 (c) 如果交互效应也值得关注，则运行因子设计（更复杂，需要更大的样本）
+- 不建议在重叠群体上继续两个测试
+
+### 用例 5: 上下文传递 — 与现有模式一致的新事件
+**输入上下文**: 现有事件模式使用命名约定：`[domain]_[object]_[action]` 采用 snake_case。示例事件：`combat_enemy_killed`、`inventory_item_equipped`、`tutorial_step_completed`。
+**输入**: "为我们新的制作系统设计事件跟踪：玩家收集材料、打开制作菜单并制作物品。"
+**预期行为**:
+- 生成遵循所提供模式的确切命名约定的事件：`crafting_material_gathered`、`crafting_menu_opened`、`crafting_item_crafted`
+- 不发明不同的命名模式（例如 `gatherMaterial`、`craftingOpened`），即使它可能看起来更自然
+- 属性遵循与现有事件相同的结构：`player_id`、`session_id`、`timestamp` 作为标准字段；领域特定字段（material_type、item_id、crafting_time_seconds）作为附加属性
+- 输出明确引用所提供的命名约定作为遵循的标准
 
 ---
 
-## Coverage Notes
-- Case 3 (A/B test design completeness) is a quality gate — an incomplete test design wastes experiment budget
-- Case 4 (mutual exclusion) is a data integrity test — overlapping tests produce unusable results; this must be caught
-- Case 5 is the most important context-awareness test; naming convention drift across schemas causes dashboard breakage
-- No automated runner; review manually or via `/skill-test`
+## 协议合规性
+
+- [ ] 保持在声明的领域内（事件模式设计、A/B 测试设计、分析方法论）
+- [ ] 将实现请求重定向到适当的程序员并提供集成规范，而非代码
+- [ ] 生成完整的 A/B 测试设计（假设、指标、样本量、持续时间、随机化单位）— 从不部分完成
+- [ ] 将重叠 A/B 测试中的互斥违规标记为数据质量阻碍
+- [ ] 完全遵循提供的命名约定；不发明替代约定
+
+---
+
+## 覆盖范围说明
+- 用例 3（A/B 测试设计完整性）是质量关卡 — 不完整的测试设计会浪费实验预算
+- 用例 4（互斥性）是数据完整性测试 — 重叠测试产生不可用的结果；必须捕获此问题
+- 用例 5 是最重要的上下文感知测试；跨模式的命名约定漂移会导致仪表板损坏
+- 无自动运行器；通过 `/skill-test` 手动审查

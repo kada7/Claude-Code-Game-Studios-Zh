@@ -1,166 +1,166 @@
 ---
 name: code-review
-description: "Performs an architectural and quality code review on a specified file or set of files. Checks for coding standard compliance, architectural pattern adherence, SOLID principles, testability, and performance concerns."
+description: "对指定文件或文件集执行架构和质量代码审查。检查编码标准合规性、架构模式遵循、SOLID原则、可测试性和性能问题。"
 argument-hint: "[path-to-file-or-directory]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Bash, Task
 agent: lead-programmer
 ---
 
-## Phase 1: Load Target Files
+## 阶段 1: 加载目标文件
 
-Read the target file(s) in full. Read CLAUDE.md for project coding standards.
-
----
-
-## Phase 2: Identify Engine Specialists
-
-Read `.claude/docs/technical-preferences.md`, section `## Engine Specialists`. Note:
-
-- The **Primary** specialist (used for architecture and broad engine concerns)
-- The **Language/Code Specialist** (used when reviewing the project's primary language files)
-- The **Shader Specialist** (used when reviewing shader files)
-- The **UI Specialist** (used when reviewing UI code)
-
-If the section reads `[TO BE CONFIGURED]`, no engine is pinned — skip engine specialist steps.
+完整读取目标文件。读取 CLAUDE.md 获取项目编码标准。
 
 ---
 
-## Phase 3: ADR Compliance Check
+## 阶段 2: 识别引擎专家
 
-Search for ADR references in the story file, commit messages, and header comments. Look for patterns like `ADR-NNN` or `docs/architecture/ADR-`.
+读取 `.claude/docs/technical-preferences.md`，`## Engine Specialists` 部分。记录:
 
-If no ADR references found, note: "No ADR references found — skipping ADR compliance check."
+- **Primary** 专家 (用于架构和广泛的引擎问题)
+- **Language/Code Specialist** (审查项目主要语言文件时使用)
+- **Shader Specialist** (审查着色器文件时使用)
+- **UI Specialist** (审查 UI 代码时使用)
 
-For each referenced ADR: read the file, extract the **Decision** and **Consequences** sections, then classify any deviation:
-
-- **ARCHITECTURAL VIOLATION** (BLOCKING): Uses a pattern explicitly rejected in the ADR
-- **ADR DRIFT** (WARNING): Meaningfully diverges from the chosen approach without using a forbidden pattern
-- **MINOR DEVIATION** (INFO): Small difference from ADR guidance that doesn't affect overall architecture
-
----
-
-## Phase 4: Standards Compliance
-
-Identify the system category (engine, gameplay, AI, networking, UI, tools) and evaluate:
-
-- [ ] Public methods and classes have doc comments
-- [ ] Cyclomatic complexity under 10 per method
-- [ ] No method exceeds 40 lines (excluding data declarations)
-- [ ] Dependencies are injected (no static singletons for game state)
-- [ ] Configuration values loaded from data files
-- [ ] Systems expose interfaces (not concrete class dependencies)
+如果该部分显示 `[TO BE CONFIGURED]`，则没有固定引擎 — 跳过引擎专家步骤。
 
 ---
 
-## Phase 5: Architecture and SOLID
+## 阶段 3: ADR 合规性检查
 
-**Architecture:**
-- [ ] Correct dependency direction (engine <- gameplay, not reverse)
-- [ ] No circular dependencies between modules
-- [ ] Proper layer separation (UI does not own game state)
-- [ ] Events/signals used for cross-system communication
-- [ ] Consistent with established patterns in the codebase
+在 story 文件、提交消息和头部注释中搜索 ADR 引用。查找 `ADR-NNN` 或 `docs/architecture/ADR-` 等模式。
+
+如果未找到 ADR 引用，注意: "未找到 ADR 引用 — 跳过 ADR 合规性检查。"
+
+对于每个引用的 ADR: 读取文件，提取 **Decision** 和 **Consequences** 部分，然后对任何偏差进行分类:
+
+- **ARCHITECTURAL VIOLATION** (阻塞): 使用 ADR 明确拒绝的模式
+- **ADR DRIFT** (警告): 与所选方法有显著差异但未使用禁止模式
+- **MINOR DEVIATION** (信息): 与 ADR 指导的小差异，不影响整体架构
+
+---
+
+## 阶段 4: 标准合规性
+
+识别系统类别 (engine, gameplay, AI, networking, UI, tools) 并评估:
+
+- [ ] 公共方法和类有文档注释
+- [ ] 每个方法的圈复杂度低于 10
+- [ ] 没有方法超过 40 行 (不包括数据声明)
+- [ ] 依赖被注入 (游戏状态不使用静态单例)
+- [ ] 配置值从数据文件加载
+- [ ] 系统暴露接口 (而非具体类依赖)
+
+---
+
+## 阶段 5: 架构和 SOLID
+
+**架构:**
+- [ ] 正确的依赖方向 (engine <- gameplay, 而非反向)
+- [ ] 模块之间没有循环依赖
+- [ ] 正确的分层分离 (UI 不拥有游戏状态)
+- [ ] 事件/信号用于跨系统通信
+- [ ] 与代码库中已建立的模式一致
 
 **SOLID:**
-- [ ] Single Responsibility: Each class has one reason to change
-- [ ] Open/Closed: Extendable without modification
-- [ ] Liskov Substitution: Subtypes substitutable for base types
-- [ ] Interface Segregation: No fat interfaces
-- [ ] Dependency Inversion: Depends on abstractions, not concretions
+- [ ] Single Responsibility: 每个类只有一个改变的理由
+- [ ] Open/Closed: 无需修改即可扩展
+- [ ] Liskov Substitution: 子类型可替代基类型
+- [ ] Interface Segregation: 没有胖接口
+- [ ] Dependency Inversion: 依赖抽象而非具体
 
 ---
 
-## Phase 6: Game-Specific Concerns
+## 阶段 6: 游戏特定关注点
 
-- [ ] Frame-rate independence (delta time usage)
-- [ ] No allocations in hot paths (update loops)
-- [ ] Proper null/empty state handling
-- [ ] Thread safety where required
-- [ ] Resource cleanup (no leaks)
+- [ ] 帧率独立性 (delta time 使用)
+- [ ] 热路径中没有分配 (update 循环)
+- [ ] 正确的 null/空状态处理
+- [ ] 需要时的线程安全
+- [ ] 资源清理 (无泄漏)
 
 ---
 
-## Phase 7: Specialist Reviews (Parallel)
+## 阶段 7: 专家审查 (并行)
 
-Spawn all applicable specialists simultaneously via Task — do not wait for one before starting the next.
+通过 Task 同时生成所有适用的专家 — 不要等待一个完成再开始下一个。
 
-### Engine Specialists
+### 引擎专家
 
-If an engine is configured, determine which specialist applies to each file and spawn in parallel:
+如果配置了引擎，确定哪个专家适用于每个文件并并行生成:
 
 - Primary language files (`.gd`, `.cs`, `.cpp`) → Language/Code Specialist
 - Shader files (`.gdshader`, `.hlsl`, shader graph) → Shader Specialist
 - UI screen/widget code → UI Specialist
-- Cross-cutting or unclear → Primary Specialist
+- Cross-cutting 或 unclear → Primary Specialist
 
-Also spawn the **Primary Specialist** for any file touching engine architecture (scene structure, node hierarchy, lifecycle hooks).
+对于任何触及引擎架构的文件 (场景结构、节点层次结构、生命周期 hooks)，同时生成 **Primary Specialist**。
 
-### QA Testability Review
+### QA 可测试性审查
 
-For Logic and Integration stories, also spawn `qa-tester` via Task in parallel with the engine specialists. Pass:
-- The implementation files being reviewed
-- The story's `## QA Test Cases` section (the pre-written test specs from qa-lead)
-- The story's `## Acceptance Criteria`
+对于 Logic 和 Integration stories，同时通过 Task 生成 `qa-tester` 与引擎专家并行。传递:
+- 正在审查的实现文件
+- Story 的 `## QA Test Cases` 部分 (来自 qa-lead 的预写测试规范)
+- Story 的 `## Acceptance Criteria`
 
-Ask the qa-tester to evaluate:
-- [ ] Are all test hooks and interfaces exposed (not hidden behind private/internal access)?
-- [ ] Do the QA test cases from the story's `## QA Test Cases` section map to testable code paths?
-- [ ] Are any acceptance criteria untestable as implemented (e.g., hardcoded values, no seam for injection)?
-- [ ] Does the implementation introduce any new edge cases not covered by the existing QA test cases?
-- [ ] Are there any observable side effects that should have a test but don't?
+要求 qa-tester 评估:
+- [ ] 所有测试钩子和接口是否暴露 (不隐藏在 private/internal 访问后)?
+- [ ] Story 的 `## QA Test Cases` 部分中的 QA 测试用例是否映射到可测试的代码路径?
+- [ ] 是否有任何验收标准按实现方式无法测试 (例如，硬编码值，没有注入的 seam)?
+- [ ] 实现是否引入了现有 QA 测试用例未涵盖的新边界情况?
+- [ ] 是否有任何可观察的副作用应该有测试但没有?
 
-For Visual/Feel and UI stories: qa-tester reviews whether the manual verification steps in `## QA Test Cases` are achievable with the implementation as written — e.g., "is the state the manual checker needs to reach actually reachable?"
+对于 Visual/Feel 和 UI stories: qa-tester 审查 `## QA Test Cases` 中的手动验证步骤对于书面实现是否可实现 — 例如，"手动检查者需要到达的状态实际上是否可达?"
 
-Collect all specialist findings before producing output.
+在生成输出前收集所有专家发现。
 
 ---
 
-## Phase 8: Output Review
+## 阶段 8: 输出审查
 
 ```
-## Code Review: [File/System Name]
+## 代码审查: [File/System Name]
 
-### Engine Specialist Findings: [N/A — no engine configured / CLEAN / ISSUES FOUND]
-[Findings from engine specialist(s), or "No engine configured." if skipped]
+### 引擎专家发现: [N/A — 未配置引擎 / CLEAN / ISSUES FOUND]
+[引擎专家的发现，如果跳过则为 "No engine configured."]
 
-### Testability: [N/A — Visual/Feel or Config story / TESTABLE / GAPS / BLOCKING]
-[qa-tester findings: test hooks, coverage gaps, untestable paths, new edge cases]
-[If BLOCKING: implementation must expose [X] before tests in ## QA Test Cases can run]
+### 可测试性: [N/A — Visual/Feel 或 Config story / TESTABLE / GAPS / BLOCKING]
+[qa-tester 发现: 测试钩子、覆盖差距、无法测试的路径、新边界情况]
+[如果 BLOCKING: 实现必须暴露 [X] 才能运行 ## QA Test Cases 中的测试]
 
-### ADR Compliance: [NO ADRS FOUND / COMPLIANT / DRIFT / VIOLATION]
-[List each ADR checked, result, and any deviations with severity]
+### ADR 合规性: [NO ADRS FOUND / COMPLIANT / DRIFT / VIOLATION]
+[列出每个检查的 ADR、结果和任何偏差及严重度]
 
-### Standards Compliance: [X/6 passing]
-[List failures with line references]
+### 标准合规性: [X/6 passing]
+[列出失败的行引用]
 
-### Architecture: [CLEAN / MINOR ISSUES / VIOLATIONS FOUND]
-[List specific architectural concerns]
+### 架构: [CLEAN / MINOR ISSUES / VIOLATIONS FOUND]
+[列出具体架构关注点]
 
 ### SOLID: [COMPLIANT / ISSUES FOUND]
-[List specific violations]
+[列出具体违规]
 
-### Game-Specific Concerns
-[List game development specific issues]
+### 游戏特定关注点
+[列出游戏开发特定问题]
 
-### Positive Observations
-[What is done well -- always include this section]
+### 积极观察
+[做得好的地方 — 始终包含此部分]
 
-### Required Changes
-[Must-fix items before approval — ARCHITECTURAL VIOLATIONs always appear here]
+### 必需更改
+[批准前必须修复的项目 — ARCHITECTURAL VIOLATIONs 始终出现在这里]
 
-### Suggestions
-[Nice-to-have improvements]
+### 建议
+[不错的改进]
 
-### Verdict: [APPROVED / APPROVED WITH SUGGESTIONS / CHANGES REQUIRED]
+### 裁决: [APPROVED / APPROVED WITH SUGGESTIONS / CHANGES REQUIRED]
 ```
 
-This skill is read-only — no files are written.
+此 skill 为只读 — 不写入文件。
 
 ---
 
-## Phase 9: Next Steps
+## 阶段 9: 后续步骤
 
-- If verdict is APPROVED: run `/story-done [story-path]` to close the story.
-- If verdict is CHANGES REQUIRED: fix the issues and re-run `/code-review`.
-- If an ARCHITECTURAL VIOLATION is found: run `/architecture-decision` to record the correct approach.
+- 如果裁决为 APPROVED: 运行 `/story-done [story-path]` 关闭 story。
+- 如果裁决为 CHANGES REQUIRED: 修复问题并重新运行 `/code-review`。
+- 如果发现 ARCHITECTURAL VIOLATION: 运行 `/architecture-decision` 记录正确的方法。

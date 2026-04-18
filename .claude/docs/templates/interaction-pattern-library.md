@@ -1,125 +1,103 @@
-# Interaction Pattern Library: [Game Title]
+# 交互模式库: [Game Title]
 
-> **Status**: Draft | Stable | Under Revision
-> **Author**: [ux-designer]
-> **Last Updated**: [Date]
-> **Version**: [1.0]
-> **Engine**: [Godot 4.6 / Unity 6 / Unreal Engine 5]
-> **UI Framework**: [Godot Control nodes / Unity UI Toolkit / Unreal UMG]
-> **Related Documents**:
-> - `docs/art-bible.md` — visual standards (colors, typography, iconography)
-> - `docs/accessibility-requirements.md` — accessibility commitments per feature
-> - `docs/ux/ux-spec-[screen].md` — individual screen specs that reference patterns
+> **状态**: Draft | Stable | Under Revision
+> **作者**: [ux-designer]
+> **最后更新**: [Date]
+> **版本**: [1.0]
+> **引擎**: [Godot 4.6 / Unity 6 / Unreal Engine 5]
+> **UI框架**: [Godot Control nodes / Unity UI Toolkit / Unreal UMG]
+> **相关文档**:
+> - `docs/art-bible.md` — 视觉标准（颜色、排版、图标）
+> - `docs/accessibility-requirements.md` — 每个功能的无障碍设计承诺
+> - `docs/ux/ux-spec-[screen].md` — 引用模式的单个屏幕规范
 
-> **Why this document exists**: Every UI screen spec should be able to say
-> "uses Button (Primary) pattern" rather than re-specifying hover states,
-> press animations, focus behavior, keyboard handling, and screen reader
-> announcements from scratch. This library is the single source of truth for
-> reusable interaction behaviors. When a screen spec references a pattern name,
-> the programmer looks it up here. When the behavior changes, it changes here
-> and applies everywhere.
->
-> This is a living document. Patterns are added as new screens are designed —
-> do not design a new interaction without checking here first. If a new pattern
-> is needed, add it here (or propose it to the ux-designer) before writing the
-> first screen spec that uses it.
->
-> **Status definitions**:
-> - **Draft**: Interaction specified but not yet implemented or validated
-> - **Stable**: Implemented, tested, and validated in at least one shipped screen
-> - **Deprecated**: Being phased out — existing uses will be migrated, do not use in new screens
+> **本文档存在的原因**: 每个UI屏幕规范都应能说"使用Button (Primary)模式"，而不是从头重新指定悬停状态、按下动画、焦点行为、键盘处理和屏幕阅读器公告。此库是可重用交互行为的唯一可信源。当屏幕规范引用模式名称时，程序员在此查找。当行为更改时，在此更改并应用于所有地方。
+
+> 这是一个动态文档。模式随着新屏幕的设计而添加——不要在设计新交互前不先检查此处。如果需要新模式，在编写使用它的第一个屏幕规范之前，在此添加（或向ux-designer提出）。
+
+> **状态定义**:
+> - **草稿**: 已指定交互但尚未实现或验证
+> - **稳定**: 已实现、测试并在至少一个已发布的屏幕中验证
+> - **已弃用**: 正在逐步淘汰——现有使用将迁移，不要在新屏幕中使用
 
 ---
 
-## How to Use This Library
+## 如何使用此库
 
-**If you are designing a screen**: Browse the Pattern Catalog Index below before
-inventing new interactions. When a standard pattern fits, reference it by name
-in the screen spec (e.g., "The confirm button uses Button (Primary) pattern").
-When no existing pattern fits, propose a new one — document it here alongside
-or before the screen spec that introduces it.
+**如果你是屏幕设计师**: 在发明新交互前，先浏览下面的模式目录索引。当标准模式适用时，在屏幕规范中按名称引用它（例如，"确认按钮使用Button (Primary)模式"）。当没有现有模式适用时，提出一个新模式——在此处记录它，与引入它的屏幕规范一起或在之前。
 
-**If you are implementing a screen**: When a screen spec says "use [PatternName]
-pattern," find it in this document for the complete specification. The
-implementation notes section contains engine-specific guidance. The accessibility
-section contains the requirements that are non-negotiable.
+**如果你是屏幕实现者**: 当屏幕规范说"使用[PatternName]模式"时，在本文档中查找它以获取完整规范。实现说明部分包含引擎特定指导。无障碍设计部分包含不可妥协的要求。
 
-**If you are reviewing a screen spec**: Verify that all interactive elements
-reference a pattern from this library or include their own full interaction
-specification. "Standard button" or "the usual way" is not a valid reference.
+**如果你是屏幕规范评审者**: 验证所有交互元素都引用了此库中的模式，或包含它们自己的完整交互规范。"标准按钮"或"通常方式"不是有效引用。
 
-**If you are updating a pattern**: Changing a Stable pattern affects every screen
-that uses it. Before changing, audit all usages (search screen specs for the
-pattern name), determine the impact, get approval from the ux-designer, and
-update this document before or simultaneously with any implementation change.
+**如果你是模式更新者**: 更改稳定模式会影响使用它的每个屏幕。在更改前，审计所有使用情况（在屏幕规范中搜索模式名称），确定影响，获得UX设计师的批准，并在实施任何更改之前或同时更新本文档。
 
 ---
 
-## Pattern Catalog Index
+## 模式目录索引
 
-> Add a row here every time a new pattern is added to this document.
-> The "Used In" column is the usages audit trail — update it when new screens
-> adopt the pattern.
+> 每次向本文档添加新模式时，请在此添加一行。
+> "Used In"列是使用审计跟踪——当新屏幕采用该模式时更新它。
 
-| Pattern Name | Category | Description | Used In (Screens) | Status |
+| 模式名称 | 类别 | 描述 | 使用场景（屏幕） | 状态 |
 |-------------|----------|-------------|------------------|--------|
-| Button (Primary) | Input | Main call-to-action. High visual weight. One per screen. | [Main Menu, Pause Menu, Settings] | Draft |
-| Button (Secondary) | Input | Alternative action or cancel. Lower visual weight than Primary. | [All modal dialogs, settings screens] | Draft |
-| Button (Destructive) | Input | Irreversible action. Requires confirmation before execution. | [Delete Save, Reset Settings] | Draft |
-| Toggle | Input | Binary on/off state selection. | [Accessibility settings, audio settings] | Draft |
-| Slider | Input | Continuous value selection. | [Volume controls, brightness, text size] | Draft |
-| Dropdown / Select | Input | Selection from a discrete list of options. | [Resolution, language, key binding] | Draft |
-| List Item | Layout / Input | Selectable row in a vertical scrollable list. | [Achievements, quest log, settings list] | Draft |
-| Grid Item | Layout / Input | Selectable cell in a two-dimensional grid. | [Inventory, ability select, item shop] | Draft |
-| Modal Dialog | Feedback / Layout | Blocking overlay requiring explicit player decision. | [Confirmation dialogs, error prompts] | Draft |
-| Confirmation Dialog | Feedback / Layout | Specific modal for destructive action confirmation. | [Delete Save, Leave Match, Reset] | Draft |
-| Toast / Notification | Feedback | Non-blocking temporary message in a screen corner. | [Achievement unlock, autosave notification] | Draft |
-| Tooltip | Feedback | Contextual information on hover or focus. | [Inventory items, ability descriptions, settings] | Draft |
-| Progress Bar | Feedback / Layout | Linear progress indicator. | [Loading screen, XP bar, quest progress] | Draft |
-| Input Field | Input | Text entry control. | [Player name, search, key binding entry] | Draft |
-| Tab Bar | Navigation | Tabbed section navigation within a single screen. | [Character sheet, settings, crafting] | Draft |
-| Scroll Container | Layout | Scrollable content region with visible scroll indicator. | [Inventory, lore entries, credits] | Draft |
-| Inventory Slot | Game-Specific | Item container in inventory grid (empty, filled, equipped, locked). | [Inventory screen, equipment screen] | Draft |
-| Ability / Skill Icon | Game-Specific | Ability button with cooldown, charges, and locked states. | [HUD ability bar, skill tree] | Draft |
-| Health / Resource Bar | Game-Specific | Value bar with threshold states and damage flash. | [HUD] | Draft |
-| Minimap | Game-Specific | Overview map with player marker and points of interest. | [HUD] | Draft |
-| Quest / Objective Tracker | Game-Specific | Active objective display with proximity and completion states. | [HUD] | Draft |
-| Dialogue Box | Game-Specific | NPC conversation UI with speaker identification. | [All dialogue sequences] | Draft |
-| Context Action Prompt | Game-Specific | Contextual "Press X to [action]" prompt near interactable objects. | [World interaction] | Draft |
-| Damage Number | Game-Specific | Floating combat feedback number. | [Combat HUD] | Draft |
-| Status Effect Icon | Game-Specific | Buff/debuff indicator with duration. | [HUD status bar, enemy health display] | Draft |
-| Notification Banner | Game-Specific | Achievement, level up, item acquired notifications. | [Global overlay] | Draft |
-| Screen Push | Navigation | Forward navigation with directional animation. | [All menu navigation] | Draft |
-| Screen Pop (Back) | Navigation | Back navigation with reversed animation. | [All menu navigation] | Draft |
-| Screen Replace | Navigation | Replace current screen without stacking history. | [Main Menu to Loading Screen] | Draft |
-| Modal Open / Close | Navigation | Overlay that dims background screen. | [All modal dialogs] | Draft |
-| Tab Switch | Navigation | Same-screen content switch between tabs. | [All tabbed screens] | Draft |
-| Focus Management | Navigation | Rules for where focus goes when screens open, close, or change. | [All screens] | Draft |
-| Escape / Cancel | Navigation | Universal back behavior across platforms and input methods. | [All screens] | Draft |
-| Loading State | Feedback | How screens and components indicate loading in progress. | [All loading states] | Draft |
-| Empty State | Feedback | How empty lists and grids are presented. | [Empty inventory, no quests, no saves] | Draft |
-| Error State | Feedback | How errors are communicated. | [Save failed, network error, invalid input] | Draft |
-| Success Confirmation | Feedback | How completed actions are confirmed. | [Settings saved, item crafted, quest turned in] | Draft |
-| Optimistic UI | Feedback | Showing assumed success before system confirmation. | [If online features are present] | Draft |
+| Button (Primary) | Input | 主要操作调用。高视觉权重。每个屏幕一个。 | [Main Menu, Pause Menu, Settings] | Draft |
+| Button (Secondary) | Input | 替代操作或取消。视觉权重低于主要按钮。 | [All modal dialogs, settings screens] | Draft |
+| Button (Destructive) | Input | 不可逆操作。执行前需要确认。 | [Delete Save, Reset Settings] | Draft |
+| Toggle | Input | 二进制开/关状态选择。 | [Accessibility settings, audio settings] | Draft |
+| Slider | Input | 连续值选择。 | [Volume controls, brightness, text size] | Draft |
+| Dropdown / Select | Input | 从离散选项列表中选择。 | [Resolution, language, key binding] | Draft |
+| List Item | Layout / Input | 垂直可滚动列表中的可选择行。 | [Achievements, quest log, settings list] | Draft |
+| Grid Item | Layout / Input | 二维网格中的可选择单元格。 | [Inventory, ability select, item shop] | Draft |
+| Modal Dialog | Feedback / Layout | 需要玩家明确决定的阻塞覆盖层。 | [Confirmation dialogs, error prompts] | Draft |
+| Confirmation Dialog | Feedback / Layout | 用于危险操作确认的特定模态。 | [Delete Save, Leave Match, Reset] | Draft |
+| Toast / Notification | Feedback | 屏幕角落的非阻塞临时消息。 | [Achievement unlock, autosave notification] | Draft |
+| Tooltip | Feedback | 悬停或焦点时的上下文信息。 | [Inventory items, ability descriptions, settings] | Draft |
+| Progress Bar | Feedback / Layout | 线性进度指示器。 | [Loading screen, XP bar, quest progress] | Draft |
+| Input Field | Input | 文本输入控件。 | [Player name, search, key binding entry] | Draft |
+| Tab Bar | Navigation | 单个屏幕内的标签页部分导航。 | [Character sheet, settings, crafting] | Draft |
+| Scroll Container | Layout | 带有可见滚动指示器的可滚动内容区域。 | [Inventory, lore entries, credits] | Draft |
+| Inventory Slot | Game-Specific | 物品栏网格中的物品容器（空、已填充、已装备、已锁定）。 | [Inventory screen, equipment screen] | Draft |
+| Ability / Skill Icon | Game-Specific | 带有冷却时间、充能次数和锁定状态的技能按钮。 | [HUD ability bar, skill tree] | Draft |
+| Health / Resource Bar | Game-Specific | 带有阈值状态和伤害闪烁的数值条。 | [HUD] | Draft |
+| Minimap | Game-Specific | 带有玩家标记和兴趣点的概览地图。 | [HUD] | Draft |
+| Quest / Objective Tracker | Game-Specific | 带有接近度和完成状态的活跃目标显示。 | [HUD] | Draft |
+| Dialogue Box | Game-Specific | 带有说话者标识的NPC对话UI。 | [All dialogue sequences] | Draft |
+| Context Action Prompt | Game-Specific | 可交互对象附近的上下文"按X键[动作]"提示。 | [World interaction] | Draft |
+| Damage Number | Game-Specific | 浮动战斗反馈数字。 | [Combat HUD] | Draft |
+| Status Effect Icon | Game-Specific | 带有持续时间的增益/减益指示器。 | [HUD status bar, enemy health display] | Draft |
+| Notification Banner | Game-Specific | 成就、升级、获得物品的通知。 | [Global overlay] | Draft |
+| Screen Push | Navigation | 带有方向动画的前向导航。 | [All menu navigation] | Draft |
+| Screen Pop (Back) | Navigation | 带有反向动画的后向导航。 | [All menu navigation] | Draft |
+| Screen Replace | Navigation | 替换当前屏幕而不堆叠历史记录。 | [Main Menu to Loading Screen] | Draft |
+| Modal Open / Close | Navigation | 使背景屏幕变暗的覆盖层。 | [All modal dialogs] | Draft |
+| Tab Switch | Navigation | 同一屏幕内标签页之间的内容切换。 | [All tabbed screens] | Draft |
+| Focus Management | Navigation | 屏幕打开、关闭或更改时焦点移动的规则。 | [All screens] | Draft |
+| Escape / Cancel | Navigation | 跨平台和输入方法的通用返回行为。 | [All screens] | Draft |
+| Loading State | Feedback | 屏幕和组件如何指示加载进行中。 | [All loading states] | Draft |
+| Empty State | Feedback | 空列表和空网格如何呈现。 | [Empty inventory, no quests, no saves] | Draft |
+| Error State | Feedback | 错误如何传达。 | [Save failed, network error, invalid input] | Draft |
+| Success Confirmation | Feedback | 已完成的操作如何确认。 | [Settings saved, item crafted, quest turned in] | Draft |
+| Optimistic UI | Feedback | 在系统确认之前显示假设的成功。 | [If online features are present] | Draft |
 
 ---
 
-## Standard Control Patterns
+## 标准控件模式
 
 ---
 
-#### Button (Primary)
+#### Button (Primary)（主要按钮）
 
-**Category**: Input
-**Status**: Draft
-**When to Use**: The single most important action on a screen. "Start Game,"
+**类别**: Input
+**状态**: Draft
+**When to Use（使用场景）**: 屏幕上最重要的单个操作。 "Start Game,"
 "Confirm," "Accept," "Buy." There should be at most one Primary button visible
-at a time. It is the answer to "what does the player most likely want to do here?"
-**When NOT to Use**: Alternative or secondary actions; destructive actions that
+at a time. 它回答了"玩家在这里最可能想做什么？"
+**When NOT to Use（不应使用场景）**: Alternative or secondary actions; destructive actions that
 require confirmation before the consequence is irreversible; any action that is
 not the primary intent of the screen.
 
-**Interaction Specification**:
+**交互规范**:
 
 | State | Visual | Input | Response | Duration | Audio |
 |-------|--------|-------|----------|----------|-------|
@@ -130,14 +108,14 @@ not the primary intent of the screen.
 | Disabled | 40% opacity, no pointer cursor, no hover state | — | No response | — | — |
 | Loading (post-press) | Replace label with spinner. Button remains at pressed scale, disabled state. | — | Prevents double-submission | Duration of async operation | — |
 
-**Accessibility**:
+**无障碍设计**:
 - Keyboard: Tab to focus, Enter or Space to activate. Must be reachable from any other interactive element on screen via Tab sequence.
 - Gamepad: D-pad or left stick to navigate focus to button. A (Xbox) / Cross (PS) to activate. Focus must be placed on Primary button by default when screen opens.
 - Screen reader: Button must expose accessible name matching visible label. Role: "button." State: "dimmed" when disabled. Activation announcement: "[Label] button — [result of action, if known]."
 - Colorblind: Do not rely on color alone to distinguish Primary from Secondary. Primary uses higher visual weight (fill vs. outline, or larger size) in addition to color differentiation.
 - Minimum touch target: 44x44pt (iOS HIG) / 48x48dp (Android). Apply even on PC if touch support is possible.
 
-**Implementation Notes**:
+**实现说明**:
 [Godot: Extend `Button` control. Override `_draw()` for custom states rather than
 modifying themes mid-state. Use `focus_mode = FOCUS_ALL` to ensure keyboard
 focusability. Set `mouse_default_cursor_shape = CURSOR_POINTING_HAND`. For the
@@ -146,16 +124,16 @@ Control — scaling the Button itself can clip children.]
 
 ---
 
-#### Button (Secondary)
+#### Button (Secondary)（次要按钮）
 
-**Category**: Input
-**Status**: Draft
-**When to Use**: Alternative or cancel action. "Back," "Cancel," "Skip," "Maybe
+**类别**: Input
+**状态**: Draft
+**When to Use（使用场景）**: Alternative or cancel action. "Back," "Cancel," "Skip," "Maybe
 Later." Lower visual weight than Primary — it should recede visually, not compete.
-**When NOT to Use**: Destructive actions (use Button (Destructive)). The most
+**When NOT to Use（不应使用场景）**: Destructive actions (use Button (Destructive)). The most
 important action on the screen (use Button (Primary)).
 
-**Interaction Specification**:
+**交互规范**:
 
 | State | Visual | Input | Response | Duration | Audio |
 |-------|--------|-------|----------|----------|-------|
@@ -165,29 +143,29 @@ important action on the screen (use Button (Primary)).
 | Pressed | Scale 0.97x, fill opacity increases to 30% | Click / Enter / B (Xbox) / Circle (PS) on focused state | Action fires on press-up | 60ms ease-in | [UI cancel/back sound] |
 | Disabled | 40% opacity | — | No response | — | — |
 
-**Accessibility**: Same requirements as Button (Primary). Accessible name must
+**无障碍设计**: Same requirements as Button (Primary). Accessible name must
 match visible label. In a dialog with Primary and Secondary buttons, the Secondary
 button typically maps to the platform "cancel" input (B / Circle / Escape) as well
 as direct focus activation.
 
-**Implementation Notes**: [Same as Button (Primary). Where a Primary and Secondary
+**实现说明**: [Same as Button (Primary). Where a Primary and Secondary
 appear together, ensure Secondary is always positioned consistently — right/bottom
 of Primary on horizontal layouts, or below Primary on vertical layouts. Consistency
 across screens is more important than per-screen aesthetic preference.]
 
 ---
 
-#### Button (Destructive)
+#### Button (Destructive)（危险按钮）
 
-**Category**: Input
-**Status**: Draft
-**When to Use**: Any action that is irreversible and causes loss of player data or
+**类别**: Input
+**状态**: Draft
+**When to Use（使用场景）**: Any action that is irreversible and causes loss of player data or
 significant progress: "Delete Save File," "Reset All Settings," "Leave Match,"
 "Discard Changes." The visual treatment signals danger before the player presses.
-**When NOT to Use**: Actions that can be undone, or actions that are merely
+**When NOT to Use（不应使用场景）**: Actions that can be undone, or actions that are merely
 consequential but reversible.
 
-**Interaction Specification**:
+**交互规范**:
 
 | State | Visual | Input | Response | Duration | Audio |
 |-------|--------|-------|----------|----------|-------|
@@ -197,32 +175,32 @@ consequential but reversible.
 | — | Confirmation Dialog handles the actual execution | — | — | — | — |
 | Disabled | 40% opacity | — | No response | — | — |
 
-> **Critical rule**: A Button (Destructive) NEVER executes its action directly.
+> **关键规则**: A Button (Destructive) NEVER executes its action directly.
 > It always triggers a Confirmation Dialog. There are no exceptions. A player
 > who presses it by accident must always have one more opportunity to back out.
 > Games that skip confirmation on destructive actions generate the most visible
 > negative community sentiment of any UX failure type. See: every "accidentally
 > deleted save file" complaint on any game forum.
 
-**Accessibility**: Screen reader must announce the destructive nature: "[Label] button — this action cannot be undone." In addition to accessible name, use the `description` property if available to add the warning text.
+**无障碍设计**: Screen reader must announce the destructive nature: "[Label] button — this action cannot be undone." In addition to accessible name, use the `description` property if available to add the warning text.
 
-**Implementation Notes**: [Destructive button triggers a separate Confirmation Dialog scene. Pass the action callback to the dialog — the button itself does not hold the execution logic. This separation prevents accidental execution if the confirmation dialog has a bug.]
+**实现说明**: [Destructive button triggers a separate Confirmation Dialog scene. Pass the action callback to the dialog — the button itself does not hold the execution logic. This separation prevents accidental execution if the confirmation dialog has a bug.]
 
 ---
 
-#### Toggle
+#### Toggle（切换开关）
 
-**Category**: Input
-**Status**: Draft
-**When to Use**: Binary on/off settings where both states are equally valid and
+**类别**: Input
+**状态**: Draft
+**When to Use（使用场景）**: Binary on/off settings where both states are equally valid and
 the current state must be visible at a glance. "Subtitles: On/Off," "Aim Assist:
 On/Off," "Notifications: On/Off."
-**When NOT to Use**: Selections from more than two options (use Dropdown). Actions
+**When NOT to Use（不应使用场景）**: 从两个以上选项中选择（使用下拉选择器）。 Actions
 that happen once rather than representing a persistent state (use Button). Cases
 where the consequence of toggling is complex enough to need explanation (show
 a description field alongside).
 
-**Interaction Specification**:
+**交互规范**:
 
 | State | Visual | Input | Response | Duration | Audio |
 |-------|--------|-------|----------|----------|-------|
@@ -233,12 +211,12 @@ a description field alongside).
 | Pressed / Deactivated | Thumb slides to left. Track reverts to muted fill. | Same inputs | Toggle state change | 150ms ease-in-out | [Toggle OFF sound — subtly different from ON] |
 | Disabled | 40% opacity. No interaction. Current state still visible. | — | No response | — | — |
 
-**Accessibility**:
+**无障碍设计**:
 - Keyboard/Gamepad: Space or Enter to toggle. Avoid requiring directional inputs (left/right) to toggle — some users cannot predict that behavior.
 - Screen reader: Role: "switch." State: "on" or "off" — the accessible name should NOT include the state (the screen reader announces state separately). Correct: accessible name "Subtitles," state "on." Incorrect: accessible name "Subtitles On."
 - The toggle label (not just the visual thumb position) must change to show current state for players who cannot reliably distinguish left from right positions.
 
-**Implementation Notes**: [Godot: Use a custom Control or a CheckButton. The
+**实现说明**: [Godot: Use a custom Control or a CheckButton. The
 built-in CheckButton provides accessibility role but uses a checkbox-style visual;
 a custom slide-toggle animation may be needed for the target art style. Ensure
 the slide animation is skipped when motion reduction mode is active — in that
@@ -246,17 +224,17 @@ case, snap to final state instantly.]
 
 ---
 
-#### Slider
+#### Slider（滑块）
 
-**Category**: Input
-**Status**: Draft
-**When to Use**: Selecting a value from a continuous range where approximate values
+**类别**: Input
+**状态**: Draft
+**When to Use（使用场景）**: Selecting a value from a continuous range where approximate values
 are acceptable and the range and relative position matter. Volume (0–100%), brightness,
 text size. The visual representation of position is itself useful information.
-**When NOT to Use**: Precise value entry (use Input Field). Selection from a short
-discrete list (use Dropdown). Binary state (use Toggle).
+**When NOT to Use（不应使用场景）**: 精确值输入（使用输入框）。 Selection from a short
+discrete list (use Dropdown). 二进制状态（使用切换开关）。
 
-**Interaction Specification**:
+**交互规范**:
 
 | State | Visual | Input | Response | Duration | Audio |
 |-------|--------|-------|----------|----------|-------|
@@ -269,12 +247,12 @@ discrete list (use Dropdown). Binary state (use Toggle).
 | Released | Value locks. onChange fires final value. | Mouse release | — | — | — |
 | Disabled | 40% opacity. No interaction. Value visible. | — | No response | — | — |
 
-**Accessibility**:
+**无障碍设计**:
 - Keyboard: Left/Right arrows to adjust by small step. Page Up/Page Down for large step. Home/End to jump to min/max.
 - Screen reader: Role: "slider." Accessible name: the label (e.g., "Music Volume"). Current value announced on every change: "Music Volume, 80 percent." Min/max values announced on first focus.
 - All sliders must show a numeric value alongside the visual position. Relying only on track fill position excludes players who cannot perceive relative position.
 
-**Implementation Notes**: [Godot `HSlider`: set `step` to appropriate increment.
+**实现说明**: [Godot `HSlider`: set `step` to appropriate increment.
 Override keyboard input to add Page Up/Down support via `_input()`. Bind the
 `value_changed` signal to update the displayed numeric label. When motion reduction
 mode is enabled, ensure value label updates are the sole feedback — do not suppress
@@ -283,18 +261,18 @@ accessibility.]
 
 ---
 
-#### Dropdown / Select
+#### Dropdown / Select（下拉选择器）
 
-**Category**: Input
-**Status**: Draft
-**When to Use**: Selection from a discrete list of 3-15 options where only the
+**类别**: Input
+**状态**: Draft
+**When to Use（使用场景）**: Selection from a discrete list of 3-15 options where only the
 selected value needs to be visible at rest. Display resolution, language, window
 mode, input preset. The closed state shows only the current selection.
-**When NOT to Use**: Binary choices (use Toggle). More than ~15 options (use a
+**When NOT to Use（不应使用场景）**: Binary choices (use Toggle). More than ~15 options (use a
 full List pattern or a scrollable Select). When comparing options matters as much
 as selecting one (show options visibly, e.g., as a horizontal selector or list).
 
-**Interaction Specification**:
+**交互规范**:
 
 | State | Visual | Input | Response | Duration | Audio |
 |-------|--------|-------|----------|----------|-------|
@@ -307,12 +285,12 @@ as selecting one (show options visibly, e.g., as a horizontal selector or list).
 | Dismissed without selecting | List closes. Value unchanged. | Escape / B / Circle / click outside | Dismiss | 80ms | [UI cancel sound] |
 | Disabled | 40% opacity. No interaction. | — | — | — | — |
 
-**Accessibility**:
+**无障碍设计**:
 - Keyboard: Up/Down arrows navigate list items while open. Enter selects. Escape dismisses. First letter of an option jumps focus to first matching item.
 - Screen reader: Role: "combobox." Accessible name: the field label. Expanded/collapsed state announced. Current value announced when focused. Each list item announces its value and position: "English, 1 of 12."
 - The dropdown list must never obscure the current item or the control that opened it — this is a common failure on small screens.
 
-**Implementation Notes**: [Godot: Custom implementation using a `Button` (the
+**实现说明**: [Godot: Custom implementation using a `Button` (the
 closed state) and a `PopupMenu` or a `VBoxContainer` revealed by animation. Native
 `OptionButton` provides accessibility but limited visual customization. Ensure
 the popup positions itself above the control if it would be clipped by the screen
@@ -320,17 +298,17 @@ bottom. Close the popup on `_input` detecting click outside its rect.]
 
 ---
 
-#### List Item
+#### List Item（列表项）
 
-**Category**: Layout / Input
-**Status**: Draft
-**When to Use**: A single selectable row in a vertically scrollable list. Achievements,
+**类别**: Layout / Input
+**状态**: Draft
+**When to Use（使用场景）**: 垂直可滚动列表中的单个可选择行。 Achievements,
 quest log entries, settings categories, save file slots. The list is the container;
 this is the row within it.
-**When NOT to Use**: Grid layouts where items exist in two dimensions (use Grid Item).
+**When NOT to Use（不应使用场景）**: 物品存在于二维的网格布局（使用网格项）。
 Non-selectable content rows (remove hover/focus states and the pressed state).
 
-**Interaction Specification**:
+**交互规范**:
 
 | State | Visual | Input | Response | Duration | Audio |
 |-------|--------|-------|----------|----------|-------|
@@ -341,12 +319,12 @@ Non-selectable content rows (remove hover/focus states and the pressed state).
 | Pressed / Activated | Brief brightness flash, then navigates or performs action | Click / Enter / A / Cross | Navigation or action | 80ms flash | [UI confirm sound] |
 | Disabled | 40% opacity. No interaction. | — | — | — | — |
 
-**Accessibility**:
+**无障碍设计**:
 - Keyboard/Gamepad: Up/Down arrows or D-pad to move between list items. The list must handle focus cycling — reaching the bottom should stop (not wrap) unless wrapping is explicitly designed.
 - Screen reader: Role: "listitem." Parent list role: "list." Accessible name: primary label content. Metadata (secondary label) is optionally included in the description. Position announced: "Quest Log, 3 of 12."
 - Minimum row height: 44pt / 48dp for touch. For controller-primary platforms, 56px rows are more comfortable.
 
-**Implementation Notes**: [Godot: Use a `VBoxContainer` inside a `ScrollContainer`.
+**实现说明**: [Godot: Use a `VBoxContainer` inside a `ScrollContainer`.
 Each row is a custom `Control` or `PanelContainer` with a `_gui_input` override.
 For keyboard navigation inside the scroll container, implement custom focus
 traversal — Godot's default Tab navigation does not scroll the container to keep
@@ -354,17 +332,17 @@ focused items in view. Use `ensure_control_visible()` on the scroll container.]
 
 ---
 
-#### Grid Item
+#### Grid Item（网格项）
 
-**Category**: Layout / Input
-**Status**: Draft
-**When to Use**: A selectable cell in a two-dimensional grid. Inventory slots,
+**类别**: Layout / Input
+**状态**: Draft
+**When to Use（使用场景）**: 二维网格中的可选择单元格。 Inventory slots,
 ability select, crafting ingredient selection, character portrait selection. The
 grid is the container; this is the cell.
-**When NOT to Use**: Single-column content (use List Item). Non-selectable display
+**When NOT to Use（不应使用场景）**: Single-column content (use List Item). Non-selectable display
 cells (remove interactive states).
 
-**Interaction Specification**:
+**交互规范**:
 
 | State | Visual | Input | Response | Duration | Audio |
 |-------|--------|-------|----------|----------|-------|
@@ -379,30 +357,30 @@ cells (remove interactive states).
 | Drop target (valid) | Cell brightens, accepting color indicator | Item dragged over | — | 60ms | — |
 | Drop target (invalid) | Red tint or shake animation | Item dragged over invalid slot | — | 60ms | [UI error sound] |
 
-**Accessibility**:
+**无障碍设计**:
 - Keyboard/Gamepad: D-pad or arrow keys navigate cells. The grid must communicate its dimensions to screen readers. Row/column position announced.
 - Screen reader: Role: "gridcell." Parent role: "grid." Accessible name: item name (or "empty slot" for empty cells). State: "selected" when selected, "dimmed" when locked. Position: "row 2, column 3."
 - Tooltips must be reachable by keyboard — they must appear when the cell is focused, not only when hovered.
 
-**Implementation Notes**: [Godot: `GridContainer` with fixed column count. Each
+**实现说明**: [Godot: `GridContainer` with fixed column count. Each
 cell is a custom `Control`. Implement custom D-pad navigation by overriding
 `_gui_input` and calculating the cell to the left/right/above/below based on
 index and column count. `GridContainer` does not provide this natively.]
 
 ---
 
-#### Modal Dialog
+#### Modal Dialog（模态对话框）
 
-**Category**: Feedback / Layout
-**Status**: Draft
-**When to Use**: A decision or acknowledgment that must be resolved before the
+**类别**: Feedback / Layout
+**状态**: Draft
+**When to Use（使用场景）**: A decision or acknowledgment that must be resolved before the
 player can continue. The dialog is blocking — background content is dimmed and
 non-interactive. "Are you sure?", "Your progress will be saved.", error states.
-**When NOT to Use**: Non-blocking notifications (use Toast / Notification). Information
+**When NOT to Use（不应使用场景）**: 非阻塞通知（使用Toast通知）。 Information
 that can wait until the player is ready (add it to a persistent help system instead).
 Dialogs that should allow the player to continue playing behind them.
 
-**Interaction Specification**:
+**交互规范**:
 
 | State | Visual | Input | Response | Duration | Audio |
 |-------|--------|-------|----------|----------|-------|
@@ -412,19 +390,19 @@ Dialogs that should allow the player to continue playing behind them.
 | Dismissing (cancelled) | Dialog panel scales to 0.9 then fades. Overlay fades to 0%. | Secondary button / Escape / B / Circle | No action, return focus to trigger element | 150ms | [UI cancel sound] |
 | Cannot dismiss | If the dialog represents a blocking error, do not provide a cancel path. Provide only resolution options. | — | — | — | — |
 
-> **Focus trap rule**: While a modal dialog is open, Tab and D-pad navigation
+> **焦点捕获规则**: While a modal dialog is open, Tab and D-pad navigation
 > must cycle within the dialog's interactive elements only. It must not be possible
 > to navigate focus outside the dialog to the background content. This is both
 > an accessibility requirement (WCAG 2.1 SC 2.1.2) and a UX integrity requirement.
 > When the dialog closes, focus must return to the element that triggered it,
 > not to the top of the page.
 
-**Accessibility**:
+**无障碍设计**:
 - Screen reader: Dialog container role: "dialog." Accessible name: dialog title (required — every dialog must have a title, even if visually hidden). On open, screen reader announces dialog title and first focusable element. Focus trap active.
 - Keyboard: Escape key always maps to the cancel/dismiss action (same as Secondary button or close button). Enter always maps to the primary/confirm action.
 - Motion reduction: Scale animation replaced with instant appear/disappear. Overlay fade retained at 100ms (faster).
 
-**Implementation Notes**: [Godot: Implement as a `CanvasLayer` with a high layer
+**实现说明**: [Godot: Implement as a `CanvasLayer` with a high layer
 value (100+) to ensure it renders above all game content. The background overlay
 is a full-screen `ColorRect` at 60% black opacity. Use `grab_focus()` on the
 dialog's primary button after the open animation completes. Override `_input()` to
@@ -433,52 +411,52 @@ focusable elements.]
 
 ---
 
-#### Confirmation Dialog
+#### Confirmation Dialog（确认对话框）
 
-**Category**: Feedback / Layout
-**Status**: Draft
-**When to Use**: The specific case of confirming a destructive action. Always
+**类别**: Feedback / Layout
+**状态**: Draft
+**When to Use（使用场景）**: 确认危险操作的具体情况。 Always
 triggered by Button (Destructive). Always has exactly two options: confirm (labeled
 with the specific action, not "OK") and cancel.
-**When NOT to Use**: Non-destructive confirmations. Errors or notifications that
+**When NOT to Use（不应使用场景）**: Non-destructive confirmations. Errors or notifications that
 do not require a decision. Any dialog with more than two actions.
 
-> **Label rule**: The confirm button must be labeled with the specific action,
+> **标签规则**: The confirm button must be labeled with the specific action,
 > not a generic "OK" or "Yes." "Delete Save File" not "OK." "Leave Match" not
 > "Yes." This reduces mistakes for players who have difficulty reading the dialog
 > content quickly. The pattern comes from Apple HIG and is validated by decades
 > of usability research.
 
-**Structure**:
+**结构**:
 - Title: Brief, action-describing. "Delete save file?" not "Are you sure?"
 - Body: One sentence stating the consequence. "This cannot be undone."
 - Confirm button: Button (Primary) — labeled with the specific action. "Delete Save File."
 - Cancel button: Button (Secondary) — "Cancel."
 - Default focus: Cancel (safer default — reduces accidental destructive actions).
 
-**Accessibility**: Inherits all Modal Dialog accessibility. Additionally: screen
+**无障碍设计**: Inherits all Modal Dialog accessibility. Additionally: screen
 reader announces "Alert dialog, [title]" to signal destructive context. Default
 focus on Cancel is a requirement, not a preference.
 
-**Implementation Notes**: [Confirmation Dialog is a specific instance of Modal
+**实现说明**: [Confirmation Dialog is a specific instance of Modal
 Dialog — implement it as a subclass or as a parameterized scene. The default
 focus on Cancel is critical: set `grab_focus()` on the Cancel button, not the
 Confirm button, after open animation completes.]
 
 ---
 
-#### Toast / Notification
+#### Toast / Notification（Toast通知）
 
-**Category**: Feedback
-**Status**: Draft
-**When to Use**: Brief, non-blocking information that does not require a player
+**类别**: Feedback
+**状态**: Draft
+**When to Use（使用场景）**: Brief, non-blocking information that does not require a player
 decision. "Game saved." "Achievement unlocked." "Your inventory is full." The player
 can continue playing; the notification disappears on its own.
-**When NOT to Use**: Information that requires a decision (use Modal Dialog).
+**When NOT to Use（不应使用场景）**: Information that requires a decision (use Modal Dialog).
 Errors that require the player to take action. Critical information that the player
 must not miss.
 
-**Interaction Specification**:
+**交互规范**:
 
 | State | Visual | Input | Response | Duration | Audio |
 |-------|--------|-------|----------|----------|-------|
@@ -488,13 +466,13 @@ must not miss.
 | Manual dismiss | Fades and slides out immediately | Click/tap X button or swipe on touch | Remove | 150ms | [UI cancel sound, quiet] |
 | Queue overflow | New notification pushes oldest out early | New notification triggered while previous is displayed | FIFO queue, max 3 simultaneous | — | — |
 
-**Accessibility**:
+**无障碍设计**:
 - Screen reader: Toasts must be read aloud without requiring focus. In HTML, this uses `role="status"` or `role="alert"`. In game UI, this requires the engine's accessibility notification system. Verify engine support in engine-reference docs.
 - Motion reduction: Slide animation replaced with fade only.
 - Toasts must never be the sole communication channel for information the player needs to act on. If the information requires action, use a persistent UI element in addition to the toast.
 - Auto-dismiss timer: 5 seconds is the minimum. Players with cognitive processing differences may need more time. Consider a setting to extend to 10 or 15 seconds.
 
-**Implementation Notes**: [Godot: Manage a queue of `PanelContainer` scenes in a
+**实现说明**: [Godot: Manage a queue of `PanelContainer` scenes in a
 `VBoxContainer` anchored to a screen corner. Each toast is instantiated, added to
 the container, then auto-removed after a timer. The container should be on a high
 `CanvasLayer` (50+) but below modal dialogs (100+). Animate using a `Tween` on
@@ -503,20 +481,20 @@ animation.]
 
 ---
 
-#### Tooltip
+#### Tooltip（工具提示）
 
-**Category**: Feedback
-**Status**: Draft
-**When to Use**: Contextual information that supplements a visible label. Item
+**类别**: Feedback
+**状态**: Draft
+**When to Use（使用场景）**: 补充可见标签的上下文信息。 Item
 descriptions in inventory. Stat explanations on a character sheet. Setting
 descriptions in accessibility options. The player must be able to access this
 information or proceed without it.
-**When NOT to Use**: Information the player MUST read to complete an action — put
+**When NOT to Use（不应使用场景）**: Information the player MUST read to complete an action — put
 that in the label or body text, not a tooltip. Tooltips are not discoverable
 on mobile touch without a hover state. On touch-only platforms, use an info button
 that opens a description modal instead.
 
-**Interaction Specification**:
+**交互规范**:
 
 | State | Visual | Input | Response | Duration | Audio |
 |-------|--------|-------|----------|----------|-------|
@@ -527,12 +505,12 @@ that opens a description modal instead.
 | Displayed | Tooltip visible. Title (optional). Body text. Max width: 300px. Multiple lines allowed. | — | — | — | — |
 | Hiding | Tooltip fades out | Mouse leaves element / focus moves away | Hide tooltip | 80ms ease-in | — |
 
-**Accessibility**:
+**无障碍设计**:
 - Screen reader: Tooltip content must be accessible without hover. The accessible name of the parent element should include the most critical tooltip information. The full tooltip text is optionally in the `description` property. Screen reader reads tooltip content when element is focused.
 - The delay (300-400ms) prevents accidental tooltip display and is required — instant tooltips are disruptive in gamepad navigation.
 - Tooltip text must meet the same contrast requirements as body text (4.5:1 minimum).
 
-**Implementation Notes**: [Godot: Attach a custom `TooltipControl` scene as a
+**实现说明**: [Godot: Attach a custom `TooltipControl` scene as a
 child of the trigger element. Show/hide with a `Timer` node. Position the tooltip
 using a `CanvasLayer` to ensure it appears above all other UI. For screen edges,
 detect if the tooltip rect extends beyond `get_viewport_rect()` and flip the
@@ -540,18 +518,18 @@ position to the opposite side.]
 
 ---
 
-#### Progress Bar
+#### Progress Bar（进度条）
 
-**Category**: Feedback / Layout
-**Status**: Draft
-**When to Use**: Linear progress toward a defined endpoint. Loading screens (time
+**类别**: Feedback / Layout
+**状态**: Draft
+**When to Use（使用场景）**: 朝着定义端点的线性进度。 Loading screens (time
 to completion), XP fill toward next level, quest objectives with countable progress
 ("3 of 10 enemies defeated"), download progress.
-**When NOT to Use**: Circular or radial progress (use a separate Radial Progress
+**When NOT to Use（不应使用场景）**: Circular or radial progress (use a separate Radial Progress
 pattern if needed). Values that fluctuate up and down rapidly (use Health/Resource
 Bar pattern). Values with no defined endpoint.
 
-**Interaction Specification**:
+**交互规范**:
 
 | State | Visual | Input | Response | Duration | Audio |
 |-------|--------|-------|----------|----------|-------|
@@ -561,13 +539,13 @@ Bar pattern). Values with no defined endpoint.
 | Value at zero | Fill hidden (zero width). Track still visible. | — | — | — | — |
 | Indeterminate (unknown duration) | Animated loop (fill segment moves left-to-right, repeat). Used for loading of unknown duration. | — | — | Infinite loop | — |
 
-**Accessibility**:
+**无障碍设计**:
 - Screen reader: Role: "progressbar." Accessible name: what is progressing (e.g., "Experience Points," "Loading"). Value: current numeric value AND percentage AND maximum. "Experience Points, 450 of 1000, 45 percent." Update on significant changes (not every pixel).
 - Do not rely only on fill color to communicate value. Include a numeric label.
 - Indeterminate progress bars: announce "Loading, in progress" — do not announce changes since the value is unknown.
 - Motion reduction: Indeterminate animation is replaced with a static "loading" indicator. Smooth fill animation is replaced with instant jump to new value.
 
-**Implementation Notes**: [Godot: `ProgressBar` built-in with custom theming.
+**实现说明**: [Godot: `ProgressBar` built-in with custom theming.
 For indeterminate mode, `ProgressBar` does not have a native indeterminate state
 in Godot 4.x — implement using a looping `Tween` on a fill element's position.
 Ensure the Tween is paused when motion reduction mode is active and a static
@@ -575,18 +553,18 @@ indicator is shown instead.]
 
 ---
 
-#### Input Field
+#### Input Field（输入框）
 
-**Category**: Input
-**Status**: Draft
-**When to Use**: Text entry. Player name on a new save, search within a list,
+**类别**: Input
+**状态**: Draft
+**When to Use（使用场景）**: 文本输入。 Player name on a new save, search within a list,
 remapping a key binding (special case — shows the key press, not typed text),
 entering a numeric value precisely.
-**When NOT to Use**: Selecting from known options (use Dropdown or List). On
+**When NOT to Use（不应使用场景）**: 从已知选项中选择（使用下拉选择器或列表）。 On
 console-primary platforms, minimize text entry — it requires a virtual keyboard,
 which is high friction.
 
-**Interaction Specification**:
+**交互规范**:
 
 | State | Visual | Input | Response | Duration | Audio |
 |-------|--------|-------|----------|----------|-------|
@@ -601,12 +579,12 @@ which is high friction.
 | Validated / correct | Border turns success color (green — ensure colorblind safe). Success icon optional. | On validation pass | — | Instant | — |
 | Disabled | 40% opacity, no interaction. Value still visible. | — | — | — | — |
 
-**Accessibility**:
+**无障碍设计**:
 - Keyboard: All standard text editing shortcuts (Home, End, Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+Z).
 - Screen reader: Role: "textbox." Accessible name: field label (not placeholder text). Current value announced. Character limit announced when reached. Validation errors announced immediately on occurrence.
 - Placeholder text must not be used as the only label — a visible label above or beside the field is required. Placeholder text disappears when the player types, causing confusion for players with cognitive or memory impairments.
 
-**Implementation Notes**: [Godot `LineEdit`: set `placeholder_text` for the hint
+**实现说明**: [Godot `LineEdit`: set `placeholder_text` for the hint
 but always include a visible `Label` node as the field's accessible name. Bind
 `text_changed` signal for real-time validation. Bind `text_submitted` for form
 submission on Enter. On console, `LineEdit.call("_popup_keyboard")` or use the OS
@@ -615,20 +593,20 @@ console keyboard API specifics.]
 
 ---
 
-#### Tab Bar
+#### Tab Bar（标签栏）
 
-**Category**: Navigation
-**Status**: Draft
-**When to Use**: Dividing a single screen's content into discrete sections where
+**类别**: Navigation
+**状态**: Draft
+**When to Use（使用场景）**: Dividing a single screen's content into discrete sections where
 only one section is visible at a time. Character sheet tabs (Stats / Equipment /
 Skills), settings tabs (Gameplay / Graphics / Audio / Accessibility). Maximum
 5-6 tabs before the pattern breaks down and a sidebar navigation should be
 considered instead.
-**When NOT to Use**: More than 6 tabs. Content that benefits from simultaneous
+**When NOT to Use（不应使用场景）**: 超过6个标签页。 Content that benefits from simultaneous
 visibility (use a layout pattern instead). Navigation between different screens
 (use Screen Push).
 
-**Interaction Specification**:
+**交互规范**:
 
 | State | Visual | Input | Response | Duration | Audio |
 |-------|--------|-------|----------|----------|-------|
@@ -639,12 +617,12 @@ visibility (use a layout pattern instead). Navigation between different screens
 | Activated | Active indicator transitions to this tab. Content area transitions (fade or slide). | Click / Enter / A / Cross | Switch active tab. Content update. | 150ms ease | [UI tab switch sound] |
 | Gamepad shoulder button | — | L1/R1 (PS) or LB/RB (Xbox) | Switch to previous/next tab (standard platform convention) | 150ms | [UI tab switch sound] |
 
-**Accessibility**:
+**无障碍设计**:
 - Keyboard: Arrow keys navigate between tabs within the tab bar (left/right). Tab key moves focus into the content area below. This follows the ARIA tab panel pattern.
 - Screen reader: Role: "tab" for individual tabs. Role: "tablist" for the container. Role: "tabpanel" for the content area. Active tab state: "selected." Accessible name: tab label. Tabpanel is labeled by its corresponding tab.
 - The active tab must be visually distinguishable by more than color alone (underline, fill pattern, or weight change in addition to color).
 
-**Implementation Notes**: [Godot: `TabContainer` built-in. For custom visual
+**实现说明**: [Godot: `TabContainer` built-in. For custom visual
 styling, implement manually with a `HBoxContainer` of tab buttons and a
 `MarginContainer` for content. The shoulder button shortcut (LB/RB) must be
 implemented in the screen's `_input()` override — it is not built into Godot's
@@ -653,18 +631,18 @@ both are the same physical button, so a single binding works.]
 
 ---
 
-#### Scroll Container
+#### Scroll Container（滚动容器）
 
-**Category**: Layout
-**Status**: Draft
-**When to Use**: Content that exceeds the visible area of its container. Inventory
+**类别**: Layout
+**状态**: Draft
+**When to Use（使用场景）**: 超出容器可见区域的内容。 Inventory
 lists, lore entry text, credits, long settings lists. The scroll indicator shows
 the player that more content exists.
-**When NOT to Use**: Content that can be paginated instead (pagination may be
+**When NOT to Use（不应使用场景）**: Content that can be paginated instead (pagination may be
 clearer for dense list navigation). Infinite scroll (always provide a loading
 state and an end state).
 
-**Interaction Specification**:
+**交互规范**:
 
 | State | Visual | Input | Response | Duration | Audio |
 |-------|--------|-------|----------|----------|-------|
@@ -677,12 +655,12 @@ state and an end state).
 | Scroll top / bottom | Content stops. Scrollbar thumb at end. | Content boundary reached | Stop scrolling | — | — |
 | Focus follows scroll | When a child element receives focus, scroll container ensures it is fully visible. | Any child receives focus | Scroll to reveal focused element | 200ms ease | — |
 
-**Accessibility**:
+**无障碍设计**:
 - Keyboard/Gamepad: The scroll container itself should not require explicit scrollbar interaction — navigating list items inside it should auto-scroll to keep focused items in view.
 - Screen reader: The scroll container announces "scrollable" and the scroll position ("showing items 5 through 15 of 30"). This requires engine accessibility support — verify in engine-reference/godot/.
 - Fade edges (content fading at scroll boundaries to indicate more content exists) are a helpful visual affordance but must not be the only indicator that content exists beyond the visible area. Include a scrollbar.
 
-**Implementation Notes**: [Godot `ScrollContainer`: call `ensure_control_visible()`
+**实现说明**: [Godot `ScrollContainer`: call `ensure_control_visible()`
 on the focused child whenever `gui_focus_changed` fires inside the container.
 Bind this via a recursive `connect` on the container's `gui_focus_changed` signal.
 For smooth scroll animation, use a `Tween` on `scroll_vertical` rather than
@@ -690,19 +668,19 @@ setting it directly.]
 
 ---
 
-## Game-Specific UI Patterns
+## 游戏特定UI模式
 
 ---
 
-#### Inventory Slot
+#### Inventory Slot（物品栏槽位）
 
-**Category**: Game-Specific
-**Status**: Draft
-**When to Use**: Every item container in the inventory grid. Empty slots, populated
+**类别**: Game-Specific
+**状态**: Draft
+**When to Use（使用场景）**: 物品栏网格中的每个物品容器。 Empty slots, populated
 slots, equipped slots, locked slots. The slot is the frame; the item icon is the
 content.
 
-**States**:
+**状态**:
 
 | State | Visual | Notes |
 |-------|--------|-------|
@@ -715,20 +693,20 @@ content.
 | Highlighted | Animated border glow (pulsing). Used for quest-relevant items or newly acquired items. | Respect motion reduction — replace pulse with a static badge |
 | Cooldown overlay | Radial fill overlay from 12 o'clock, clockwise, depleting as cooldown expires. | Only applicable if slots represent active items with cooldowns |
 
-**Accessibility**: Stack counts and quality tiers must have text or icon alternatives to color coding. Tooltip is the primary accessibility mechanism — ensure it is reachable by keyboard and screen reader. Locked slots must announce "locked" to screen readers.
+**无障碍设计**: Stack counts and quality tiers must have text or icon alternatives to color coding. Tooltip is the primary accessibility mechanism — ensure it is reachable by keyboard and screen reader. Locked slots must announce "locked" to screen readers.
 
-**Implementation Notes**: [Godot: Custom `Control` node. Quality border implemented as a `StyleBoxFlat` swapped based on rarity — avoid using `modulate` color for quality, as it affects the icon color. Drag and drop implemented via `get_drag_data()` and `can_drop_data()` / `drop_data()` override methods.]
+**实现说明**: [Godot: Custom `Control` node. Quality border implemented as a `StyleBoxFlat` swapped based on rarity — avoid using `modulate` color for quality, as it affects the icon color. Drag and drop implemented via `get_drag_data()` and `can_drop_data()` / `drop_data()` override methods.]
 
 ---
 
-#### Ability / Skill Icon
+#### Ability / Skill Icon（技能图标）
 
-**Category**: Game-Specific
-**Status**: Draft
-**When to Use**: Ability buttons in the HUD ability bar, skill tree nodes, and
+**类别**: Game-Specific
+**状态**: Draft
+**When to Use（使用场景）**: Ability buttons in the HUD ability bar, skill tree nodes, and
 any context where an ability must show availability state.
 
-**States**:
+**状态**:
 
 | State | Visual | Notes |
 |-------|--------|-------|
@@ -740,9 +718,9 @@ any context where an ability must show availability state.
 | Active / channeling | Pulsing border. Radial fill shows channel duration remaining. | |
 | Just activated | Brief scale 0.9x then spring to 1.0x (overshoot to 1.05x). | Example: Guild Wars 2 and Path of Exile both use press-depress animations on ability use to confirm activation. Respect motion reduction. |
 
-**Accessibility**: All cooldown/charge information must have a numeric value (screen reader cannot parse radial overlays). The cooldown timer number satisfies this. Ability names and descriptions must be exposed to screen readers via tooltip.
+**无障碍设计**: All cooldown/charge information must have a numeric value (screen reader cannot parse radial overlays). The cooldown timer number satisfies this. Ability names and descriptions must be exposed to screen readers via tooltip.
 
-**Implementation Notes**: [Godot: Custom `TextureButton` subclass with overlay
+**实现说明**: [Godot: Custom `TextureButton` subclass with overlay
 `Control` nodes for cooldown radial and charge pips. The cooldown radial uses a
 custom shader on a `ColorRect` rotating a mask — or implement with a
 `ProgressBar` styled as circular if engine supports it. Verify against
@@ -750,14 +728,14 @@ engine-reference/godot/ for Godot 4.6 shader support for this pattern.]
 
 ---
 
-#### Health / Resource Bar
+#### Health / Resource Bar（生命值/资源条）
 
-**Category**: Game-Specific
-**Status**: Draft
-**When to Use**: Any continuously varying value in the HUD that represents a
+**类别**: Game-Specific
+**状态**: Draft
+**When to Use（使用场景）**: Any continuously varying value in the HUD that represents a
 critical player resource. Health, mana, stamina, shield, fuel.
 
-**States and behaviors**:
+**状态与行为**:
 
 | Event | Visual | Audio | Duration |
 |-------|--------|-------|---------|
@@ -768,25 +746,25 @@ critical player resource. Health, mana, stamina, shield, fuel.
 | Maximum | Fill at 100%, brief glow. | — | 200ms |
 | Overflow (shield) | A separate bar segment appears beyond the natural fill area, in shield color. | [Shield gain sound] | 200ms |
 
-**Accessibility**: The current value must be accessible as a number (tooltip or persistent display, or both). Color-coded threshold states must have non-color backups (icon, flashing, or audio visual warning). Warning state at 25% must have a visual signal independent of the color change.
+**无障碍设计**: The current value must be accessible as a number (tooltip or persistent display, or both). Color-coded threshold states must have non-color backups (icon, flashing, or audio visual warning). Warning state at 25% must have a visual signal independent of the color change.
 
-**Implementation Notes**: [Godot: Two overlapping `ProgressBar` nodes for ghost
+**实现说明**: [Godot: Two overlapping `ProgressBar` nodes for ghost
 bar effect — back bar holds previous value (drains via Tween), front bar holds
 current value (updates instantly). Threshold states trigger `StyleBoxFlat` swaps
 on the front bar. Ghost bar Tween duration is tunable as a designer parameter.]
 
 ---
 
-#### Dialogue Box
+#### Dialogue Box（对话框）
 
-**Category**: Game-Specific
-**Status**: Draft
-**When to Use**: NPC conversation, voiced narrative dialogue, tutorial text
+**类别**: Game-Specific
+**状态**: Draft
+**When to Use（使用场景）**: NPC conversation, voiced narrative dialogue, tutorial text
 delivered through a character. All dialogue that has a speaker.
 
-**Structure**: Speaker portrait or name tag (top of box or left side). Dialogue text body. Continue/advance prompt (bottom right). Optional: skip-all button, voice acting indicator, subtitle indicator.
+**结构**: Speaker portrait or name tag (top of box or left side). Dialogue text body. Continue/advance prompt (bottom right). Optional: skip-all button, voice acting indicator, subtitle indicator.
 
-**States and behaviors**:
+**状态与行为**:
 
 | State | Visual | Input | Response | Duration |
 |-------|--------|-------|----------|---------|
@@ -798,9 +776,9 @@ delivered through a character. All dialogue that has a speaker.
 | Closing | Box fades out | Final line advanced | Return control to player | 200ms |
 | Skipping all (if supported) | Brief confirmation prompt: "Skip dialogue?" | Dedicated skip button | Skip to post-dialogue state | — |
 
-**Accessibility**: Subtitles are always enabled by default for all voiced dialogue. Typewriter animation speed is a user setting (see accessibility-requirements.md). The dialogue box must not auto-advance — players must control pacing. Speaker name is always shown. All choice buttons must be navigable by keyboard and gamepad. Choices must be accessible to screen readers with position announced.
+**无障碍设计**: Subtitles are always enabled by default for all voiced dialogue. Typewriter animation speed is a user setting (see accessibility-requirements.md). The dialogue box must not auto-advance — players must control pacing. Speaker name is always shown. All choice buttons must be navigable by keyboard and gamepad. Choices must be accessible to screen readers with position announced.
 
-**Implementation Notes**: [Godot: `RichTextLabel` with `bbcode_enabled` for
+**实现说明**: [Godot: `RichTextLabel` with `bbcode_enabled` for
 formatting. Typewriter effect via `visible_characters` property animated by a
 `Timer`. Bind the advance input to a function that either skips typewriter
 (sets `visible_characters = -1`) or advances the dialogue state. Speaker name
@@ -809,15 +787,15 @@ JSON or a dedicated dialogue format (e.g., Dialogic, Yarn Spinner for Godot).]
 
 ---
 
-#### Context Action Prompt
+#### Context Action Prompt（上下文操作提示）
 
-**Category**: Game-Specific
-**Status**: Draft
-**When to Use**: A prompt that appears near an interactable game object indicating
+**类别**: Game-Specific
+**状态**: Draft
+**When to Use（使用场景）**: A prompt that appears near an interactable game object indicating
 what the player can do. "Press [A] to open chest." "Hold [E] to pick up." Appears
 when the player enters the interaction zone, disappears when they leave.
 
-**States**:
+**状态**:
 
 | State | Visual | Notes |
 |-------|--------|-------|
@@ -827,20 +805,20 @@ when the player enters the interaction zone, disappears when they leave.
 | Cannot interact (blocked) | Icon dims. Label shows reason if known ("Too heavy", "Need key"). | Optional — only show blocked state if the reason is meaningful to the player |
 | Disappearing | Fades out. | Triggered when player exits interaction zone |
 
-**Accessibility**: The button icon must be accompanied by a text label — do not rely on icon alone (some players use custom button labels or adaptive controllers with non-standard icons). The prompt must be positioned to not overlap character health or critical HUD information.
+**无障碍设计**: The button icon must be accompanied by a text label — do not rely on icon alone (some players use custom button labels or adaptive controllers with non-standard icons). The prompt must be positioned to not overlap character health or critical HUD information.
 
-**Implementation Notes**: [Godot: Attach as a `Node3D` child (or `Node2D` child in 2D) of the interactable object. Use a `BillboardMesh` or a `SubViewport` with a UI scene for 3D games — this keeps the prompt facing the camera without code. Update the button icon texture based on `Input.get_joy_name()` or keyboard detection via `InputEventKey` vs `InputEventJoypadButton`. Hold progress implemented as an `AnimationPlayer` or `Tween` on a radial mask shader.]
+**实现说明**: [Godot: Attach as a `Node3D` child (or `Node2D` child in 2D) of the interactable object. Use a `BillboardMesh` or a `SubViewport` with a UI scene for 3D games — this keeps the prompt facing the camera without code. Update the button icon texture based on `Input.get_joy_name()` or keyboard detection via `InputEventKey` vs `InputEventJoypadButton`. Hold progress implemented as an `AnimationPlayer` or `Tween` on a radial mask shader.]
 
 ---
 
-#### Damage Number
+#### Damage Number（伤害数字）
 
-**Category**: Game-Specific
-**Status**: Draft
-**When to Use**: Floating feedback numbers above combat participants. Normal
+**类别**: Game-Specific
+**状态**: Draft
+**When to Use（使用场景）**: 战斗参与者上方的浮动反馈数字。 Normal
 damage, critical damage, healing, miss.
 
-**Variants**:
+**变体**:
 
 | Variant | Visual | Notes |
 |---------|--------|-------|
@@ -850,11 +828,11 @@ damage, critical damage, healing, miss.
 | Miss / Evade | "MISS" text, grey, italic. Floats at smaller size. | |
 | Status damage (DoT) | Smaller size, distinct color matching the status effect. | |
 
-**Behavior**: Numbers float upward from the hit location over 1.0 second. Numbers fade from 100% to 0% during the last 0.4 seconds. Multiple numbers from rapid hits stagger horizontally to avoid overlap. Maximum simultaneous damage numbers on screen: [define per game — typically 8-12 per character].
+**行为**: Numbers float upward from the hit location over 1.0 second. Numbers fade from 100% to 0% during the last 0.4 seconds. Multiple numbers from rapid hits stagger horizontally to avoid overlap. Maximum simultaneous damage numbers on screen: [define per game — typically 8-12 per character].
 
-**Accessibility**: Damage numbers are purely supplementary feedback — they must never be the only way to understand combat state. Health bars are the authoritative source. Provide an option to disable damage numbers entirely (some players find them visually overwhelming). When disabled, the game must remain fully playable.
+**无障碍设计**: Damage numbers are purely supplementary feedback — they must never be the only way to understand combat state. Health bars are the authoritative source. Provide an option to disable damage numbers entirely (some players find them visually overwhelming). When disabled, the game must remain fully playable.
 
-**Implementation Notes**: [Godot: Pool of `Label3D` (3D games) or `Label` (2D games)
+**实现说明**: [Godot: Pool of `Label3D` (3D games) or `Label` (2D games)
 instances recycled via an object pool. Each instance is given a random small
 horizontal offset on spawn (±20px) to reduce overlap. Float animation via
 `Tween` on `position.y` and `modulate.a`. Critical hit scale-pop via Tween
@@ -862,14 +840,14 @@ with `EASE_OUT` on scale followed by linear settle.]
 
 ---
 
-## Navigation Patterns
+## 导航模式
 
 ---
 
-#### Screen Push / Pop / Replace
+#### Screen Push / Pop / Replace（屏幕推入/弹出/替换）
 
-**Category**: Navigation
-**Status**: Draft
+**类别**: Navigation
+**状态**: Draft
 
 These three patterns define how screens enter and exit the navigation stack.
 
@@ -879,11 +857,11 @@ These three patterns define how screens enter and exit the navigation stack.
 | Pop (Back) | Back button / Escape / B / Circle | Current screen slides right and exits. Previous screen slides in from left and brightens. | Current screen removed from stack | Focus returns to the element that triggered the Push |
 | Replace | Navigate to a peer screen (not child, not parent). Loading screen. | Fade out current, fade in new. No directional bias. | Current screen removed. New screen added. | Focus moves to first interactive element on new screen |
 
-**Animation durations**: Push/Pop: 250ms ease-in-out. Replace: 200ms fade out + 200ms fade in.
+**动画持续时间**: Push/Pop: 250ms ease-in-out. Replace: 200ms fade out + 200ms fade in.
 
-**Motion reduction**: All slide animations become fades. Duration reduces to 100ms.
+**运动简化**: All slide animations become fades. Duration reduces to 100ms.
 
-**Implementation Notes**: [Godot: Implement as a `ScreenManager` singleton managing
+**实现说明**: [Godot: Implement as a `ScreenManager` singleton managing
 a stack of `Control` scenes. `push(screen_scene)` instantiates and animates in.
 `pop()` animates out and frees. `replace(screen_scene)` calls pop then push without
 the intermediate stack state. Use `CanvasLayer` per screen to isolate input handling.
@@ -891,12 +869,12 @@ Store the "return focus" element reference before pushing so it can be restored 
 
 ---
 
-#### Focus Management
+#### Focus Management（焦点管理）
 
-**Category**: Navigation
-**Status**: Draft
+**类别**: Navigation
+**状态**: Draft
 
-> Focus management is the most common keyboard and gamepad accessibility failure
+> 焦点管理是游戏UI中最常见的键盘和游戏手柄无障碍设计失败点。 keyboard and gamepad accessibility failure
 > in game UIs. These rules must be implemented consistently. A player should
 > never be in a state where they cannot see which element is focused, or where
 > Tab/D-pad produces no visible result.
@@ -916,12 +894,12 @@ Store the "return focus" element reference before pushing so it can be restored 
 
 ---
 
-#### Escape / Cancel
+#### Escape / Cancel（退出/取消）
 
-**Category**: Navigation
-**Status**: Draft
+**类别**: Navigation
+**状态**: Draft
 
-> The "go back" action is the most-used navigation input in all menu systems.
+> "返回"操作是所有菜单系统中使用最频繁的导航输入。 the most-used navigation input in all menu systems.
 > It must be consistent across every screen with no exceptions.
 
 | Platform | Input | Behavior |
@@ -932,18 +910,18 @@ Store the "return focus" element reference before pushing so it can be restored 
 | PlayStation | Circle button | Same as Escape |
 | Nintendo Switch | B button | Same as Escape (NOTE: Nintendo uses B for confirm in some first-party titles — verify platform convention for this release and document the decision) |
 
-**Rules**: This input must never be overridden to do something other than "go back / cancel." If a screen has no back action (e.g., the game is paused and the player must make a choice), Escape does nothing or shows a "you must choose" message — it does not navigate away. Every screen must define its Escape behavior explicitly in its UX spec.
+**规则**: This input must never be overridden to do something other than "go back / cancel." If a screen has no back action (e.g., the game is paused and the player must make a choice), Escape does nothing or shows a "you must choose" message — it does not navigate away. Every screen must define its Escape behavior explicitly in its UX spec.
 
 ---
 
-## Feedback and Loading Patterns
+## 反馈与加载模式
 
 ---
 
-#### Loading State
+#### Loading State（加载状态）
 
-**Category**: Feedback
-**Status**: Draft
+**类别**: Feedback
+**状态**: Draft
 
 | Scope | Pattern | Notes |
 |-------|---------|-------|
@@ -952,16 +930,16 @@ Store the "return focus" element reference before pushing so it can be restored 
 | Component / inline | Spinner or skeleton placeholder replaces the loading component. Component does not shift layout when content loads. | Skeleton placeholder (grey boxes approximating content shape) is preferable to spinner for layout-heavy content — it prevents layout shift on load. |
 | Background / async | No visual indication unless operation exceeds 2 seconds. After 2 seconds, show a small spinner or toast. | Do not show loading indicators for operations that complete in under 2 seconds — the flash of an indicator is more disruptive than waiting. |
 
-**Accessibility**: Loading states must announce to screen readers: "[Context] loading, please wait." Completion must announce "[Context] loaded." For full-screen loading, ensure the loading screen itself is navigable to screen readers — the tips text and any UI elements must be exposed.
+**无障碍设计**: Loading states must announce to screen readers: "[Context] loading, please wait." Completion must announce "[Context] loaded." For full-screen loading, ensure the loading screen itself is navigable to screen readers — the tips text and any UI elements must be exposed.
 
 ---
 
-#### Empty State
+#### Empty State（空状态）
 
-**Category**: Feedback
-**Status**: Draft
+**类别**: Feedback
+**状态**: Draft
 
-> Empty states are consistently the least-designed parts of game UIs. They are
+> 空状态一直是游戏UI中设计最不充分的部分。 the least-designed parts of game UIs. They are
 > the difference between a player feeling "this is where I'll store my items"
 > and "why is nothing here? did something break?" Every empty list and grid must
 > have a designed empty state. The empty state is not an error — it is a starting
@@ -974,14 +952,14 @@ Store the "return focus" element reference before pushing so it can be restored 
 | Achievements (none earned) | Icon. Message: "No achievements yet." List of hint achievements: "Try [Action] to earn your first achievement." | Gamified motivation, not just emptiness. |
 | Search results (no matches) | Icon. Message: "No results for '[search term]'." Sub-message: "Try a different search or [browse all]." | Mirror the search term back at them. Give an alternative action. |
 
-**Rule**: Every empty state must include an icon, a message, and either a sub-message or an action button. A blank container with no explanation is never acceptable.
+**规则**: Every empty state must include an icon, a message, and either a sub-message or an action button. A blank container with no explanation is never acceptable.
 
 ---
 
-#### Error State
+#### Error State（错误状态）
 
-**Category**: Feedback
-**Status**: Draft
+**类别**: Feedback
+**状态**: Draft
 
 | Error Type | Pattern | Tone |
 |-----------|---------|------|
@@ -990,13 +968,13 @@ Store the "return focus" element reference before pushing so it can be restored 
 | System error (crash, data corruption) | Full-screen error screen with error code, recovery options ("Restart Game," "Load last save"), and support contact. | Reassuring — acknowledge the problem, give the player agency. Never blame the player. |
 | Soft error (action cannot be performed) | Toast or inline message. | Explanatory — "Not enough gold" not "Action unavailable." |
 
-**Principle**: Error messages are never the player's fault. They are the game telling the player what happened and what to do next. Remove the word "invalid" from all error messages — replace with specific explanations.
+**原则**: Error messages are never the player's fault. They are the game telling the player what happened and what to do next. Remove the word "invalid" from all error messages — replace with specific explanations.
 
 ---
 
-## Animation Standards
+## 动画标准
 
-> These timing values apply to ALL patterns in this library. When a pattern says
+> 这些时间值适用于本库中的所有模式。 to ALL patterns in this library. When a pattern says
 > "150ms ease-out," the easing function is defined here. Consistency in timing
 > makes the UI feel like a single designed system rather than a collection of
 > individual decisions.
@@ -1025,13 +1003,9 @@ Store the "return focus" element reference before pushing so it can be restored 
 
 ---
 
-## Sound Standards
+## 声音标准
 
-> Every interactive event should have audio feedback. Sound is a primary feedback
-> channel, not a decoration. The sounds defined here are event categories — the
-> specific audio assets are defined in `docs/sound-bible.md`. This table maps
-> interaction events to sound categories so the sound designer and UI programmer
-> use the same vocabulary.
+> 每个交互事件都应有音频反馈。声音是主要的反馈通道，而不是装饰。这里定义的声音是事件类别——具体的音频资源在`docs/sound-bible.md`中定义。此表将交互事件映射到声音类别，以便声音设计师和UI程序员使用相同的词汇。
 
 | Interaction Event | Sound Category | Notes |
 |------------------|---------------|-------|
@@ -1061,7 +1035,7 @@ Store the "return focus" element reference before pushing so it can be restored 
 
 ---
 
-## Open Questions
+## 待解决问题
 
 | Question | Owner | Deadline | Resolution |
 |----------|-------|----------|-----------|

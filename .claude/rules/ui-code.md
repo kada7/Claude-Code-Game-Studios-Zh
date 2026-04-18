@@ -3,13 +3,13 @@ paths:
   - "src/ui/**"
 ---
 
-# UI Code Rules
+# UI 代码规则
 
-- UI must NEVER own or directly modify game state — display only, use commands/events to request changes
-- All UI text must go through the localization system — no hardcoded user-facing strings
-- Support both keyboard/mouse AND gamepad input for all interactive elements
-- All animations must be skippable and respect user motion/accessibility preferences
-- UI sounds trigger through the audio event system, not directly
-- UI must never block the game thread
-- Scalable text and colorblind modes are mandatory, not optional
-- Test all screens at minimum and maximum supported resolutions
+- UI **绝不**拥有或直接修改游戏状态 — 仅用于显示，使用命令/事件来请求更改
+- 所有 UI 文本必须通过本地化系统处理 — 禁止硬编码面向用户的字符串
+- 所有交互元素必须同时支持键盘/鼠标**和**手柄输入
+- 所有动画必须可跳过，并尊重用户的运动/辅助功能偏好设置
+- UI 声音通过音频事件系统触发，而不是直接触发
+- UI 绝不能阻塞游戏线程
+- 可缩放的文本和色盲模式是强制要求，而非可选
+- 在所有受支持的最小和最大分辨率下测试所有屏幕

@@ -5,116 +5,115 @@ argument-hint: "[combat feature description]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task, AskUserQuestion, TodoWrite
 ---
-**Argument check:** If no combat feature description is provided, output:
-> "Usage: `/team-combat [combat feature description]` — Provide a description of the combat feature to design and implement (e.g., `melee parry system`, `ranged weapon spread`)."
-Then stop immediately without spawning any subagents or reading any files.
+**参数检查:** 如果没有提供战斗功能描述，输出:
+> "Usage: `/team-combat [combat feature description]` — 提供要设计和实现的战斗功能描述 (例如, `melee parry system`, `ranged weapon spread`)。"
+然后立即停止而不生成任何子代理或读取任何文件。
 
-When this skill is invoked with a valid argument, orchestrate the combat team through a structured pipeline.
+当使用有效参数调用此 skill 时，通过结构化流程编排战斗团队。
 
-**Decision Points:** At each phase transition, use `AskUserQuestion` to present
-the user with the subagent's proposals as selectable options. Write the agent's
-full analysis in conversation, then capture the decision with concise labels.
-The user must approve before moving to the next phase.
+**决策点:** 在每个阶段转换时，使用 `AskUserQuestion` 向用户展示
+子代理的建议作为可选项。在对话中写入代理的
+完整分析，然后使用简洁的标签捕获决策。
+用户必须批准才能进入下一阶段。
 
-## Team Composition
-- **game-designer** — Design the mechanic, define formulas and edge cases
-- **gameplay-programmer** — Implement the core gameplay code
-- **ai-programmer** — Implement NPC/enemy AI behavior for the feature
-- **technical-artist** — Create VFX, shader effects, and visual feedback
-- **sound-designer** — Define audio events, impact sounds, and ambient combat audio
-- **engine specialist** (primary) — Validate architecture and implementation patterns are idiomatic for the engine (read from `.claude/docs/technical-preferences.md` Engine Specialists section)
-- **qa-tester** — Write test cases and validate the implementation
+## 团队组成
+- **game-designer** — 设计机制，定义公式和边界情况
+- **gameplay-programmer** — 实现核心游戏玩法代码
+- **ai-programmer** — 为功能实现 NPC/敌人 AI 行为
+- **technical-artist** — 创建 VFX、着色器效果和视觉反馈
+- **sound-designer** — 定义音频事件、打击声音和环境战斗音频
+- **engine specialist** (primary) — 验证架构和实现模式对于引擎是否符合习惯 (从 `.claude/docs/technical-preferences.md` Engine Specialists 部分读取)
+- **qa-tester** — 编写测试用例并验证实现
 
-## How to Delegate
+## 如何委派
 
-Use the Task tool to spawn each team member as a subagent:
-- `subagent_type: game-designer` — Design the mechanic, define formulas and edge cases
-- `subagent_type: gameplay-programmer` — Implement the core gameplay code
-- `subagent_type: ai-programmer` — Implement NPC/enemy AI behavior
-- `subagent_type: technical-artist` — Create VFX, shader effects, visual feedback
-- `subagent_type: sound-designer` — Define audio events, impact sounds, ambient audio
-- `subagent_type: [primary engine specialist]` — Engine idiom validation for architecture and implementation
-- `subagent_type: qa-tester` — Write test cases and validate implementation
+使用 Task 工具将每个团队成员生成为子代理:
+- `subagent_type: game-designer` — 设计机制，定义公式和边界情况
+- `subagent_type: gameplay-programmer` — 实现核心游戏玩法代码
+- `subagent_type: ai-programmer` — 实现 NPC/敌人 AI 行为
+- `subagent_type: technical-artist` — 创建 VFX、着色器效果、视觉反馈
+- `subagent_type: sound-designer` — 定义音频事件、打击声音、环境音频
+- `subagent_type: [primary engine specialist]` — 验证架构和实现的引擎习惯用法
+- `subagent_type: qa-tester` — 编写测试用例并验证实现
 
-Always provide full context in each agent's prompt (design doc path, relevant code files, constraints). Launch independent agents in parallel where the pipeline allows it (e.g., Phase 3 agents can run simultaneously).
+始终在代理的提示中提供完整上下文 (设计文档路径、相关代码文件、约束)。在流程允许的情况下并行启动独立代理 (例如，阶段 3 代理可以同时运行)。
 
-## Pipeline
+## 流程
 
-### Phase 1: Design
-Delegate to **game-designer**:
-- Create or update the design document in `design/gdd/` covering: mechanic overview, player fantasy, detailed rules, formulas with variable definitions, edge cases, dependencies, tuning knobs with safe ranges, and acceptance criteria
-- Output: completed design document
+### 阶段 1: 设计
+委派给 **game-designer**:
+- 在 `design/gdd/` 中创建或更新设计文档，涵盖: 机制概述、玩家幻想、详细规则、带变量定义的公式、边界情况、依赖关系、带安全范围的调整旋钮和验收标准
+- 输出: 完成的设计文档
 
-### Phase 2: Architecture
-Delegate to **gameplay-programmer** (with **ai-programmer** if AI is involved):
-- Review the design document
-- Design the code architecture: class structure, interfaces, data flow
-- Identify integration points with existing systems
-- Output: architecture sketch with file list and interface definitions
+### 阶段 2: 架构
+委派给 **gameplay-programmer** (如果涉及 AI，则与 **ai-programmer** 一起):
+- 审查设计文档
+- 设计代码架构: 类结构、接口、数据流
+- 识别与现有系统的集成点
+- 输出: 架构草图及文件列表和接口定义
 
-Then spawn the **primary engine specialist** to validate the proposed architecture:
-- Is the class/node/component structure idiomatic for the pinned engine? (e.g., Godot node hierarchy, Unity MonoBehaviour vs DOTS, Unreal Actor/Component design)
-- Are there engine-native systems that should be used instead of custom implementations?
-- Any proposed APIs that are deprecated or changed in the pinned engine version?
-- Output: engine architecture notes — incorporate into the architecture before Phase 3 begins
+然后生成 **primary engine specialist** 以验证提议的架构:
+- 类/节点/组件结构对于固定引擎是否符合习惯? (例如, Godot 节点层次结构, Unity MonoBehaviour vs DOTS, Unreal Actor/Component 设计)
+- 是否应该使用引擎原生系统而不是自定义实现?
+- 固定引擎版本中是否有任何提议的 API 已弃用或更改?
+- 输出: 引擎架构说明 — 在阶段 3 开始前纳入架构
 
-### Phase 3: Implementation (parallel where possible)
-Delegate in parallel:
-- **gameplay-programmer**: Implement core combat mechanic code
-- **ai-programmer**: Implement AI behaviors (if the feature involves NPC reactions)
-- **technical-artist**: Create VFX and shader effects
-- **sound-designer**: Define audio event list and mixing notes
+### 阶段 3: 实现 (尽可能并行)
+并行委派:
+- **gameplay-programmer**: 实现核心战斗机制代码
+- **ai-programmer**: 实现 AI 行为 (如果功能涉及 NPC 反应)
+- **technical-artist**: 创建 VFX 和着色器效果
+- **sound-designer**: 定义音频事件列表和混音说明
 
-### Phase 4: Integration
-- Wire together gameplay code, AI, VFX, and audio
-- Ensure all tuning knobs are exposed and data-driven
-- Verify the feature works with existing combat systems
+### 阶段 4: 集成
+- 将游戏玩法代码、AI、VFX 和音频连接在一起
+- 确保所有调整旋钮都暴露且数据驱动
+- 验证功能与现有战斗系统协同工作
 
-### Phase 5: Validation
-Delegate to **qa-tester**:
-- Write test cases from the acceptance criteria
-- Test all edge cases documented in the design
-- Verify performance impact is within budget
-- File bug reports for any issues found
+### 阶段 5: 验证
+委派给 **qa-tester**:
+- 从验收标准编写测试用例
+- 测试设计中记录的所有边界情况
+- 验证性能影响在预算内
+- 为发现的任何问题提交 bug 报告
 
-### Phase 6: Sign-off
-- Collect results from all team members
-- Report feature status: COMPLETE / NEEDS WORK / BLOCKED
-- List any outstanding issues and their assigned owners
+### 阶段 6: 签署
+- 收集所有团队成员的结果
+- 报告功能状态: COMPLETE / NEEDS WORK / BLOCKED
+- 列出任何未解决问题及其分配的所有者
 
-## Error Recovery Protocol
+## 错误恢复协议
 
-If any spawned agent (via Task) returns BLOCKED, errors, or cannot complete:
+如果任何生成的代理 (通过 Task) 返回 BLOCKED、错误或无法完成:
 
-1. **Surface immediately**: Report "[AgentName]: BLOCKED — [reason]" to the user before continuing to dependent phases
-2. **Assess dependencies**: Check whether the blocked agent's output is required by subsequent phases. If yes, do not proceed past that dependency point without user input.
-3. **Offer options** via AskUserQuestion with choices:
-   - Skip this agent and note the gap in the final report
-   - Retry with narrower scope
-   - Stop here and resolve the blocker first
-4. **Always produce a partial report** — output whatever was completed. Never discard work because one agent blocked.
+1. **立即展示**: 在向用户报告 "[AgentName]: BLOCKED — [reason]"，然后继续到依赖阶段
+2. **评估依赖关系**: 检查被阻止代理的输出是否被后续阶段需要。如果是，在没有用户输入的情况下不要越过该依赖点。
+3. **提供选项** 通过 AskUserQuestion 提供选择:
+   - 跳过此代理并记录最终报告中的差距
+   - 以更窄的范围重试
+   - 在此处停止并首先解决阻止程序
+4. **始终生成部分报告** — 输出已完成的内容。切勿因为代理被阻止而丢弃工作。
 
-Common blockers:
-- Input file missing (story not found, GDD absent) → redirect to the skill that creates it
-- ADR status is Proposed → do not implement; run `/architecture-decision` first
-- Scope too large → split into two stories via `/create-stories`
-- Conflicting instructions between ADR and story → surface the conflict, do not guess
+常见阻止程序:
+- 输入文件缺失 (story 未找到, GDD 不存在) → 重定向到创建它的 skill
+- ADR 状态为 Proposed → 不实现; 先运行 `/architecture-decision`
+- 范围太大 → 通过 `/create-stories` 拆分为两个 stories
+- ADR 和 story 之间的冲突说明 → 展示冲突，不要猜测
 
-## File Write Protocol
+## 文件写入协议
 
-All file writes (design documents, implementation files, test cases) are
-delegated to sub-agents spawned via Task. Each sub-agent enforces the
-"May I write to [path]?" protocol. This orchestrator does not write files directly.
+所有文件写入 (设计文档、实现文件、测试用例) 都通过 Task 委派给子代理。每个子代理强制执行 "May I write to [path]?" 
+协议。此编排器不直接写入文件。
 
-## Output
+## 输出
 
-A summary report covering: design completion status, implementation status per team member, test results, and any open issues.
+涵盖以下内容的摘要报告: 设计完成状态、每个团队成员的实现状态、测试结果和任何开放问题。
 
-Verdict: **COMPLETE** — combat feature designed, implemented, and validated.
-Verdict: **BLOCKED** — one or more phases could not complete; partial report produced with unresolved items listed.
+裁决: **COMPLETE** — 战斗功能已设计、实现和验证。
+裁决: **BLOCKED** — 一个或多个阶段无法完成; 生成部分报告并列出未解决的项目。
 
-## Next Steps
+## 后续步骤
 
-- Run `/code-review` on the implemented combat code before closing stories.
-- Run `/balance-check` to validate combat formulas and tuning values.
-- Run `/team-polish` if VFX, audio, or performance polish is needed.
+- 在关闭 stories 之前对实现的战斗代码运行 `/code-review`。
+- 运行 `/balance-check` 以验证战斗公式和调整值。
+- 如果需要 VFX、音频或性能优化，运行 `/team-polish`。

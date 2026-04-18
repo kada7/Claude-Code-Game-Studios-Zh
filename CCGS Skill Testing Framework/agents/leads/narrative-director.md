@@ -1,84 +1,84 @@
-# Agent Test Spec: narrative-director
+# Agent 测试规范：narrative-director
 
-## Agent Summary
-**Domain owned:** Story architecture, character design direction, world-building oversight, ND-CONSISTENCY gate, dialogue quality review.
-**Does NOT own:** Visual art style (art-director), technical systems or code (lead-programmer), production scheduling (producer), game mechanics rules (game-designer).
-**Model tier:** Sonnet (individual system analysis — narrative consistency and lore review).
-**Gate IDs handled:** ND-CONSISTENCY.
-
----
-
-## Static Assertions (Structural)
-
-Verified by reading the agent's `.claude/agents/narrative-director.md` frontmatter:
-
-- [ ] `description:` field is present and domain-specific (references story, character, world-building, consistency — not generic)
-- [ ] `allowed-tools:` list is read-focused; includes Read for lore documents, GDDs, and narrative docs; no Bash unless justified
-- [ ] Model tier is `claude-sonnet-4-6` per coordination-rules.md
-- [ ] Agent definition does not claim authority over visual style, technical systems, or production scheduling
+## Agent 概览
+**负责领域：** 故事架构、角色设计方向、世界构建监督、ND-CONSISTENCY gate、对话质量审查。
+**不负责：** 视觉艺术风格（art-director）、技术系统或代码（lead-programmer）、制作排期（producer）、游戏机制规则（game-designer）。
+**模型层级：** Sonnet（单个系统分析 — 叙事一致性和背景审查）。
+**处理的 Gate ID：** ND-CONSISTENCY。
 
 ---
 
-## Test Cases
+## 静态断言（结构）
 
-### Case 1: In-domain request — appropriate output format
-**Scenario:** A new lore document for "The Sunken Archive" location is submitted. The document establishes that the Archive was flooded 200 years ago during the Great Collapse, consistent with the established timeline in the world-bible. All named characters referenced are consistent with their established backstories. Request is tagged ND-CONSISTENCY.
-**Expected:** Returns `ND-CONSISTENCY: CONSISTENT` with rationale confirming the timeline alignment and character reference accuracy.
-**Assertions:**
-- [ ] Verdict is exactly one of CONSISTENT / INCONSISTENT
-- [ ] Verdict token is formatted as `ND-CONSISTENCY: CONSISTENT`
-- [ ] Rationale references specific established facts verified (the 200-year timeline, the Great Collapse event)
-- [ ] Output stays within narrative scope — does not comment on visual design of the location or its technical implementation
+通过读取 agent 的 `.claude/agents/narrative-director.md` frontmatter 验证：
 
-### Case 2: Out-of-domain request — redirects or escalates
-**Scenario:** A developer asks narrative-director to review and optimize the shader code used for the "ancient glow" visual effect on Archive artifacts.
-**Expected:** Agent declines to evaluate shader code and redirects to the appropriate engine specialist (godot-gdscript-specialist or equivalent shader specialist).
-**Assertions:**
-- [ ] Does not make any binding decision about shader code or visual implementation
-- [ ] Explicitly names the appropriate engine or shader specialist as the correct handler
-- [ ] May note the intended narrative mood the effect should convey (e.g., "should feel ancient and sacred, not technological"), but defers all technical visual implementation
-
-### Case 3: Gate verdict — correct vocabulary
-**Scenario:** A new character backstory document is submitted for the character "Aldric Vorne." The document states Aldric was born in the Capital 150 years ago and witnessed the Great Collapse firsthand. However, the established world-bible states Aldric was born 50 years after the Great Collapse in a provincial town, not the Capital. Request is tagged ND-CONSISTENCY.
-**Expected:** Returns `ND-CONSISTENCY: INCONSISTENT` with specific citation of the two contradicting facts: the birth timing (150 years ago vs. 50 years post-Collapse) and the birth location (Capital vs. provincial town).
-**Assertions:**
-- [ ] Verdict is exactly one of CONSISTENT / INCONSISTENT — not freeform text
-- [ ] Verdict token is formatted as `ND-CONSISTENCY: INCONSISTENT`
-- [ ] Rationale cites both contradictions specifically, not just "doesn't match lore"
-- [ ] References the authoritative source (world-bible) for the established facts
-
-### Case 4: Conflict escalation — correct parent
-**Scenario:** A writer has established in their latest dialogue that the ancient civilization "spoke only in song." The world-builder's existing lore entries describe the same civilization communicating through written glyphs. Both are in the narrative domain, and the two creators disagree on which is canonical.
-**Expected:** narrative-director makes a binding canonical decision within their domain. They do not need to escalate to a higher authority for intra-narrative conflicts — this is within their declared domain authority. They issue a ruling (e.g., "glyph-writing is the canonical primary communication; song may be ritual/ceremonial") and direct both writer and world-builder to align their work to the ruling.
-**Assertions:**
-- [ ] Makes a binding canonical decision — does not defer this intra-narrative conflict to creative-director
-- [ ] Decision is clearly stated and provides a path to reconciliation for both parties
-- [ ] Directs both parties (writer and world-builder) to update their respective documents to align
-- [ ] Notes the decision in a way that can be added to the world-bible as a canonical fact
-
-### Case 5: Context pass — uses provided context
-**Scenario:** Agent receives a gate context block that includes three existing lore documents: the world-bible (establishes the Great Collapse timeline and causes), the character registry (lists canonical character ages, origins, and allegiances), and a faction document (describes the Sunken Archive Keepers). A new story chapter is submitted that introduces a previously unregistered character.
-**Expected:** Assessment cross-references the new character against the character registry (no conflict), checks the chapter's timeline references against the world-bible, and evaluates the chapter's portrayal of the Archive Keepers against the faction document. Uses specific facts from all three provided documents in the assessment.
-**Assertions:**
-- [ ] Cross-references the new character against the provided character registry
-- [ ] Checks timeline references against the provided world-bible facts
-- [ ] Evaluates faction portrayal against the provided faction document
-- [ ] Does not generate generic narrative feedback — all assertions are traceable to the provided documents
+- [ ] `description:` 字段存在且是领域特定的（涉及故事、角色、世界构建、一致性 — 非通用描述）
+- [ ] `allowed-tools:` 列表是读取导向的；包含用于背景文档、GDD和叙事文档的Read；除非有正当理由，否则不含Bash
+- [ ] 模型层级为 `claude-sonnet-4-6`（根据 coordination-rules.md）
+- [ ] Agent 定义不宣称对视觉风格、技术系统或制作排期拥有权限
 
 ---
 
-## Protocol Compliance
+## 测试用例
 
-- [ ] Returns verdicts using CONSISTENT / INCONSISTENT vocabulary only
-- [ ] Stays within declared narrative domain
-- [ ] Makes binding decisions for intra-narrative conflicts without unnecessary escalation
-- [ ] Uses gate IDs in output (e.g., `ND-CONSISTENCY: INCONSISTENT`) not inline prose verdicts
-- [ ] Does not make binding visual design, technical, or production decisions
+### 用例 1：领域内请求 — 适当的输出格式
+**场景：** 提交"沉没档案馆"位置的新背景文档。该文档确定档案馆在200年前的大崩溃期间被淹没，与世界圣经中已建立的时间线一致。所有引用的命名角色与其已建立的背景故事一致。请求标记为 ND-CONSISTENCY。
+**预期：** 返回 `ND-CONSISTENCY: CONSISTENT`，并给出理由，确认时间线对齐和角色引用准确性。
+**断言：**
+- [ ] 裁决正好是 CONSISTENT / INCONSISTENT 之一
+- [ ] 裁决标记格式为 `ND-CONSISTENCY: CONSISTENT`
+- [ ] 理由引用已验证的特定已建立事实（200年时间线、大崩溃事件）
+- [ ] 输出保持在叙事范围内 — 不评论位置的视觉设计或其技术实现
+
+### 用例 2：领域外请求 — 重定向或升级
+**场景：** 开发者要求 narrative-director 审查和优化用于档案馆文物"古老辉光"视觉效果使用的着色器代码。
+**预期：** Agent 拒绝评估着色器代码，并重定向到适当的引擎专家（godot-gdscript-specialist 或等效的着色器专家）。
+**断言：**
+- [ ] 不做任何关于着色器代码或视觉实现的约束性决定
+- [ ] 明确命名适当的引擎或着色器专家为正确的处理者
+- [ ] 可以指出效果应传达的预期叙事氛围（例如，"应感觉古老而神圣，而非技术性"），但推迟所有技术视觉实现
+
+### 用例 3：Gate 裁决 — 正确的词汇
+**场景：** 提交角色"Aldric Vorne"的新背景故事文档。该文档说明Aldric出生于150年前的首都，并亲眼目睹了大崩溃。然而，已建立的世界圣经说明Aldric出生于大崩溃后50年的一个省镇，而非首都。请求标记为 ND-CONSISTENCY。
+**预期：** 返回 `ND-CONSISTENCY: INCONSISTENT`，并具体引用两个矛盾事实：出生时间（150年前 vs. 崩溃后50年）和出生地点（首都 vs. 省镇）。
+**断言：**
+- [ ] 裁决正好是 CONSISTENT / INCONSISTENT 之一 — 非自由格式文本
+- [ ] 裁决标记格式为 `ND-CONSISTENCY: INCONSISTENT`
+- [ ] 理由具体引用两个矛盾，而非仅仅是"不符合背景"
+- [ ] 引用已建立事实的权威来源（世界圣经）
+
+### 用例 4：冲突升级 — 正确的上级
+**场景：** 作家在其最新对话中确定古代文明"只以歌唱交流"。世界构建者的现有背景条目描述同一文明通过书面字形交流。两者都在叙事领域内，两位创作者对哪个是正典存在分歧。
+**预期：** narrative-director 在其领域内做出约束性的正典决定。他们不需要为内部叙事冲突升级到更高级别的权威 — 这在其声明的领域权限内。他们发布裁决（例如，"字形书写是正典的主要交流方式；歌唱可能是仪式/典礼性的"），并指导作家和世界构建者将其工作与裁决对齐。
+**断言：**
+- [ ] 做出约束性的正典决定 — 不将此内部叙事冲突推迟给 creative-director
+- [ ] 决定明确陈述，并为双方提供和解路径
+- [ ] 指导双方（作家和世界构建者）更新各自的文档以对齐
+- [ ] 以可添加到世界圣经作为正典事实的方式记录决定
+
+### 用例 5：上下文传递 — 使用提供的上下文
+**场景：** Agent 接收一个包含三个现有背景文档的 gate 上下文块：世界圣经（建立大崩溃时间线和原因）、角色注册表（列出正典角色年龄、起源和效忠）、派系文档（描述沉没档案馆守护者）。提交一个引入先前未注册角色的新故事章节。
+**预期：** 评估将新角色与角色注册表交叉引用（无冲突），根据世界圣经检查章节的时间线引用，并根据派系文档评估章节对档案馆守护者的描绘。在评估中使用所有三个提供文档中的具体事实。
+**断言：**
+- [ ] 将新角色与提供的角色注册表交叉引用
+- [ ] 根据提供的世界圣经事实检查时间线引用
+- [ ] 根据提供的派系文档评估派系描绘
+- [ ] 不生成通用的叙事反馈 — 所有断言都可追溯到提供的文档
 
 ---
 
-## Coverage Notes
-- Dialogue quality review (distinct from world-building consistency) is not covered — a dedicated case should be added.
-- Multi-document consistency check across a full chapter set is not covered — deferred to /review-all-gdds integration.
-- Narrative impact of mechanical changes (e.g., a game mechanic that undermines story tension) requires coordination with game-designer and is not covered here.
-- Character arc review (progression, motivation coherence over time) is not covered.
+## 协议合规性
+
+- [ ] 仅使用 CONSISTENT / INCONSISTENT 词汇返回裁决
+- [ ] 保持在声明的叙事领域内
+- [ ] 为内部叙事冲突做出约束性决定，无需不必要的升级
+- [ ] 在输出中使用 gate ID（例如 `ND-CONSISTENCY: INCONSISTENT`），而非内嵌散文裁决
+- [ ] 不做约束性的视觉设计、技术或制作决策
+
+---
+
+## 覆盖范围说明
+- 对话质量审查（与世界构建一致性不同）未覆盖 — 应添加专用用例。
+- 跨完整章节集的多文档一致性检查未覆盖 — 推迟到 /review-all-gdds 集成。
+- 机械变化的叙事影响（例如，破坏故事张力的游戏机制）需要与 game-designer 协调，此处未覆盖。
+- 角色弧审查（进展、动机随时间的一致性）未覆盖。

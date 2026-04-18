@@ -1,6 +1,6 @@
 ---
 name: smoke-check
-description: "Run the critical path smoke test gate before QA hand-off. Executes the automated test suite, verifies core functionality, and produces a PASS/FAIL report. Run after a sprint's stories are implemented and before manual QA begins. A failed smoke check means the build is not ready for QA."
+description: "在 QA 交接前运行关键路径 Smoke 测试 Gate。执行自动化测试套件，验证核心功能，并生成 PASS/FAIL 报告。在 Sprint 的 Stories 实现后、手动 QA 开始前运行。失败的 Smoke check 意味着构建尚未准备好进行 QA。"
 argument-hint: "[sprint | quick | --platform pc|console|mobile|all]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Bash, Write, AskUserQuestion
@@ -8,180 +8,175 @@ allowed-tools: Read, Glob, Grep, Bash, Write, AskUserQuestion
 
 # Smoke Check
 
-This skill is the gate between "implementation done" and "ready for QA
-hand-off". It runs the automated test suite, checks for test coverage gaps,
-batch-verifies critical paths with the developer, and produces a PASS/FAIL
-report.
+此 Skill 是"实现完成"和"准备好进行 QA
+交接"之间的 Gate。它运行自动化测试套件，检查测试覆盖缺口，
+与开发者批量验证关键路径，并生成 PASS/FAIL
+报告。
 
-The rule is simple: **a build that fails smoke check does not go to QA.**
-Handing a broken build to QA wastes their time and demoralises the team.
+规则很简单：**失败 Smoke check 的构建不会交给 QA。**
+将损坏的构建交给 QA 会浪费他们的时间并使团队士气低落。
 
-**Output:** `production/qa/smoke-[date].md`
-
----
-
-## Parse Arguments
-
-Arguments can be combined: `/smoke-check sprint --platform console`
-
-**Base mode** (first argument, default: `sprint`):
-- `sprint` — full smoke check against the current sprint's stories
-- `quick` — skip coverage scan (Phase 3) and Batch 3; use for rapid re-checks
-
-**Platform flag** (`--platform`, default: none):
-- `--platform pc` — add PC-specific checks (keyboard, mouse, windowed mode)
-- `--platform console` — add console-specific checks (gamepad, TV safe zones,
-  platform certification requirements)
-- `--platform mobile` — add mobile-specific checks (touch, portrait/landscape,
-  battery/thermal behaviour)
-- `--platform all` — add all platform variants; output per-platform verdict table
-
-If `--platform` is provided, Phase 4 adds platform-specific batches and
-Phase 5 outputs a per-platform verdict table in addition to the overall verdict.
+**输出：** `production/qa/smoke-[date].md`
 
 ---
 
-## Phase 1: Detect Test Setup
+## 解析参数
 
-Before running anything, understand the environment:
+参数可以组合：`/smoke-check sprint --platform console`
 
-1. **Test framework check**: verify `tests/` directory exists.
-   If it does not: "No test directory found at `tests/`. Run `/test-setup`
-   to scaffold the testing infrastructure, or create the directory manually
-   if tests live elsewhere." Then stop.
+**基础模式**（第一个参数，默认：`sprint`）：
+- `sprint` —— 针对当前 Sprint Stories 的完整 Smoke check
+- `quick` —— 跳过覆盖扫描（阶段 3）和批次 3；用于快速重新检查
 
-2. **CI check**: check whether `.github/workflows/` contains a workflow file
-   referencing tests. Note in the report whether CI is configured.
+**平台标志**（`--platform`，默认：无）：
+- `--platform pc` —— 添加 PC 特定检查（键盘、鼠标、窗口模式）
+- `--platform console` —— 添加主机特定检查（手柄、电视安全区、
+  平台认证要求）
+- `--platform mobile` —— 添加移动端特定检查（触摸、竖屏/横屏、
+  电池/发热行为）
+- `--platform all` —— 添加所有平台变体；输出每个平台的裁决表
 
-3. **Engine detection**: read `.claude/docs/technical-preferences.md` and
-   extract the `Engine:` value. Store this for test command selection in
-   Phase 2.
-
-4. **Smoke test list**: check whether `production/qa/smoke-tests.md` or
-   `tests/smoke/` exists. If a smoke test list is found, load it for use in
-   Phase 4. If neither exists, smoke tests will be drawn from the current QA
-   plan (Phase 4 fallback).
-
-5. **QA plan check**: glob `production/qa/qa-plan-*.md` and take the most
-   recently modified file. If found, note the path — it will be used in
-   Phase 3 and Phase 4. If not found, note: "No QA plan found. Run
-   `/qa-plan sprint` before smoke-checking for best results."
-
-Report findings before proceeding: "Environment: [engine]. Test directory:
-[found / not found]. CI configured: [yes / no]. QA plan: [path / not found]."
+如果提供了 `--platform`，阶段 4 添加平台特定批次，
+阶段 5 除了总体裁决外，还输出每个平台的裁决表。
 
 ---
 
-## Phase 2: Run Automated Tests
+## 阶段 1: 检测测试设置
 
-Attempt to run the test suite via Bash. Select the command based on the engine
-detected in Phase 1:
+在运行任何内容之前，了解环境：
 
-**Godot 4:**
+1. **测试框架检查**：验证 `tests/` 目录是否存在。
+   如果不存在："No test directory found at `tests/`。Run `/test-setup`
+   to scaffold the testing infrastructure，or create the directory manually
+   if tests live elsewhere。" 然后停止。
+
+2. **CI 检查**：检查 `.github/workflows/` 是否包含引用测试的工作流文件。
+   在报告中注明是否配置了 CI。
+
+3. **引擎检测**：读取 `.claude/docs/technical-preferences.md` 并
+   提取 `Engine:` 值。存储此值以供阶段 2 中的测试命令选择。
+
+4. **Smoke 测试列表**：检查 `production/qa/smoke-tests.md` 或
+   `tests/smoke/` 是否存在。如果找到 Smoke 测试列表，加载它以供阶段 4 使用。
+   如果都不存在，Smoke 测试将从当前 QA 计划中抽取
+   （阶段 4 回退）。
+
+5. **QA 计划检查**：glob `production/qa/qa-plan-*.md` 并获取最新
+   修改的文件。如果找到，记录路径 —— 它将在阶段 3 和阶段 4 中使用。
+   如果未找到，记录："No QA plan found。Run
+   `/qa-plan sprint` before smoke-checking for best results。"
+
+在继续前报告发现："Environment: [engine]。Test directory:
+[found / not found]。CI configured: [yes / no]。QA plan: [path / not found]。"
+
+---
+
+## 阶段 2: 运行自动化测试
+
+尝试通过 Bash 运行测试套件。根据阶段 1 检测到的引擎选择命令：
+
+**Godot 4：**
 ```bash
 godot --headless --script tests/gdunit4_runner.gd 2>&1
 ```
-If the GDUnit4 runner script does not exist at that path, try:
+如果该路径不存在 GDUnit4 runner 脚本，尝试：
 ```bash
 godot --headless -s addons/gdunit4/GdUnitRunner.gd 2>&1
 ```
-If neither path exists, note: "GDUnit4 runner not found — confirm the runner
-path for your test framework."
+如果两个路径都不存在，记录："GDUnit4 runner not found — confirm the runner
+path for your test framework。"
 
-**Unity:**
-Unity tests require the editor and cannot be run headlessly via shell in most
-environments. Check for recent test result artifacts:
+**Unity：**
+Unity 测试需要编辑器，在大多数环境中无法通过 shell 无头运行。
+检查最近的测试结果产物：
 ```bash
 ls -t test-results/ 2>/dev/null | head -5
 ```
-If test result files exist (XML or JSON), read the most recent one and parse
-PASS/FAIL counts. If no artifacts exist: "Unity tests must be run from the
-editor or CI pipeline. Please confirm test status manually before proceeding."
+如果存在测试结果文件（XML 或 JSON），读取最新的一个并解析
+PASS/FAIL 计数。如果没有产物："Unity tests must be run from the
+editor or CI pipeline。Please confirm test status manually before proceeding。"
 
-**Unreal Engine:**
+**Unreal Engine：**
 ```bash
 ls -t Saved/Logs/ 2>/dev/null | grep -i "test\|automation" | head -5
 ```
-If no matching log found: "UE automation tests must be run via the Session
-Frontend or CI pipeline. Please confirm test status manually."
+如果未找到匹配的日志："UE automation tests must be run via the Session
+Frontend or CI pipeline。Please confirm test status manually。"
 
-**Unknown engine / not configured:**
-"Engine not configured in `.claude/docs/technical-preferences.md`. Run
-`/setup-engine` to specify the engine, then re-run `/smoke-check`."
+**未知引擎 / 未配置：**
+"Engine not configured in `.claude/docs/technical-preferences.md`。Run
+`/setup-engine` to specify the engine，then re-run `/smoke-check`。"
 
-**If the test runner is not available in this environment** (engine binary not
-on PATH, runner script not found, etc.), report clearly:
+**如果此环境中测试运行器不可用**（引擎二进制文件不在 PATH 上，
+runner 脚本未找到等），清楚地报告：
 
-"Automated tests could not be executed — engine binary not found on PATH.
-Status will be recorded as NOT RUN. Confirm test results from your local IDE
-or CI pipeline. Unconfirmed NOT RUN is treated as PASS WITH WARNINGS, not
-FAIL — the developer must manually confirm results."
+"Automated tests could not be executed — engine binary not found on PATH。
+Status will be recorded as NOT RUN。Confirm test results from your local IDE
+or CI pipeline。Unconfirmed NOT RUN is treated as PASS WITH WARNINGS，not
+FAIL — the developer must manually confirm results。"
 
-Do not treat NOT RUN as an automatic FAIL. Record it as a warning. The
-developer's manual confirmation in Phase 4 can resolve it.
+不要将 NOT RUN 视为自动 FAIL。将其记录为警告。开发者
+在阶段 4 的手动确认可以解决它。
 
-Parse runner output and extract:
-- Total tests run
-- Passing count
-- Failing count
-- Names of any failing tests (up to 10; if more, note the count)
-- Any crash or error output from the runner itself
+解析 runner 输出并提取：
+- 运行总测试数
+- 通过计数
+- 失败计数
+- 任何失败测试的名称（最多 10 个；如果更多，记录计数）
+- runner 本身的任何崩溃或错误输出
 
 ---
 
-## Phase 3: Check Test Coverage
+## 阶段 3: 检查测试覆盖
 
-Draw the story list from, in priority order:
-1. The QA plan found in Phase 1 (its Test Summary table lists expected test
-   file paths per story)
-2. The current sprint plan from `production/sprints/` (most recently modified
-   file)
-3. If the `quick` argument was passed, skip this phase entirely and note:
+按优先顺序从以下获取 Story 列表：
+1. 阶段 1 中找到的 QA 计划（其测试摘要表列出每个 Story 的预期测试
+   文件路径）
+2. `production/sprints/` 中的当前 Sprint 计划（最新修改的文件）
+3. 如果传入了 `quick` 参数，完全跳过此阶段并注明：
    "Coverage scan skipped — run `/smoke-check sprint` for full coverage
-   analysis."
+   analysis。"
 
-For each story in scope:
+对于范围内的每个 Story：
 
-1. Extract the system slug from the story's file path
-   (e.g., `production/epics/combat/story-001.md` → `combat`)
-2. Glob `tests/unit/[system]/` and `tests/integration/[system]/` for files
-   whose name contains the story slug or a closely related term
-3. Check the story file itself for a `Test file:` header field or a
-   "Test Evidence" section
+1. 从 Story 的文件路径提取系统 slug
+   （例如 `production/epics/combat/story-001.md` → `combat`）
+2. Glob `tests/unit/[system]/` 和 `tests/integration/[system]/` 查找名称包含
+   Story slug 或密切相关术语的文件
+3. 检查 Story 文件本身是否有 `Test file:` 标题字段或
+   "Test Evidence" 章节
 
-Assign a coverage status to each story:
+为每个 Story 分配覆盖状态：
 
-| Status | Meaning |
+| 状态 | 含义 |
 |--------|---------|
-| **COVERED** | A test file was found matching this story's system and scope |
-| **MANUAL** | Story type is Visual/Feel or UI; a test evidence document was found |
-| **MISSING** | Logic or Integration story with no matching test file |
-| **EXPECTED** | Config/Data story — no test file required; spot-check is sufficient |
-| **UNKNOWN** | Story file missing or unreadable |
+| **COVERED** | 找到匹配此 Story 系统和范围的测试文件 |
+| **MANUAL** | Story 类型是视觉/感觉或 UI；找到测试证据文档 |
+| **MISSING** | 逻辑或集成 Story 无匹配测试文件 |
+| **EXPECTED** | 配置/数据 Story —— 不需要测试文件；抽查即可 |
+| **UNKNOWN** | Story 文件缺失或无法读取 |
 
-MISSING entries are advisory gaps. They do not cause a FAIL verdict but must
-appear prominently in the report and must be resolved before `/story-done` can
-fully close those stories.
+MISSING 条目是建议性缺口。它们不会导致 FAIL 裁决，但必须
+在报告中突出显示，并且必须在 `/story-done` 可以完全关闭这些 Stories 之前解决。
 
 ---
 
-## Phase 4: Run Manual Smoke Checks
+## 阶段 4: 运行手动 Smoke 检查
 
-Draw the smoke test checklist from, in priority order:
-1. The QA plan's "Smoke Test Scope" section (if QA plan was found in Phase 1)
-2. `production/qa/smoke-tests.md` (if it exists)
-3. `tests/smoke/` directory contents (if it exists)
-4. The standard fallback list below (used only when none of the above exist)
+按优先顺序从以下获取 Smoke 测试检查清单：
+1. QA 计划的 "Smoke Test Scope" 章节（如果阶段 1 中找到了 QA 计划）
+2. `production/qa/smoke-tests.md`（如果存在）
+3. `tests/smoke/` 目录内容（如果存在）
+4. 以下标准回退列表（仅在以上都不存在时使用）
 
-Tailor batches 2 and 3 to the actual systems identified from the sprint or QA
-plan. Replace bracketed placeholders with real mechanic names from the current
-sprint's stories.
+根据 Sprint 或 QA 计划中确定的实际系统定制批次 2 和 3。
+用当前 Sprint Stories 中的真实机制名称替换括号占位符。
 
-Use `AskUserQuestion` to batch-verify. Keep to at most 3 calls.
+使用 `AskUserQuestion` 进行批量验证。最多 3 次调用。
 
-**Batch 1 — Core stability (always run):**
+**批次 1 —— 核心稳定性（始终运行）：**
 ```
-question: "Smoke check — Batch 1: Core stability. Please verify each:"
+question: "Smoke check — Batch 1: Core stability。Please verify each:"
 options:
   - "Game launches to main menu without crash — PASS"
   - "Game launches to main menu without crash — FAIL"
@@ -191,7 +186,7 @@ options:
   - "Main menu responds to all inputs — FAIL"
 ```
 
-**Batch 2 — Sprint mechanic and regression (always run):**
+**批次 2 —— Sprint 机制和回归（始终运行）：**
 ```
 question: "Smoke check — Batch 2: This sprint's changes and regression check:"
 options:
@@ -203,7 +198,7 @@ options:
   - "Previous sprint's features — regression found: [brief description]"
 ```
 
-**Batch 3 — Data integrity and performance (run unless `quick` argument):**
+**批次 3 —— 数据完整性和性能（除非传入 `quick`，否则运行）：**
 ```
 question: "Smoke check — Batch 3: Data integrity and performance:"
 options:
@@ -215,11 +210,11 @@ options:
   - "Performance — not checked in this session"
 ```
 
-Record each response verbatim for the Phase 5 report.
+为阶段 5 的报告逐字记录每个响应。
 
-**Platform Batches** *(run only if `--platform` argument was provided)*:
+**平台批次** *（仅在传入 `--platform` 参数时运行）*：
 
-**PC platform** (`--platform pc` or `--platform all`):
+**PC 平台**（`--platform pc` 或 `--platform all`）：
 ```
 question: "Smoke check — PC Platform: Verify platform-specific behaviour:"
 options:
@@ -233,7 +228,7 @@ options:
   - "Resolution changes — FAIL: [describe issue]"
 ```
 
-**Console platform** (`--platform console` or `--platform all`):
+**主机平台**（`--platform console` 或 `--platform all`）：
 ```
 question: "Smoke check — Console Platform: Verify platform-specific behaviour:"
 options:
@@ -247,7 +242,7 @@ options:
   - "Cold start — FAIL: [describe issue]"
 ```
 
-**Mobile platform** (`--platform mobile` or `--platform all`):
+**移动平台**（`--platform mobile` 或 `--platform all`）：
 ```
 question: "Smoke check — Mobile Platform: Verify platform-specific behaviour:"
 options:
@@ -263,23 +258,23 @@ options:
 
 ---
 
-## Phase 5: Generate Report
+## 阶段 5: 生成报告
 
-Assemble the full smoke check report:
+组装完整的 Smoke check 报告：
 
 ````markdown
-## Smoke Check Report
-**Date**: [date]
+## Smoke Check 报告
+**日期**: [date]
 **Sprint**: [sprint name / number, or "Not identified"]
-**Engine**: [engine]
-**QA Plan**: [path, or "Not found — run /qa-plan first"]
-**Argument**: [sprint | quick | blank]
+**引擎**: [engine]
+**QA 计划**: [path, or "Not found — run /qa-plan first"]
+**参数**: [sprint | quick | blank]
 
 ---
 
-### Automated Tests
+### 自动化测试
 
-**Status**: [PASS ([N] tests, [N] passing) | FAIL ([N] failures) |
+**状态**: [PASS ([N] tests, [N] passing) | FAIL ([N] failures) |
 NOT RUN ([reason])]
 
 [If FAIL, list failing tests:]
@@ -287,11 +282,11 @@ NOT RUN ([reason])]
 
 [If NOT RUN:]
 "Manual confirmation required: did tests pass in your local IDE or CI? This
-will determine whether the automated test row contributes to a FAIL verdict."
+will determine whether the automated test row contributes to a FAIL verdict。"
 
 ---
 
-### Test Coverage
+### 测试覆盖
 
 | Story | Type | Test File | Coverage Status |
 |-------|------|-----------|----------------|
@@ -300,11 +295,11 @@ will determine whether the automated test row contributes to a FAIL verdict."
 | [title] | Logic | — | MISSING ⚠ |
 | [title] | Config/Data | — | EXPECTED |
 
-**Summary**: [N] covered, [N] manual, [N] missing, [N] expected.
+**Summary**: [N] covered, [N] manual, [N] missing, [N] expected。
 
 ---
 
-### Manual Smoke Checks
+### 手动 Smoke 检查
 
 - [x] Game launches without crash — PASS
 - [x] New game starts — PASS
@@ -315,103 +310,99 @@ will determine whether the automated test row contributes to a FAIL verdict."
 
 ---
 
-### Missing Test Evidence
+### 缺失的测试证据
 
-Stories that must have test evidence before they can be marked COMPLETE via
-`/story-done`:
+必须通过 `/story-done` 标记为 COMPLETE 之前具有测试证据的 Stories：
 
-- **[story title]** (`[path]`) — Logic story has no test file.
-  Expected location: `tests/unit/[system]/[story-slug]_test.[ext]`
+- **[story title]** (`[path]`) —— 逻辑 Story 没有测试文件。
+  预期位置: `tests/unit/[system]/[story-slug]_test.[ext]`
 
-[If none:] "All Logic and Integration stories have test coverage."
+[如果没有:] "All Logic and Integration stories have test coverage。"
 
 ---
 
-### Platform-Specific Results *(only if `--platform` was provided)*
+### 平台特定结果 *（仅当传入 `--platform` 时）*
 
-| Platform | Checks Run | Passed | Failed | Platform Verdict |
-|----------|-----------|--------|--------|-----------------|
+| 平台 | 检查运行 | 通过 | 失败 | 平台裁决 |
+|------|---------|------|------|---------|
 | PC | [N] | [N] | [N] | PASS / FAIL |
 | Console | [N] | [N] | [N] | PASS / FAIL |
 | Mobile | [N] | [N] | [N] | PASS / FAIL |
 
-**Platform notes**: [any platform-specific observations not captured in pass/fail]
+**平台备注**: [任何未在 pass/fail 中捕获的平台特定观察]
 
-Any platform with one or more FAIL checks contributes to the overall FAIL verdict.
+任何平台有一个或多个 FAIL 检查都会贡献给总体 FAIL 裁决。
 
 ---
 
-### Verdict: [PASS | PASS WITH WARNINGS | FAIL]
+### 裁决: [PASS | PASS WITH WARNINGS | FAIL]
 
-[Verdict rules — first matching rule wins:]
+[裁决规则 —— 第一个匹配的规则获胜：]
 
-**FAIL** if ANY of:
-- Automated test suite ran and reported one or more test failures
-- Any Batch 1 (core stability) check returned FAIL
-- Any Batch 2 (primary sprint mechanic or regression check) returned FAIL
+**FAIL** 如果有以下任何一项：
+- 自动化测试套件运行并报告一个或多个测试失败
+- 任何批次 1（核心稳定性）检查返回 FAIL
+- 任何批次 2（主要 Sprint 机制或回归检查）返回 FAIL
 
-**PASS WITH WARNINGS** if ALL of:
-- Automated tests PASS or NOT RUN (developer has not yet confirmed)
-- All Batch 1 and Batch 2 smoke checks PASS
-- One or more Logic/Integration stories have MISSING test evidence
+**PASS WITH WARNINGS** 如果全部满足：
+- 自动化测试 PASS 或 NOT RUN（开发者尚未确认）
+- 所有批次 1 和批次 2 Smoke 检查 PASS
+- 一个或多个逻辑/集成 Story 有 MISSING 测试证据
 
-**PASS** if ALL of:
-- Automated tests PASS
-- All smoke checks in all batches PASS or N/A
-- No MISSING test evidence entries
+**PASS** 如果全部满足：
+- 自动化测试 PASS
+- 所有批次中所有 Smoke 检查 PASS 或 N/A
+- 没有 MISSING 测试证据条目
 ````
 
 ---
 
-## Phase 6: Write and Gate
+## 阶段 6: 写入和 Gate
 
-Present the full report in conversation, then ask:
+在对话中展示完整报告，然后询问：
 
-"May I write this smoke check report to `production/qa/smoke-[date].md`?"
+"我可以将此 Smoke check 报告写入 `production/qa/smoke-[date].md` 吗？"
 
-Write only after approval.
+仅在批准后写入。
 
-After writing, deliver the gate verdict:
+写入后，交付 gate 裁决：
 
-**If verdict is FAIL:**
+**如果裁决是 FAIL：**
 
-"The smoke check failed. Do not hand off to QA until these failures are
-resolved:
+"Smoke check 失败。在解决这些失败之前不要交给 QA：
 
-[List each failing automated test or smoke check with a one-line description]
+[列出每个失败的自动化测试或 Smoke 检查及一行描述]
 
-Fix the failures and run `/smoke-check` again to re-gate before QA hand-off."
+修复失败并再次运行 `/smoke-check` 以在 QA 交接前重新 gate。"
 
-**If verdict is PASS WITH WARNINGS:**
+**如果裁决是 PASS WITH WARNINGS：**
 
-"Smoke check passed with warnings. The build is ready for manual QA.
+"Smoke check 通过但有警告。构建已准备好进行手动 QA。
 
-Advisory items to resolve before running `/story-done` on affected stories:
+在受影响 Stories 上运行 `/story-done` 之前需要解决的建议项：
 [list MISSING test evidence entries]
 
-QA hand-off: share `production/qa/qa-plan-[sprint].md` with the qa-tester
-agent to begin manual verification."
+QA 交接：与 qa-tester agent 分享 `production/qa/qa-plan-[sprint].md` 以开始手动验证。"
 
-**If verdict is PASS:**
+**如果裁决是 PASS：**
 
-"Smoke check passed cleanly. The build is ready for manual QA.
+"Smoke check 干净通过。构建已准备好进行手动 QA。
 
-QA hand-off: share `production/qa/qa-plan-[sprint].md` with the qa-tester
-agent to begin manual verification."
+QA 交接：与 qa-tester agent 分享 `production/qa/qa-plan-[sprint].md` 以开始手动验证。"
 
 ---
 
-## Collaborative Protocol
+## 协作协议
 
-- **Never treat NOT RUN as automatic FAIL** — record it as NOT RUN and let
-  the developer confirm status manually. Unconfirmed NOT RUN contributes to
-  PASS WITH WARNINGS, not FAIL.
-- **Never auto-fix failures** — report them and state what must be resolved.
-  Do not attempt to edit source code or test files.
-- **PASS WITH WARNINGS does not block QA hand-off** — it records advisory
-  gaps for `/story-done` to follow up on.
-- **`quick` argument** skips Phase 3 (coverage scan) and Phase 4 Batch 3.
-  Use it for rapid re-checks after fixing a specific failure.
-- Use `AskUserQuestion` for all manual smoke check verification.
-- **Never write the report without asking** — Phase 6 requires explicit
-  approval before any file is created.
+- **Never treat NOT RUN as automatic FAIL** —— 将其记录为 NOT RUN 并让
+  开发者手动确认状态。未确认的 NOT RUN 贡献给
+  PASS WITH WARNINGS，不是 FAIL。
+- **Never auto-fix failures** —— 报告它们并说明必须解决什么。
+  不要尝试编辑源代码或测试文件。
+- **PASS WITH WARNINGS does not block QA hand-off** —— 它记录建议性
+  缺口供 `/story-done` 跟进。
+- **`quick` argument** 跳过阶段 3（覆盖扫描）和阶段 4 批次 3。
+  用于修复特定失败后的快速重新检查。
+- 对所有手动 Smoke 检查验证使用 `AskUserQuestion`。
+- **Never write the report without asking** —— 阶段 6 在创建任何文件前需要明确
+  批准。

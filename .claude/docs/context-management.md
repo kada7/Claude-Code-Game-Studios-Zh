@@ -1,29 +1,25 @@
-# Context Management
+# 上下文管理
 
-Context is the most critical resource in a Claude Code session. Manage it actively.
+上下文是 Claude Code 会话中最重要的资源。请主动管理它。
 
-## File-Backed State (Primary Strategy)
+## 文件化状态（主要策略）
 
-**The file is the memory, not the conversation.** Conversations are ephemeral and
-will be compacted or lost. Files on disk persist across compactions and session crashes.
+**文件即记忆，而非对话。** 对话是临时的，会被压缩或丢失。磁盘上的文件在压缩和会话崩溃后依然存在。
 
-### Session State File
+### 会话状态文件
 
-Maintain `production/session-state/active.md` as a living checkpoint. Update it
-after each significant milestone:
+维护 `production/session-state/active.md` 作为一个动态检查点。在每个重要里程碑之后更新它：
 
-- Design section approved and written to file
-- Architecture decision made
-- Implementation milestone reached
-- Test results obtained
+- 设计部分已批准并写入文件
+- 架构决策已确定
+- 实现里程碑已达成
+- 测试结果已获得
 
-The state file should contain: current task, progress checklist, key decisions
-made, files being worked on, and open questions.
+状态文件应包含：当前任务、进度清单、已做出的关键决策、正在处理的文件以及待解决问题。
 
-### Status Line Block (Production+ only)
+### 状态行块（仅 Production+ 阶段）
 
-When the project is in Production, Polish, or Release stage, include a structured
-status block in `active.md` that the status line script can parse:
+当项目处于 Production、Polish 或 Release 阶段时，在 `active.md` 中包含一个结构化状态块，供状态行脚本解析：
 
 ```markdown
 <!-- STATUS -->
@@ -33,75 +29,68 @@ Task: Implement hitbox detection
 <!-- /STATUS -->
 ```
 
-- All three fields (Epic, Feature, Task) are optional — include only what applies
-- Update this block when switching focus areas
-- The status line displays it as a breadcrumb: `Combat System > Melee Combat > Hitboxes`
-- Remove or empty the block when no active work focus exists
+- 所有三个字段（Epic、Feature、Task）都是可选的 —— 仅包含适用的字段
+- 切换焦点区域时更新此块
+- 状态行将其显示为面包屑导航：`Combat System > Melee Combat > Hitboxes`
+1. 当没有活动工作焦点时，删除或清空此块
 
-After any disruption (compaction, crash, `/clear`), read the state file first.
+任何中断（压缩、崩溃、`/clear`）后，首先读取状态文件。
 
-### Incremental File Writing
+### 增量文件写入
 
-When creating multi-section documents (design docs, architecture docs, lore entries):
+创建多节文档（设计文档、架构文档、背景故事条目）时：
 
-1. Create the file immediately with a skeleton (all section headers, empty bodies)
-2. Discuss and draft one section at a time in conversation
-3. Write each section to the file as soon as it's approved
-4. Update the session state file after each section
-5. After writing a section, previous discussion about that section can be safely
-   compacted — the decisions are in the file
+1. 立即创建带有骨架的文件（所有节标题，内容为空）
+2. 在对话中一次讨论和起草一节
+3. 每个节一经批准就立即写入文件
+4. 每写完一节后更新会话状态文件
+5. 写入一节后，有关该节的先前讨论可以安全压缩 —— 决策已保存在文件中
 
-This keeps the context window holding only the *current* section's discussion
-(~3-5k tokens) instead of the entire document's conversation history (~30-50k tokens).
+这将使上下文窗口仅保留*当前*节的讨论（约 3-5k token）而不是整个文档的对话历史（约 30-50k token）。
 
-## Proactive Compaction
+## 主动压缩
 
-- **Compact proactively** at ~60-70% context usage, not reactively at the limit
-- **Use `/clear`** between unrelated tasks, or after 2+ failed correction attempts
-- **Natural compaction points:** after writing a section to file, after committing,
-  after completing a task, before starting a new topic
-- **Focused compaction:** `/compact Focus on [current task] — sections 1-3 are
-  written to file, working on section 4`
+- **主动压缩**在上下文使用率达到 60-70% 时进行，而不是达到限制时才被动反应
+- **使用 `/clear`** 在不相关的任务之间，或在 2 次以上纠正尝试失败后
+- **自然压缩点：** 将一节写入文件后、提交后、完成任务后、开始新主题前
+- **聚焦压缩：** `/compact 专注于 [当前任务] —— 第 1-3 节已写入文件，正处理第 4 节`
 
-## Context Budgets by Task Type
+## 按任务类型的上下文预算
 
-- Light (read/review): ~3k tokens startup
-- Medium (implement feature): ~8k tokens
-- Heavy (multi-system refactor): ~15k tokens
+- 轻度（阅读/审阅）：约 3k token 启动
+- 中度（实现功能）：约 8k token  
+- 重度（多系统重构）：约 15k token
 
-## Subagent Delegation
+## Subagent 委派
 
-Use subagents for research and exploration to keep the main session clean.
-Subagents run in their own context window and return only summaries:
+使用 subagent 进行研究和探索，以保持主会话的简洁。
+Subagent 在其独立的上下文窗口中运行，仅返回摘要：
 
-- **Use subagents** when investigating across multiple files, exploring unfamiliar code,
-  or doing research that would consume >5k tokens of file reads
-- **Use direct reads** when you know exactly which 1-2 files to check
-- Subagents do not inherit conversation history — provide full context in the prompt
+- **使用 subagent** 当需要跨多个文件调查、探索不熟悉的代码，或进行需要读取超过 5k token 文件的研究时
+- **直接读取** 当确切知道要检查的 1-2 个文件时
+- Subagent 不继承对话历史 —— 在提示中提供完整的上下文
 
-## Compaction Instructions
+## 压缩指令
 
-When context is compacted, preserve the following in the summary:
+当上下文被压缩时，在摘要中保留以下内容：
 
-- Reference to `production/session-state/active.md` (read it to recover state)
-- List of files modified in this session and their purpose
-- Any architectural decisions made and their rationale
-- Active sprint tasks and their current status
-- Agent invocations and their outcomes (success/failure/blocked)
-- Test results (pass/fail counts, specific failures)
-- Unresolved blockers or questions awaiting user input
-- The current task and what step we are on
-- Which sections of the current document are written to file vs. still in progress
+- 对 `production/session-state/active.md` 的引用（读取它以恢复状态）
+- 此会话中修改的文件列表及其用途
+- 任何已做出的架构决策及其原理
+- 活动 sprint 任务及其当前状态
+- Agent 调用及其结果（成功/失败/阻塞）
+- 测试结果（通过/失败计数，特定失败）
+- 未解决的阻塞问题或等待用户输入的问题
+- 当前任务及我们所在的步骤
+- 当前文档的哪些节已写入文件 vs 仍在进行中
 
-**After compaction:** Read `production/session-state/active.md` and any files being
-actively worked on to recover full context. The files contain the decisions; the
-conversation history is secondary.
+**压缩后：** 读取 `production/session-state/active.md` 和任何正在积极处理的文件以恢复完整上下文。文件包含决策；对话历史是次要的。
 
-## Recovery After Session Crash
+## 会话崩溃后的恢复
 
-If a session dies ("prompt too long") or you start a new session to continue work:
+如果会话终止（"prompt too long"）或者你开始新会话以继续工作：
 
-1. The `session-start.sh` hook will detect and preview `active.md` automatically
-2. Read the full state file for context
-3. Read the partially-completed file(s) listed in the state
-4. Continue from the next incomplete section or task
+1. `session-start.sh` 钩子将自动检测并预览 `active.md`
+2. 读取完整的状态文件以获取上下文
+3. 读取状态中列出的部分完成文件
+4. 从未完成的部分或任务继续

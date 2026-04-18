@@ -1,9 +1,8 @@
-# settings.local.json Template
+# settings.local.json 模板
 
-Create `.claude/settings.local.json` for personal overrides that should NOT
-be committed to version control. Add it to `.gitignore`.
+创建 `.claude/settings.local.json` 用于不应提交到版本控制的个人覆盖设置。将其添加到 `.gitignore`。
 
-## Example settings.local.json
+## 示例 settings.local.json
 
 ```json
 {
@@ -23,25 +22,22 @@ be committed to version control. Add it to `.gitignore`.
 }
 ```
 
-## Permission Modes
+## 权限模式
 
-Claude Code supports different permission modes. Recommended for game dev:
+Claude Code 支持不同的权限模式。游戏开发推荐：
 
-### During Development (Default)
-Use **normal mode** — Claude asks before running most commands. This is safest
-for production code.
+### 开发期间（默认）
+使用**正常模式** — Claude 在运行大多数命令前会询问。这对生产代码最安全。
 
-### During Prototyping
-Use **auto-accept mode** with limited scope — faster iteration on throwaway code.
-Only use this when working in `prototypes/` directory.
+### 原型开发期间
+使用**自动接受模式**，限制范围 — 在废弃代码上迭代更快。仅在 `prototypes/` 目录下工作时使用。
 
-### During Code Review
-Use **read-only** permissions — Claude can read and search but not modify files.
+### 代码审查期间
+使用**只读**权限 — Claude 可以读取和搜索但不能修改文件。
 
-## Customizing Hooks Locally
+## 本地自定义钩子
 
-You can add personal hooks in `settings.local.json` that extend (not override)
-the project hooks. For example, adding a notification when builds complete:
+您可以在 `settings.local.json` 中添加个人钩子，这些钩子扩展（不覆盖）项目钩子。例如，添加构建完成时的通知：
 
 ```json
 {

@@ -127,6 +127,10 @@ production/           # Sprint 计划, 里程碑, 发布追踪
 
 ---
 
+## 工作流示意图
+
+![](images/workflow-guide.png)
+
 ## 第 1 阶段：概念 (Phase 1: Concept)
 
 ### 本阶段发生什么

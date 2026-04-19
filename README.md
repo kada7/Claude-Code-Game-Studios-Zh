@@ -30,7 +30,7 @@
 
 独自使用 AI 进行游戏开发是非常强大的，但单个聊天会话缺乏结构。没有人能阻止你硬编码“魔术数字”、跳过设计文档或编写混乱的代码（spaghetti code）。没有 QA 环节，没有设计评审，也没有人问“这真的符合游戏的愿景吗？”
 
-**Claude Code Game Studios** 通过为你的 AI 会话提供真实工作室的结构来解决这个问题。你得到的不再是一个通用的 Assistant，而是 49 个组织在工作室层级中的专业 Agent —— 指导愿景的 Directors、负责各自领域的 Department Leads，以及进行实际工作的 Specialists。每个 Agent 都有明确的职责、升级路径和质量检查点（Quality Gates）。
+**Claude Code Game Studios** 通过为你的 AI 会话提供真实工作室的结构来解决这个问题。你得到的不再是一个通用的助手，而是 49 个组织在工作室层级中的专业 Agent —— 指导愿景的总监（Directors）、负责各自领域的部门负责人（Department Leads），以及进行实际工作的专家（Specialists）。每个 Agent 都有明确的职责、升级路径和质量检查点（Quality Gates）。
 
 结果是：你仍然做出每一个决定，但现在你拥有了一个会提出正确问题、尽早发现错误，并让你的项目从最初的脑暴到发布都井井有条的团队。
 
@@ -69,22 +69,43 @@
 Agent 分为三个层级，与现实工作室的运作方式一致：
 
 ```
-Tier 1 — Directors (Opus)
+Tier 1 — 总监 Directors (Opus)
+  创意总监              技术总监              制作人
   creative-director    technical-director    producer
 
-Tier 2 — Department Leads (Sonnet)
-  game-designer        lead-programmer       art-director
-  audio-director       narrative-director    qa-lead
+Tier 2 — 部门负责人 Department Leads (Sonnet)
+  游戏设计师          主程              艺术总监
+  game-designer      lead-programmer   art-director
+
+  音频总监            叙事总监              QA负责人
+  audio-director     narrative-director    qa-lead
+
+  发布经理              本地化负责人
   release-manager      localization-lead
 
-Tier 3 — Specialists (Sonnet/Haiku)
+Tier 3 — 专家 Specialists (Sonnet/Haiku)
+  游戏玩法程序员       引擎程序员            AI程序员
   gameplay-programmer  engine-programmer     ai-programmer
+
+  网络程序员           工具程序员            UI程序员
   network-programmer   tools-programmer      ui-programmer
+
+  系统设计师           关卡设计师            经济设计师
   systems-designer     level-designer        economy-designer
+
+  技术美术             音效设计师            编剧
   technical-artist     sound-designer        writer
+
+  世界构建师           UX设计师              原型设计师
   world-builder        ux-designer           prototyper
+
+  性能分析师           运维工程师            数据分析师
   performance-analyst  devops-engineer       analytics-engineer
+
+  安全工程师           QA测试员              无障碍专家
   security-engineer    qa-tester             accessibility-specialist
+
+   live-ops设计师      社区经理
   live-ops-designer    community-manager
 ```
 

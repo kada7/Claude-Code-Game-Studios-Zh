@@ -22,8 +22,11 @@
 
 ## 中文化说明
 本项目是基于[Claude-Code-Game-Studios](https://github.com/Donchitos/Claude-Code-Game-Studios)的中文化
+
 **当前版本只是非常粗糙地进行AI翻译，未做人工校对，主要用于学习、研究原始项目**
-**请勿直接将此版本用于claude code，原始项目可正常进行中文交流及输出**
+
+**请勿直接将此版本用于claude code，原版英文项目可正常进行中文交流及输出**
+
 欢迎pull request，让这个中文版本更具实用价值。
 
 ## 为什么存在这个项目

@@ -93,8 +93,8 @@
       "opacity": 100,
       "angle": 0,
       "seed": 100003,
-      "version": 2,
-      "versionNonce": 1229356652,
+      "version": 21,
+      "versionNonce": 249362420,
       "isDeleted": false,
       "groupIds": [],
       "boundElements": [
@@ -112,17 +112,17 @@
       "roundness": {
         "type": 3
       },
-      "index": "a2",
+      "index": "a2G",
       "frameId": null,
-      "updated": 1776580670308
+      "updated": 1776666563270
     },
     {
       "type": "text",
       "id": "phase1_text",
-      "x": 120,
-      "y": 97,
-      "width": 140,
-      "height": 35,
+      "x": 173.19140625,
+      "y": 96.25,
+      "width": 33.6171875,
+      "height": 32.5,
       "text": "阶段1\n概念",
       "originalText": "阶段1\n概念",
       "fontSize": 13,
@@ -138,8 +138,8 @@
       "opacity": 100,
       "angle": 0,
       "seed": 100004,
-      "version": 2,
-      "versionNonce": 859303508,
+      "version": 21,
+      "versionNonce": 1014621812,
       "isDeleted": false,
       "groupIds": [],
       "boundElements": [],
@@ -150,7 +150,7 @@
       "index": "a3",
       "frameId": null,
       "roundness": null,
-      "updated": 1776580670308,
+      "updated": 1776666563270,
       "autoResize": true
     },
     {
@@ -169,8 +169,8 @@
       "opacity": 100,
       "angle": 0,
       "seed": 100005,
-      "version": 2,
-      "versionNonce": 792973548,
+      "version": 4,
+      "versionNonce": 854414412,
       "isDeleted": false,
       "groupIds": [],
       "boundElements": [
@@ -179,11 +179,11 @@
           "type": "text"
         },
         {
-          "id": "arrow_p1_p2",
+          "id": "arrow_p2_p3",
           "type": "arrow"
         },
         {
-          "id": "arrow_p2_p3",
+          "id": "arrow_p1_p2",
           "type": "arrow"
         }
       ],
@@ -194,15 +194,15 @@
       },
       "index": "a4",
       "frameId": null,
-      "updated": 1776580670308
+      "updated": 1776666563269
     },
     {
       "type": "text",
       "id": "phase2_text",
-      "x": 325,
-      "y": 97,
-      "width": 140,
-      "height": 35,
+      "x": 369,
+      "y": 96.25,
+      "width": 52,
+      "height": 32.5,
       "text": "阶段2\n系统设计",
       "originalText": "阶段2\n系统设计",
       "fontSize": 13,
@@ -218,8 +218,8 @@
       "opacity": 100,
       "angle": 0,
       "seed": 100006,
-      "version": 2,
-      "versionNonce": 877593556,
+      "version": 3,
+      "versionNonce": 1297410764,
       "isDeleted": false,
       "groupIds": [],
       "boundElements": [],
@@ -230,7 +230,7 @@
       "index": "a5",
       "frameId": null,
       "roundness": null,
-      "updated": 1776580670308,
+      "updated": 1776666563270,
       "autoResize": true
     },
     {
@@ -632,9 +632,9 @@
     {
       "type": "arrow",
       "id": "arrow_p1_p2",
-      "x": 282,
-      "y": 112,
-      "width": 21,
+      "x": 281.9044874221452,
+      "y": 112.16953944949094,
+      "width": 21.191025155709553,
       "height": 0,
       "strokeColor": "#64748b",
       "backgroundColor": "transparent",
@@ -645,8 +645,8 @@
       "opacity": 100,
       "angle": 0,
       "seed": 100017,
-      "version": 2,
-      "versionNonce": 388313068,
+      "version": 7,
+      "versionNonce": 1701498444,
       "isDeleted": false,
       "groupIds": [],
       "boundElements": [],
@@ -658,7 +658,7 @@
           0
         ],
         [
-          21,
+          21.191025155709553,
           0
         ]
       ],
@@ -678,15 +678,15 @@
       "index": "aG",
       "frameId": null,
       "roundness": null,
-      "updated": 1776580670308
+      "updated": 1776666563271
     },
     {
       "type": "arrow",
       "id": "arrow_p2_p3",
-      "x": 487,
-      "y": 112,
-      "width": 21,
-      "height": 0,
+      "x": 486.9044874221453,
+      "y": 112.09334297600822,
+      "width": 21.19102515570944,
+      "height": 1.4210854715202004e-14,
       "strokeColor": "#64748b",
       "backgroundColor": "transparent",
       "fillStyle": "solid",
@@ -696,8 +696,8 @@
       "opacity": 100,
       "angle": 0,
       "seed": 100018,
-      "version": 2,
-      "versionNonce": 1022825684,
+      "version": 3,
+      "versionNonce": 349808588,
       "isDeleted": false,
       "groupIds": [],
       "boundElements": [],
@@ -709,8 +709,8 @@
           0
         ],
         [
-          21,
-          0
+          21.19102515570944,
+          -1.4210854715202004e-14
         ]
       ],
       "startBinding": {
@@ -729,7 +729,7 @@
       "index": "aH",
       "frameId": null,
       "roundness": null,
-      "updated": 1776580670308
+      "updated": 1776666563271
     },
     {
       "type": "arrow",

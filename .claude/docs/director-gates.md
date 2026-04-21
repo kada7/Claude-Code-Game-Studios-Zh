@@ -19,31 +19,31 @@ Spawn `creative-director` via Task using gate **CD-PILLARS** from
 
 ---
 
-## Review Modes
+## 审查模式
 
-Review intensity controls whether director gates run. It can be set globally
-(persists across sessions) or overridden per skill run.
+审查强度控制总监门控是否运行。它可以全局设置
+（持久跨会话）或每次技能运行时覆盖。
 
-**Global config**: `production/review-mode.txt` — one word: `full`, `lean`, or `solo`.
-Set once during `/start`. Edit the file directly to change it at any time.
+**全局配置**: `production/review-mode.txt` — 一个单词：`full`、`lean` 或 `solo`。
+在 `/start` 期间设置一次。直接编辑此文件可以在任何时候更改它。
 
-**Per-run override**: any gate-using skill accepts `--review [full|lean|solo]` as an
-argument. This overrides the global config for that run only.
+**每次运行覆盖**: 任何使用门控的技能接受 `--review [full|lean|solo]` 作为
+参数。这仅在该次运行中覆盖全局配置。
 
-Examples:
+示例：
 ```
-/brainstorm space horror           → uses global mode
-/brainstorm space horror --review full   → forces full mode this run
-/architecture-decision --review solo     → skips all gates this run
+/brainstorm space horror           → 使用全局模式
+/brainstorm space horror --review full   → 此次强制使用 full 模式
+/architecture-decision --review solo     → 此次跳过所有门控
 ```
 
-| Mode | What runs | Best for |
+| 模式 | 运行内容 | 最适合 |
 |------|-----------|----------|
-| `full` | All gates active — every workflow step reviewed | Teams, learning users, or when you want thorough director feedback at every step |
-| `lean` | PHASE-GATEs only (`/gate-check`) — per-skill gates skipped | **Default** — solo devs and small teams; directors review at milestones only |
-| `solo` | No director gates anywhere | Game jams, prototypes, maximum speed |
+| `full` | 所有门控激活 — 每个工作流程步骤都经过审查 | 团队、学习用户，或当你希望在每个步骤都获得彻底的总监反馈时 |
+| `lean` | 仅 PHASE-GATEs 运行（`/gate-check`） — 每技能门控跳过 | **默认** — 单人开发和小团队；总监仅在里程碑处审查 |
+| `solo` | 任何地方都不运行总监门控 | Game jam、原型、最大速度 |
 
-**Check pattern — apply before every gate spawn:**
+**检查模式 — 在每个门控生成前应用：**
 
 ```
 Before spawning gate [GATE-ID]:
@@ -60,706 +60,668 @@ Apply the resolved mode:
 
 ---
 
-## Invocation Pattern (copy into any skill)
+## 调用模式（复制到任何技能）
 
-**MANDATORY: Resolve review mode before every gate spawn.** Never spawn a gate without checking. The resolved mode is determined once per skill run:
-1. If skill was called with `--review [mode]`, use that
-2. Else read `production/review-mode.txt`
-3. Else default to `lean`
+**必须: 在每个门控生成前解析审查模式。**永远不要在不检查的情况下生成门控。解析后的模式每次技能运行确定一次：
+1. 如果技能以 `--review [mode]` 调用，使用该模式
+2. 否则读取 `production/review-mode.txt`
+3. 否则默认为 `lean`
 
-Apply the resolved mode:
-- `solo` → **skip all gates**. Note in output: `[GATE-ID] skipped — Solo mode`
-- `lean` → **skip unless this is a PHASE-GATE** (CD-PHASE-GATE, TD-PHASE-GATE, PR-PHASE-GATE, AD-PHASE-GATE). Note: `[GATE-ID] skipped — Lean mode`
-- `full` → spawn as normal
+应用解析后的模式：
+- `solo` → **跳过所有门控**。在输出中注明：`[GATE-ID] skipped — Solo mode`
+- `lean` → **跳过除非这是PHASE-GATE**（CD-PHASE-GATE、TD-PHASE-GATE、PR-PHASE-GATE、AD-PHASE-GATE）。注明：`[GATE-ID] skipped — Lean mode`
+- `full` → 正常生成
 
 ```
-# Apply mode check, then:
+# 应用模式检查，然后：
 Spawn `[agent-name]` via Task:
-- Gate: [GATE-ID] (see .claude/docs/director-gates.md)
-- Context: [fields listed under that gate]
+- Gate: [GATE-ID] (参见 .claude/docs/director-gates.md)
+- Context: [该门控下列出的字段]
 - Await the verdict before proceeding.
 ```
 
-For parallel spawning (multiple directors at the same gate point):
+对于并行生成（同一门控点多个总监同时）：
 
 ```
-# Apply mode check for each gate first, then spawn all that survive:
+# 先对每个门控应用模式检查，然后生成所有通过的：
 Spawn all [N] agents simultaneously via Task — issue all Task calls before
 waiting for any result. Collect all verdicts before proceeding.
 ```
 
 ---
 
-## Standard Verdict Format
+## 标准裁决格式
 
-All gates return one of three verdicts. Skills must handle all three:
+所有门控返回三种裁决之一。技能必须处理全部三种：
 
-| Verdict | Meaning | Default action |
+| 裁决 | 含义 | 默认操作 |
 |---------|---------|----------------|
-| **APPROVE / READY** | No issues. Proceed. | Continue the workflow |
-| **CONCERNS [list]** | Issues present but not blocking. | Surface to user via `AskUserQuestion` — options: `Revise flagged items` / `Accept and proceed` / `Discuss further` |
-| **REJECT / NOT READY [blockers]** | Blocking issues. Do not proceed. | Surface blockers to user. Do not write files or advance stage until resolved. |
+| **APPROVE / READY** | 没有问题。继续。 | 继续工作流程 |
+| **CONCERNS [list]** | 存在问题但不阻塞。 | 通过 `AskUserQuestion` 呈现给用户 — 选项：`修订标注项` / `接受并继续` / `进一步讨论` |
+| **REJECT / NOT READY [blockers]** | 阻塞性问题。不要继续。 | 将阻塞项呈现给用户。在解决前不要写入文件或推进阶段。 |
 
-**Escalation rule**: When multiple directors are spawned in parallel, apply the
-strictest verdict — one NOT READY overrides all READY verdicts.
+**升级规则**：当多个总监并行生成时，应用最严格的裁决 — 一个 NOT READY 覆盖所有 READY 裁决。
 
 ---
 
-## Recording Gate Outcomes
+## 记录门控结果
 
-After a gate resolves, record the verdict in the relevant document's status header:
+门控解决后，在相关文档的状态头部记录裁决：
 
 ```markdown
 > **[Director] Review ([GATE-ID])**: APPROVED [date] / CONCERNS (accepted) [date] / REVISED [date]
 ```
 
-For phase gates, record in `docs/architecture/architecture.md` or
-`production/session-state/active.md` as appropriate.
+对于阶段门控，在 `docs/architecture/architecture.md` 或
+`production/session-state/active.md` 中记录（根据适当情况）。
 
 ---
 
 ## Tier 1 — Creative Director Gates
 
-Agent: `creative-director` | Model tier: Opus | Domain: Vision, pillars, player experience
+Agent: `creative-director` | Model tier: Opus | Domain: 愿景、支柱、玩家体验
 
 ---
 
 ### CD-PILLARS — Pillar Stress Test
 
-**Trigger**: After game pillars and anti-pillars are defined (brainstorm Phase 4,
-or any time pillars are revised)
+**触发时机**：在游戏支柱和反支柱定义后（brainstorm Phase 4，
+或任何支柱修订时）
 
-**Context to pass**:
-- Full pillar set with names, definitions, and design tests
-- Anti-pillars list
-- Core fantasy statement
-- Unique hook ("Like X, AND ALSO Y")
+**待传递上下文**：
+- 完整的支柱集合，包含名称、定义和设计测试
+- 反支柱列表
+- 核心幻想陈述
+- 独特卖点 ("Like X, AND ALSO Y")
 
-**Prompt**:
-> "Review these game pillars. Are they falsifiable — could a real design decision
-> actually fail this pillar? Do they create meaningful tension with each other? Do
-> they differentiate this game from its closest comparables? Would they help resolve
-> a design disagreement in practice, or are they too vague to be useful? Return
-> specific feedback for each pillar and an overall verdict: APPROVE (strong), CONCERNS
-> [list] (needs sharpening), or REJECT (weak — pillars do not carry weight)."
+**提示**：
+> "审查这些游戏支柱。它们是否可证伪 — 真实的设计决策是否可能不通过这个支柱？
+> 它们在互相之间创造有意义的张力吗？它们能够将本游戏与最接近的可比游戏
+> 区分开来吗？它们能够在实践中帮助解决设计争议，还是太模糊而无法
+> 使用？返回每个支柱的具体反馈和整体裁决：APPROVE（强）、CONCERNS
+> [列表]（需要锻炼），或 REJECT（弱 — 支柱没有承载力量）。"
 
-**Verdicts**: APPROVE / CONCERNS / REJECT
+**裁决**: APPROVE / CONCERNS / REJECT
 
 ---
 
 ### CD-GDD-ALIGN — GDD Pillar Alignment Check
 
-**Trigger**: After a system GDD is authored (design-system, quick-design, or any
-workflow that produces a GDD)
+**触发时机**：在系统GDD编写完成后（design-system、quick-design或任何
+生成GDD的工作流程）
 
-**Context to pass**:
-- GDD file path
-- Game pillars (from `design/gdd/game-concept.md` or `design/gdd/game-pillars.md`)
-- MDA aesthetics target for this game
-- System's stated Player Fantasy section
+**待传递上下文**：
+- GDD文件路径
+- 游戏支柱（来自 `design/gdd/game-concept.md` 或 `design/gdd/game-pillars.md`）
+- 本游戏的MDA美学目标
+- 系统的 Player Fantasy 章节
 
-**Prompt**:
-> "Review this system GDD for pillar alignment. Does every section serve the stated
-> pillars? Are there mechanics or rules that contradict or weaken a pillar? Does
-> the Player Fantasy section match the game's core fantasy? Return APPROVE, CONCERNS
-> [specific sections with issues], or REJECT [pillar violations that must be
-> redesigned before this system is implementable]."
+**提示**：
+> "审查这个系统GDD的支柱一致性。每个章节都服务于所述的支柱吗？
+> 是否有与支柱矛盾或削弱支柱的机制或规则？Player Fantasy 章节与游戏的
+> 核心幻想匹配吗？返回 APPROVE、CONCERNS
+> [具体存在问题的章节]，或 REJECT [在该系统可实现之前必须重新设计的支柱违规项]。"
 
-**Verdicts**: APPROVE / CONCERNS / REJECT
+**裁决**: APPROVE / CONCERNS / REJECT
 
 ---
 
 ### CD-SYSTEMS — Systems Decomposition Vision Check
 
-**Trigger**: After the systems index is written by `/map-systems` — validates the
-complete system set before GDD authoring begins
+**触发时机**：在系统索引由 `/map-systems` 编写完成后 — 在GDD编写开始前
+验证完整的系统集合
 
-**Context to pass**:
-- Systems index path (`design/gdd/systems-index.md`)
-- Game pillars and core fantasy (from `design/gdd/game-concept.md`)
-- Priority tier assignments (MVP / Vertical Slice / Alpha / Full Vision)
-- Any high-risk or bottleneck systems identified in the dependency map
+**待传递上下文**：
+- 系统索引路径（`design/gdd/systems-index.md`）
+- 游戏支柱和核心幻想（来自 `design/gdd/game-concept.md`）
+- 优先级层级分配（MVP / Vertical Slice / Alpha / Full Vision）
+- 依赖关系图中识别的任何高风险或瓶颈系统
 
-**Prompt**:
-> "Review this systems decomposition against the game's design pillars. Does the
-> full set of MVP-tier systems collectively deliver the core fantasy? Are there
-> systems whose mechanics don't serve any stated pillar — indicating they may be
-> scope creep? Are there pillar-critical player experiences that have no system
-> assigned to deliver them? Are any systems missing that the core loop requires?
-> Return APPROVE (systems serve the vision), CONCERNS [specific gaps or
-> misalignments with their pillar implications], or REJECT [fundamental gaps —
-> the decomposition misses critical design intent and must be revised before GDD
-> authoring begins]."
+**提示**：
+> "根据游戏的设计支柱审查这个系统分解。所有MVP层级系统能否
+> 共同实现核心幻想？是否有机制不服务于任何所述支柱的系统 — 表明它们可能是
+> 范围蔓延？是否有对支柱至关重要的玩家体验没有分配系统来实现？
+> 核心循环需要的系统是否缺失？返回 APPROVE（系统服务于愿景）、CONCERNS [具体缺口或
+> 与其支柱启示不一致的地方]，或 REJECT [根本性缺口 —
+> 分解遗漏了关键设计意图，必须在GDD编写开始前修订]。"
 
-**Verdicts**: APPROVE / CONCERNS / REJECT
+**裁决**: APPROVE / CONCERNS / REJECT
 
 ---
 
 ### CD-NARRATIVE — Narrative Consistency Check
 
-**Trigger**: After narrative GDDs, lore documents, dialogue specs, or world-building
-documents are authored (team-narrative, design-system for story systems, writer
-deliverables)
+**触发时机**：在叙事GDD、背景设定文档、对话规格或世界构建
+文档编写完成后（team-narrative、故事系统的design-system、作家
+交付物）
 
-**Context to pass**:
-- Document file path(s)
-- Game pillars
-- Narrative direction brief or tone guide (if exists at `design/narrative/`)
-- Any existing lore that the new document references
+**待传递上下文**：
+- 文档文件路径
+- 游戏支柱
+- 叙事方向简报或语气指南（如果在 `design/narrative/` 存在）
+- 新文档引用的任何已有背景设定
 
-**Prompt**:
-> "Review this narrative content for consistency with the game's pillars and
-> established world rules. Does the tone match the game's established voice? Are
-> there contradictions with existing lore or world-building? Does the content serve
-> the player experience pillar? Return APPROVE, CONCERNS [specific inconsistencies],
-> or REJECT [contradictions that break world coherence]."
+**提示**：
+> "审查此叙事内容与游戏支柱和已建立世界规则的一致性。语气是否
+> 与游戏确立的声音匹配？是否与现有背景设定或世界构建存在矛盾？
+> 内容是否服务于玩家体验支柱？返回 APPROVE、CONCERNS [具体不一致之处]，
+> 或 REJECT [打破世界连贯性的矛盾]。"
 
-**Verdicts**: APPROVE / CONCERNS / REJECT
+**裁决**: APPROVE / CONCERNS / REJECT
 
 ---
 
 ### CD-PLAYTEST — Player Experience Validation
 
-**Trigger**: After playtest reports are generated (`/playtest-report`), or after
-any session that produces player feedback
+**触发时机**：在游戏测试报告生成后（`/playtest-report`），或在
+任何产生玩家反馈的会话后
 
-**Context to pass**:
-- Playtest report file path
-- Game pillars and core fantasy statement
-- The specific hypothesis being tested
+**待传递上下文**：
+- 游戏测试报告文件路径
+- 游戏支柱和核心幻想陈述
+- 正在测试的具体假设
 
-**Prompt**:
-> "Review this playtest report against the game's design pillars and core fantasy.
-> Is the player experience matching the intended fantasy? Are there systematic issues
-> that represent pillar drift — mechanics that feel fine in isolation but undermine
-> the intended experience? Return APPROVE (core fantasy is landing), CONCERNS [gaps
-> between intended and actual experience], or REJECT [core fantasy is not present —
-> redesign needed before further playtesting]."
+**提示**：
+> "根据游戏设计支柱和核心幻想审查此测试报告。玩家体验是否
+> 与预期幻想匹配？是否有体现支柱漂移的系统性问题 — 单独看起来
+> 正常但损害预期体验的机制？返回 APPROVE（核心幻想正在落地）、CONCERNS [预期与
+> 实际体验之间的差距]，或 REJECT [核心幻想不存在 —
+> 在进一步测试前需要重新设计]。"
 
-**Verdicts**: APPROVE / CONCERNS / REJECT
+**裁决**: APPROVE / CONCERNS / REJECT
 
 ---
 
 ### CD-PHASE-GATE — Creative Readiness at Phase Transition
 
-**Trigger**: Always at `/gate-check` — spawn in parallel with TD-PHASE-GATE and PR-PHASE-GATE
+**触发时机**：始终在 `/gate-check` — 与 TD-PHASE-GATE 和 PR-PHASE-GATE 并行生成
 
-**Context to pass**:
-- Target phase name
-- List of all artifacts present (file paths)
-- Game pillars and core fantasy
+**待传递上下文**：
+- 目标阶段名称
+- 所有产出物列表（文件路径）
+- 游戏支柱和核心幻想
 
-**Prompt**:
-> "Review the current project state for [target phase] gate readiness from a
-> creative direction perspective. Are the game pillars faithfully represented in
-> all design artifacts? Does the current state preserve the core fantasy? Are there
-> any design decisions across GDDs or architecture that compromise the intended
-> player experience? Return READY, CONCERNS [list], or NOT READY [blockers]."
+**提示**：
+> "从创意方向角度审查当前项目状态是否已准备好进入 [target phase] 阶段。
+> 游戏支柱在所有设计产出物中得到忠实体现吗？当前状态保持了核心幻想吗？
+> 跨GDD或架构的设计决策中是否有损害预期玩家体验的内容？
+> 返回 READY、CONCERNS [列表]，或 NOT READY [阻塞项]。"
 
-**Verdicts**: READY / CONCERNS / NOT READY
+**裁决**: READY / CONCERNS / NOT READY
 
 ---
 
 ## Tier 1 — Technical Director Gates
 
-Agent: `technical-director` | Model tier: Opus | Domain: Architecture, engine risk, performance
+Agent: `technical-director` | Model tier: Opus | Domain: 架构、引擎风险、性能
 
 ---
 
 ### TD-SYSTEM-BOUNDARY — System Boundary Architecture Review
 
-**Trigger**: After `/map-systems` Phase 3 dependency mapping is agreed but before
-GDD authoring begins — validates that the system structure is architecturally
-sound before teams invest in writing GDDs against it
+**触发时机**：在 `/map-systems` Phase 3 依赖关系图确定后但GDD编写开始前 —
+验证系统结构在架构上是否合理，避免团队在不合理的结构上投入GDD编写
 
-**Context to pass**:
-- Systems index path (or the dependency map summary if index not yet written)
-- Layer assignments (Foundation / Core / Feature / Presentation / Polish)
-- The full dependency graph (what each system depends on)
-- Any bottleneck systems flagged (many dependents)
-- Any circular dependencies found and their proposed resolutions
+**待传递上下文**：
+- 系统索引路径（或如果索引尚未编写则提供依赖关系图摘要）
+- 层级分配（Foundation / Core / Feature / Presentation / Polish）
+- 完整的依赖关系图（每个系统依赖什么）
+- 标记的任何瓶颈系统（大量依赖者）
+- 发现的任何循环依赖及其建议解决方案
 
-**Prompt**:
-> "Review this systems decomposition from an architectural perspective before GDD
-> authoring begins. Are the system boundaries clean — does each system own a
-> distinct concern with minimal overlap? Are there God Object risks (systems doing
-> too much)? Does the dependency ordering create implementation-sequencing problems?
-> Are there implicit shared-state problems in the proposed boundaries that will
-> cause tight coupling when implemented? Are any Foundation-layer systems actually
-> dependent on Feature-layer systems (inverted dependency)? Return APPROVE
-> (boundaries are architecturally sound — proceed to GDD authoring), CONCERNS
-> [specific boundary issues to address in the GDDs themselves], or REJECT
-> [fundamental boundary problems — the system structure will cause architectural
-> issues and must be restructured before any GDD is written]."
+**提示**：
+> "在GDD编写开始前，从架构角度审查这个系统分解。系统边界是否清晰
+> — 每个系统是否拥有独特的关注点并且重叠最小？是否存在God Object风险（系统
+> 做得太多）？依赖排序是否会导致实现序列问题？提议边界中是否有隐含的
+> 共享状态问题会在实现时导致紧耦合？是否有Foundation层系统实际上
+> 依赖于Feature层系统（反转依赖）？返回 APPROVE
+> （边界在架构上是合理的 — 继续GDD编写）、CONCERNS
+> [需要在GDD自身中解决的具体边界问题]，或 REJECT
+> [根本性边界问题 — 系统结构将导致架构问题，必须在任何GDD编写之前重新构建]。"
 
-**Verdicts**: APPROVE / CONCERNS / REJECT
+**裁决**: APPROVE / CONCERNS / REJECT
 
 ---
 
 ### TD-FEASIBILITY — Technical Feasibility Assessment
 
-**Trigger**: After biggest technical risks are identified during scope/feasibility
-(brainstorm Phase 6, quick-design, or any early-stage concept with technical unknowns)
+**触发时机**：在范围/可行性分析中最大技术风险被识别后
+（brainstorm Phase 6、quick-design或任何早期阶段概念的技术未知）
 
-**Context to pass**:
-- Concept's core loop description
-- Platform target
-- Engine choice (or "undecided")
-- List of identified technical risks
+**待传递上下文**：
+- 概念的核心循环描述
+- 目标平台
+- 引擎选择（或"未确定"）
+- 已识别的技术风险列表
 
-**Prompt**:
-> "Review these technical risks for a [genre] game targeting [platform] using
-> [engine or 'undecided engine']. Flag any HIGH risk items that could invalidate
-> the concept as described, any risks that are engine-specific and should influence
-> the engine choice, and any risks that are commonly underestimated by solo
-> developers. Return VIABLE (risks are manageable), CONCERNS [list with mitigation
-> suggestions], or HIGH RISK [blockers that require concept or scope revision]."
+**提示**：
+> "审查这些技术风险，用于一款面向 [platform] 的 [genre] 游戏，使用
+> [engine 或 '未确定引擎']。标记任何可能使所述概念无效的HIGH风险项，
+> 任何影响引擎选择的引擎特定风险，以及任何单人开发者常常
+> 低估的风险。返回 VIABLE（风险可管理）、CONCERNS [列表及缓解建议]，
+> 或 HIGH RISK [阻塞项 — 需要修订概念或范围]。"
 
-**Verdicts**: VIABLE / CONCERNS / HIGH RISK
+**裁决**: VIABLE / CONCERNS / HIGH RISK
 
 ---
 
 ### TD-ARCHITECTURE — Architecture Sign-Off
 
-**Trigger**: After the master architecture document is drafted (`/create-architecture`
-Phase 7), and after any major architecture revision
+**触发时机**：在主架构文档草稿完成后（`/create-architecture`
+Phase 7），以及任何重大架构修订后
 
-**Context to pass**:
-- Architecture document path (`docs/architecture/architecture.md`)
-- Technical requirements baseline (TR-IDs and count)
-- ADR list with statuses
-- Engine knowledge gap inventory
+**待传递上下文**：
+- 架构文档路径（`docs/architecture/architecture.md`）
+- 技术需求基线（TR-IDs 和数量）
+- ADR列表及其状态
+- 引擎知识缺口清单
 
-**Prompt**:
-> "Review this master architecture document for technical soundness. Check: (1) Is
-> every technical requirement from the baseline covered by an architectural decision?
-> (2) Are all HIGH risk engine domains explicitly addressed or flagged as open
-> questions? (3) Are the API boundaries clean, minimal, and implementable? (4) Are
-> Foundation layer ADR gaps resolved before implementation begins? Return APPROVE,
-> CONCERNS [list], or REJECT [blockers that must be resolved before coding starts]."
+**提示**：
+> "审查这份主架构文档的技术合理性。检查：(1) 基线中的每个技术需求
+> 都是否被架构决策覆盖？(2) 所有HIGH风险引擎领域是否已明确解决或标记为
+> 开放问题？(3) API边界是否清晰、最小化且可实现？(4) 在开始实现前
+> Foundation层ADR缺口是否已解决？返回 APPROVE、CONCERNS [列表]，
+> 或 REJECT [在开始编码前必须解决的阻塞项]。"
 
-**Verdicts**: APPROVE / CONCERNS / REJECT
+**裁决**: APPROVE / CONCERNS / REJECT
 
 ---
 
 ### TD-ADR — Architecture Decision Review
 
-**Trigger**: After an individual ADR is authored (`/architecture-decision`), before
-it is marked Accepted
+**触发时机**：在单个ADR编写完成后（`/architecture-decision`），在
+其被标记为 Accepted 之前
 
-**Context to pass**:
-- ADR file path
-- Engine version and knowledge gap risk level for the domain
-- Related ADRs (if any)
+**待传递上下文**：
+- ADR文件路径
+- 引擎版本和该领域的知识缺口风险等级
+- 相关ADR（如果有）
 
-**Prompt**:
-> "Review this Architecture Decision Record. Does it have a clear problem statement
-> and rationale? Are the rejected alternatives genuinely considered? Does the
-> Consequences section acknowledge the trade-offs honestly? Is the engine version
-> stamped? Are post-cutoff API risks flagged? Does it link to the GDD requirements
-> it covers? Return APPROVE, CONCERNS [specific gaps], or REJECT [the decision is
-> underspecified or makes unsound technical assumptions]."
+**提示**：
+> "审查这份架构决策记录。它是否有清晰的问题陈述和理由？被拒绝的
+> 替代方案是否得到了认真考虑？Consequences章节是否诚实地承认了
+> 权衡？引擎版本是否已打印？Post-cutoff API风险是否已标记？它是否链接到
+> 所覆盖的GDD需求？返回 APPROVE、CONCERNS [具体缺口]，或 REJECT
+> [决策不足以或做出了不合理的技术假设]。"
 
-**Verdicts**: APPROVE / CONCERNS / REJECT
+**裁决**: APPROVE / CONCERNS / REJECT
 
 ---
 
 ### TD-ENGINE-RISK — Engine Version Risk Review
 
-**Trigger**: When making architecture decisions that touch post-cutoff engine APIs,
-or before finalizing any engine-specific implementation approach
+**触发时机**：当做出的架构决策触及post-cutoff引擎API时，
+或在最终确定任何引擎特定实现方案之前
 
-**Context to pass**:
-- The specific API or feature being used
-- Engine version and LLM knowledge cutoff (from `docs/engine-reference/[engine]/VERSION.md`)
-- Relevant excerpt from breaking-changes or deprecated-apis docs
+**待传递上下文**：
+- 正在使用的具体API或功能
+- 引擎版本和LLM知识截止日期（来自 `docs/engine-reference/[engine]/VERSION.md`）
+- 相关的breaking-changes或deprecated-apis文档摘录
 
-**Prompt**:
-> "Review this engine API usage against the version reference. Is this API present
-> in [engine version]? Has its signature, behaviour, or namespace changed since the
-> LLM knowledge cutoff? Are there known deprecations or post-cutoff alternatives?
-> Return APPROVE (safe to use as described), CONCERNS [verify before implementing],
-> or REJECT [API has changed — provide corrected approach]."
+**提示**：
+> "根据版本参考审查此引擎API使用。该API在 [engine version] 中是否存在？
+> 自LLM知识截止以来，它的签名、行为或命名空间是否发生了变化？
+> 是否有已知的弃用或post-cutoff替代方案？返回 APPROVE（按描述安全使用）、
+> CONCERNS [实现前验证]，或 REJECT [API已变更 — 提供更正方法]。"
 
-**Verdicts**: APPROVE / CONCERNS / REJECT
+**裁决**: APPROVE / CONCERNS / REJECT
 
 ---
 
 ### TD-PHASE-GATE — Technical Readiness at Phase Transition
 
-**Trigger**: Always at `/gate-check` — spawn in parallel with CD-PHASE-GATE and PR-PHASE-GATE
+**触发时机**：始终在 `/gate-check` — 与 CD-PHASE-GATE 和 PR-PHASE-GATE 并行生成
 
-**Context to pass**:
-- Target phase name
-- Architecture document path (if exists)
-- Engine reference path
-- ADR list
+**待传递上下文**：
+- 目标阶段名称
+- 架构文档路径（如果存在）
+- 引擎参考路径
+- ADR列表
 
-**Prompt**:
-> "Review the current project state for [target phase] gate readiness from a
-> technical direction perspective. Is the architecture sound for this phase? Are
-> all high-risk engine domains addressed? Are performance budgets realistic and
-> documented? Are Foundation-layer decisions complete enough to begin implementation?
-> Return READY, CONCERNS [list], or NOT READY [blockers]."
+**提示**：
+> "从技术方向角度审查当前项目状态是否已准备好进入 [target phase] 阶段。
+> 该阶段的架构是否合理？所有高风险引擎领域是否已解决？性能预算
+> 是否现实且已记录？Foundation层决策是否足够完整以开始实现？
+> 返回 READY、CONCERNS [列表]，或 NOT READY [阻塞项]。"
 
-**Verdicts**: READY / CONCERNS / NOT READY
+**裁决**: READY / CONCERNS / NOT READY
 
 ---
 
 ## Tier 1 — Producer Gates
 
-Agent: `producer` | Model tier: Opus | Domain: Scope, timeline, dependencies, production risk
+Agent: `producer` | Model tier: Opus | Domain: 范围、时间线、依赖、生产风险
 
 ---
 
 ### PR-SCOPE — Scope and Timeline Validation
 
-**Trigger**: After scope tiers are defined (brainstorm Phase 6, quick-design, or
-any workflow that produces an MVP definition and timeline estimate)
+**触发时机**：在范围层级定义后（brainstorm Phase 6、quick-design或
+任何生成MVP定义和时间线估估的工作流程）
 
-**Context to pass**:
-- Full vision scope description
-- MVP definition
-- Timeline estimate
-- Team size (solo / small team / etc.)
-- Scope tiers (what ships if time runs out)
+**待传递上下文**：
+- 完整愿景范围描述
+- MVP定义
+- 时间线估估
+- 团队规模（单人 / 小团队 / 等等）
+- 范围层级（如果时间耗尽会交付什么）
 
-**Prompt**:
-> "Review this scope estimate. Is the MVP achievable in the stated timeline for
-> the stated team size? Are the scope tiers correctly ordered by risk — does each
-> tier deliver a shippable product if work stops there? What is the most likely
-> cut point under time pressure, and is it a graceful fallback or a broken product?
-> Return REALISTIC (scope matches capacity), OPTIMISTIC [specific adjustments
-> recommended], or UNREALISTIC [blockers — timeline or MVP must be revised]."
+**提示**：
+> "审查此范围估算。对于所述团队规模，MVP在所述时间线内是否可实现？
+> 范围层级是否按风险正确排序 — 如果工作在某个层级停止，每个层级都能
+> 交付一个可发布的产品吗？在时间压力下最可能的切割点是什么，它是
+> 一个优雅的后备方案还是一个完全破坏的产品？返回 REALISTIC（范围与能力
+> 匹配）、OPTIMISTIC [建议的具体调整]，或 UNREALISTIC [阻塞项 —
+> 时间线或MVP必须修订]。"
 
-**Verdicts**: REALISTIC / OPTIMISTIC / UNREALISTIC
+**裁决**: REALISTIC / OPTIMISTIC / UNREALISTIC
 
 ---
 
 ### PR-SPRINT — Sprint Feasibility Review
 
-**Trigger**: Before finalising a sprint plan (`/sprint-plan`), and after any
-mid-sprint scope change
+**触发时机**：在确定Sprint计划前（`/sprint-plan`），以及在
+任何Sprint中途范围变更后
 
-**Context to pass**:
-- Proposed sprint story list (titles, estimates, dependencies)
-- Team capacity (hours available)
-- Current sprint backlog debt (if any)
-- Milestone constraints
+**待传递上下文**：
+- 建议的Sprint Story列表（标题、估估、依赖）
+- 团队容量（可用小时）
+- 当前Sprint候选列表债务（如果有）
+- 里程碑约束
 
-**Prompt**:
-> "Review this sprint plan for feasibility. Is the story load realistic for the
-> available capacity? Are stories correctly ordered by dependency? Are there hidden
-> dependencies between stories that could block the sprint mid-way? Are any stories
-> underestimated given their technical complexity? Return REALISTIC (plan is
-> achievable), CONCERNS [specific risks], or UNREALISTIC [sprint must be
-> descoped — identify which stories to defer]."
+**提示**：
+> "审查此Sprint计划的可行性。Story负载对于可用容量是否现实？
+> Story是否按依赖正确排序？Story之间是否有隐藏的依赖可能在Sprint中途
+> 阻止？考虑到技术复杂性，是否有任何Story被低估？返回 REALISTIC（计划
+> 可实现）、CONCERNS [具体风险]，或 UNREALISTIC [Sprint必须
+> 减少范围 — 确定哪些Story应该推迟]。"
 
-**Verdicts**: REALISTIC / CONCERNS / UNREALISTIC
+**裁决**: REALISTIC / CONCERNS / UNREALISTIC
 
 ---
 
 ### PR-MILESTONE — Milestone Risk Assessment
 
-**Trigger**: At milestone review (`/milestone-review`), at mid-sprint retrospectives,
-or when a scope change is proposed that affects the milestone
+**触发时机**：在里程碑审查（`/milestone-review`）时，在Sprint中期
+回顾时，或当提出影响里程碑的范围变更时
 
-**Context to pass**:
-- Milestone definition and target date
-- Current completion percentage
-- Blocked stories count
-- Sprint velocity data (if available)
+**待传递上下文**：
+- 里程碑定义和目标日期
+- 当前完成百分比
+- 阻塞Story数量
+- Sprint速度数据（如果可用）
 
-**Prompt**:
-> "Review this milestone status. Based on current velocity and blocked story count,
-> will this milestone hit its target date? What are the top 3 production risks
-> between now and the milestone? Are there scope items that should be cut to protect
-> the milestone date vs. items that are non-negotiable? Return ON TRACK, AT RISK
-> [specific mitigations], or OFF TRACK [date must slip or scope must cut — provide
-> both options]."
+**提示**：
+> "审查此里程碑状态。根据当前速度和阻塞Story数量，这个里程碑
+> 能否在目标日期达成？从现在到里程碑之间的前3个生产风险是什么？
+> 是否有应该裁减以保护里程碑日期的范围项，与不可谈判的项相比？
+> 返回 ON TRACK、AT RISK [具体缓解措施]，或 OFF TRACK [日期必须滑动或
+> 范围必须裁减 — 提供两种选项]。"
 
-**Verdicts**: ON TRACK / AT RISK / OFF TRACK
+**裁决**: ON TRACK / AT RISK / OFF TRACK
 
 ---
 
 ### PR-EPIC — Epic Structure Feasibility Review
 
-**Trigger**: After epics are defined by `/create-epics`, before stories are
-broken out — validates the epic structure is producible before `/create-stories`
-is invoked
+**触发时机**：在Epic由 `/create-epics` 定义后，在Story拆分前 —
+验证Epic结构是可生产的，然后才调用 `/create-stories`
 
-**Context to pass**:
-- Epic definition file paths (all epics just created)
-- Epic index path (`production/epics/index.md`)
-- Milestone timeline and target dates
-- Team capacity (solo / small team / size)
-- Layer being epiced (Foundation / Core / Feature / etc.)
+**待传递上下文**：
+- 刚创建的所有Epic定义文件路径
+- Epic索引路径（`production/epics/index.md`）
+- 里程碑时间线和目标日期
+- 团队容量（单人 / 小团队 / 规模）
+- 正在Epic化的层级（Foundation / Core / Feature / 等等）
 
-**Prompt**:
-> "Review this epic structure for production feasibility before story breakdown
-> begins. Are the epic boundaries scoped appropriately — could each epic realistically
-> complete before a milestone deadline? Are epics correctly ordered by system
-> dependency — does any epic require another epic's output before it can start?
-> Are any epics underscoped (too small, should merge) or overscoped (too large,
-> should split into 2-3 focused epics)? Are the Foundation-layer epics scoped to
-> allow Core-layer epics to begin at the start of the next sprint after Foundation
-> completes? Return REALISTIC (epic structure is producible), CONCERNS [specific
-> structural adjustments before stories are written], or UNREALISTIC [epics must
-> be split, merged, or reordered — story breakdown cannot begin until resolved]."
+**提示**：
+> "在Story拆分开始前，审查此Epic结构的生产可行性。Epic边界的范围
+> 是否适当 — 每个Epic是否能在里程碑截止日期前实际完成？Epic是否按系统
+> 依赖正确排序 — 是否有任何Epic需要另一个Epic的输出才能开始？
+> 是否有任何Epic范围过小（太小，应该合并）或范围过大（太大，
+> 应该拆分为2-3个聚焦的Epic）？Foundation层Epic的范围是否能够让Core层Epic
+> 在Foundation完成后的下一个Sprint开始时启动？返回 REALISTIC（Epic结构是可生产的）、
+> CONCERNS [在Story编写前需要的具体结构调整]，或 UNREALISTIC [Epic必须
+> 拆分、合并或重新排序 — 在解决前无法开始Story拆分]。"
 
-**Verdicts**: REALISTIC / CONCERNS / UNREALISTIC
+**裁决**: REALISTIC / CONCERNS / UNREALISTIC
 
 ---
 
 ### PR-PHASE-GATE — Production Readiness at Phase Transition
 
-**Trigger**: Always at `/gate-check` — spawn in parallel with CD-PHASE-GATE and TD-PHASE-GATE
+**触发时机**：始终在 `/gate-check` — 与 CD-PHASE-GATE 和 TD-PHASE-GATE 并行生成
 
-**Context to pass**:
-- Target phase name
-- Sprint and milestone artifacts present
-- Team size and capacity
-- Current blocked story count
+**待传递上下文**：
+- 目标阶段名称
+- 存在的Sprint和里程碑产出物
+- 团队规模和容量
+- 当前阻塞Story数量
 
-**Prompt**:
-> "Review the current project state for [target phase] gate readiness from a
-> production perspective. Is the scope realistic for the stated timeline and team
-> size? Are dependencies properly ordered so the team can actually execute in
-> sequence? Are there milestone or sprint risks that could derail the phase within
-> the first two sprints? Return READY, CONCERNS [list], or NOT READY [blockers]."
+**提示**：
+> "从生产角度审查当前项目状态是否已准备好进入 [target phase] 阶段。
+> 对于所述时间线和团队规模，范围是否现实？依赖是否正确排序，以便
+> 团队可以按序执行？是否有可能在前两个Sprint内导致阶段脱轨的里程碑或
+> Sprint风险？返回 READY、CONCERNS [列表]，或 NOT READY [阻塞项]。"
 
-**Verdicts**: READY / CONCERNS / NOT READY
+**裁决**: READY / CONCERNS / NOT READY
 
 ---
 
 ## Tier 1 — Art Director Gates
 
-Agent: `art-director` | Model tier: Sonnet | Domain: Visual identity, art bible, visual production readiness
+Agent: `art-director` | Model tier: Sonnet | Domain: 视觉身份、美术圣经、视觉生产准备
 
 ---
 
 ### AD-CONCEPT-VISUAL — Visual Identity Anchor
 
-**Trigger**: After game pillars are locked (brainstorm Phase 4), in parallel with CD-PILLARS
+**触发时机**：在游戏支柱锁定后（brainstorm Phase 4），与 CD-PILLARS 并行
 
-**Context to pass**:
-- Game concept (elevator pitch, core fantasy, unique hook)
-- Full pillar set with names, definitions, and design tests
-- Target platform (if known)
-- Any reference games or visual touchstones mentioned by the user
+**待传递上下文**：
+- 游戏概念（电梯间推介、核心幻想、独特卖点）
+- 完整的支柱集合，包含名称、定义和设计测试
+- 目标平台（如果已知）
+- 用户提到的任何参考游戏或视觉基准
 
-**Prompt**:
-> "Based on these game pillars and core concept, propose 2-3 distinct visual identity
-> directions. For each direction provide: (1) a one-line visual rule that could guide
-> all visual decisions (e.g., 'everything must move', 'beauty is in the decay'), (2)
-> mood and atmosphere targets, (3) shape language (sharp/rounded/organic/geometric
-> emphasis), (4) color philosophy (palette direction, what colors mean in this world).
-> Be specific — avoid generic descriptions. One direction should directly serve the
-> primary design pillar. Name each direction. Recommend which best serves the stated
-> pillars and explain why."
+**提示**：
+> "基于这些游戏支柱和核心概念，提出2-3个不同的视觉身份方向。
+> 对于每个方向提供：(1) 一条可以指导所有视觉决策的视觉规则
+> （例如，'一切都必须运动'、'美在衰败中'），(2) 氛围和气氛目标，
+> (3) 形状语言（尖锐/圆润/有机/几何偏重），(4) 色彩哲学
+> （调色板方向，这个世界中颜色的含义）。要具体 — 避免通用描述。
+> 一个方向应该直接服务于主要设计支柱。为每个方向命名。
+> 推荐哪个最能服务所述支柱并解释原因。"
 
-**Verdicts**: CONCEPTS (multiple valid options — user selects) / STRONG (one direction clearly dominant) / CONCERNS (pillars don't provide enough direction to differentiate visual identity yet)
+**裁决**: CONCEPTS (多个有效选项 — 用户选择) / STRONG (一个方向明显占优) / CONCERNS (支柱还未提供足够方向以区分视觉身份)
 
 ---
 
 ### AD-ART-BIBLE — Art Bible Sign-Off
 
-**Trigger**: After the art bible is drafted (`/art-bible`), before asset production begins
+**触发时机**：在Art Bible草稿完成后（`/art-bible`），资产生产开始前
 
-**Context to pass**:
-- Art bible path (`design/art/art-bible.md`)
-- Game pillars and core fantasy
-- Platform and performance constraints (from `.claude/docs/technical-preferences.md` if configured)
-- Visual identity anchor chosen during brainstorm (from `design/gdd/game-concept.md`)
+**待传递上下文**：
+- Art Bible路径（`design/art/art-bible.md`）
+- 游戏支柱和核心幻想
+- 平台和性能约束（如果在 `.claude/docs/technical-preferences.md` 中已配置）
+- 头脑风暴期间选定的视觉身份锚点（来自 `design/gdd/game-concept.md`）
 
-**Prompt**:
-> "Review this art bible for completeness and internal consistency. Does the color
-> system match the mood targets? Does the shape language follow from the visual
-> identity statement? Are the asset standards achievable within the platform
-> constraints? Does the character design direction give artists enough to work from
-> without over-specifying? Are there contradictions between sections? Would an
-> outsourcing team be able to produce assets from this document without additional
-> briefing? Return APPROVE (art bible is production-ready), CONCERNS [specific
-> sections needing clarification], or REJECT [fundamental inconsistencies that must
-> be resolved before asset production begins]."
+**提示**：
+> "审查此Art Bible的完整性和内部一致性。色彩系统是否与氛围目标匹配？
+> 形状语言是否从视觉身份陈述中衍生而来？资产标准是否在平台约束
+> 内可实现？角色设计方向是否给了艺术家足够的信息而不过度规定？
+> 章节之间是否有矛盾？外包团队能否从此文档生成资产而不需要额外
+> 简报？返回 APPROVE（Art Bible已可生产）、CONCERNS [需要明确的具体章节]，
+> 或 REJECT [在资产生产开始前必须解决的根本性不一致之处]。"
 
-**Verdicts**: APPROVE / CONCERNS / REJECT
+**裁决**: APPROVE / CONCERNS / REJECT
 
 ---
 
 ### AD-PHASE-GATE — Visual Readiness at Phase Transition
 
-**Trigger**: Always at `/gate-check` — spawn in parallel with CD-PHASE-GATE, TD-PHASE-GATE, and PR-PHASE-GATE
+**触发时机**：始终在 `/gate-check` — 与 CD-PHASE-GATE、TD-PHASE-GATE 和 PR-PHASE-GATE 并行生成
 
-**Context to pass**:
-- Target phase name
-- List of all art/visual artifacts present (file paths)
-- Visual identity anchor from `design/gdd/game-concept.md` (if present)
-- Art bible path if it exists (`design/art/art-bible.md`)
+**待传递上下文**：
+- 目标阶段名称
+- 存在的所有美术/视觉产出物列表（文件路径）
+- 来自 `design/gdd/game-concept.md` 的视觉身份锚点（如果存在）
+- 如果存在，Art Bible路径（`design/art/art-bible.md`）
 
-**Prompt**:
-> "Review the current project state for [target phase] gate readiness from a visual
-> direction perspective. Is the visual identity established and documented at the
-> level this phase requires? Are the right visual artifacts in place? Would visual
-> teams be able to begin their work without visual direction gaps that cause costly
-> rework later? Are there visual decisions that are being deferred past their latest
-> responsible moment? Return READY, CONCERNS [specific visual direction gaps that
-> could cause production rework], or NOT READY [visual blockers that must exist
-> before this phase can succeed — specify what artifact is missing and why it
-> matters at this stage]."
+**提示**：
+> "从视觉方向角度审查当前项目状态是否已准备好进入 [target phase] 阶段。
+> 视觉身份是否已在该阶段所需的水平上建立并记录？正确的视觉产出物
+> 是否已到位？视觉团队能否在没有导致后续昂贵重做的视觉方向缺口的情况下
+> 开始工作？是否有视觉决策正在超过最后负责时刻被推迟？
+> 返回 READY、CONCERNS [可能导致生产重做的具体视觉方向缺口]，或 NOT READY
+> [在此阶段成功之前必须存在的视觉阻塞项 — 指定缺失什么产出物以及
+> 它在此阶段为什么重要]。"
 
-**Verdicts**: READY / CONCERNS / NOT READY
+**裁决**: READY / CONCERNS / NOT READY
 
 ---
 
 ## Tier 2 — Lead Gates
 
-These gates are invoked by orchestration skills and senior skills when a domain
-specialist's feasibility sign-off is needed. Tier 2 leads use Sonnet (default).
+这些门控由编排技能和高级技能在需要领域
+专家的可行性签署时调用。二级负责人使用Sonnet（默认）。
 
 ---
 
 ### LP-FEASIBILITY — Lead Programmer Implementation Feasibility
 
-**Trigger**: After the master architecture document is written (`/create-architecture`
-Phase 7b), or when a new architectural pattern is proposed
+**触发时机**：在主架构文档编写完成后（`/create-architecture`
+Phase 7b），或当新的架构模式被提出时
 
-**Context to pass**:
-- Architecture document path
-- Technical requirements baseline summary
-- ADR list with statuses
+**待传递上下文**：
+- 架构文档路径
+- 技术需求基线摘要
+- ADR列表及其状态
 
-**Prompt**:
-> "Review this architecture for implementation feasibility. Flag: (a) any decisions
-> that would be difficult or impossible to implement with the stated engine and
-> language, (b) any missing interface definitions that programmers would need to
-> invent themselves, (c) any patterns that create avoidable technical debt or
-> that contradict standard [engine] idioms. Return FEASIBLE, CONCERNS [list], or
-> INFEASIBLE [blockers that make this architecture unimplementable as written]."
+**提示**：
+> "审查此架构的实现可行性。标记：(a) 任何在所述引擎和语言下
+> 难以或不可能实现的决策，(b) 任何缺失的接口定义而程序员需要
+> 自己发明，(c) 任何创造可避免技术债务或与标准 [engine] 习惯用法
+> 矛盾的模式。返回 FEASIBLE、CONCERNS [列表]，或
+> INFEASIBLE [使此架构按所写不可实现的阻塞项]。"
 
-**Verdicts**: FEASIBLE / CONCERNS / INFEASIBLE
+**裁决**: FEASIBLE / CONCERNS / INFEASIBLE
 
 ---
 
 ### LP-CODE-REVIEW — Lead Programmer Code Review
 
-**Trigger**: After a dev story is implemented (`/dev-story`, `/story-done`), or
-as part of `/code-review`
+**触发时机**：在开发Story实现完成后（`/dev-story`、`/story-done`），或
+作为 `/code-review` 的一部分
 
-**Context to pass**:
-- Implementation file paths
-- Story file path (for acceptance criteria)
-- Relevant GDD section
-- ADR that governs this system
+**待传递上下文**：
+- 实现文件路径
+- Story文件路径（用于验收标准）
+- 相关GDD章节
+- 管理该系统的ADR
 
-**Prompt**:
-> "Review this implementation against the story acceptance criteria and governing
-> ADR. Does the code match the architecture boundary definitions? Are there
-> violations of the coding standards or forbidden patterns? Is the public API
-> testable and documented? Are there any correctness issues against the GDD rules?
-> Return APPROVE, CONCERNS [specific issues], or REJECT [must be revised before merge]."
+**提示**：
+> "根据Story验收标准和管辖ADR审查此实现。代码是否与架构边界定义匹配？
+> 是否有违反编码标准或禁用模式？公共API是否可测试且已文档化？
+> 与GDD规则相比是否有任何正确性问题？返回 APPROVE、CONCERNS [具体问题]，
+> 或 REJECT [在合并前必须修订]。"
 
-**Verdicts**: APPROVE / CONCERNS / REJECT
+**裁决**: APPROVE / CONCERNS / REJECT
 
 ---
 
 ### QL-STORY-READY — QA Lead Story Readiness Check
 
-**Trigger**: Before a story is accepted into a sprint — invoked by `/create-stories`,
-`/story-readiness`, and `/sprint-plan` during story selection
+**触发时机**：在Story被接受进入Sprint前 — 由 `/create-stories`、
+`/story-readiness` 和 `/sprint-plan` 在Story选择期间调用
 
-**Context to pass**:
-- Story file path
-- Story type (Logic / Integration / Visual/Feel / UI / Config/Data)
-- Acceptance criteria list (verbatim from the story)
-- The GDD requirement (TR-ID and text) the story covers
+**待传递上下文**：
+- Story文件路径
+- Story类型（Logic / Integration / Visual/Feel / UI / Config/Data）
+- 验收标准列表（来自Story的原文）
+- Story覆盖的GDD需求（TR-ID和文本）
 
-**Prompt**:
-> "Review this story's acceptance criteria for testability before it enters the
-> sprint. Are all criteria specific enough that a developer would know unambiguously
-> when they are done? For Logic-type stories: can every criterion be verified with
-> an automated test? For Integration stories: is each criterion observable in a
-> controlled test environment? Flag criteria that are too vague to implement
-> against, and flag criteria that require a full game build to test (mark these
-> DEFERRED, not BLOCKED). Return ADEQUATE (criteria are implementable as written),
-> GAPS [specific criteria needing refinement], or INADEQUATE [criteria are too
-> vague — story must be revised before sprint inclusion]."
+**提示**：
+> "在Story进入Sprint前，审查此Story的验收标准的可测试性。所有标准
+> 都是否足够具体，以便开发者可以毫无疑问地知道什么时候完成？
+> 对于Logic类型Story：每个标准都能通过自动测试验证吗？对于Integration Story：
+> 每个标准都能在可控的测试环境中观察到吗？标记太模糊而无法
+> 实现的标准，并标记需要完整游戏构建才能测试的标准（标记这些为
+> DEFERRED，而不是BLOCKED）。返回 ADEQUATE（标准可按所写实现）、
+> GAPS [需要精练的具体标准]，或 INADEQUATE [标准太模糊
+> — Story必须在进入Sprint前修订]。"
 
-**Verdicts**: ADEQUATE / GAPS / INADEQUATE
+**裁决**: ADEQUATE / GAPS / INADEQUATE
 
 ---
 
 ### QL-TEST-COVERAGE — QA Lead Test Coverage Review
 
-**Trigger**: After implementation stories are complete, before marking an epic
-done, or at `/gate-check` Production → Polish
+**触发时机**：在实现Story完成后，在标记Epic完成前，或在 `/gate-check` Production → Polish
 
-**Context to pass**:
-- List of implemented stories with story types (Logic / Integration / Visual / UI / Config)
-- Test file paths in `tests/`
-- GDD acceptance criteria for the system
+**待传递上下文**：
+- 已实现Story列表及其Story类型（Logic / Integration / Visual / UI / Config）
+- `tests/` 中的测试文件路径
+- 系统的GDD验收标准
 
-**Prompt**:
-> "Review the test coverage for these implementation stories. Are all Logic stories
-> covered by passing unit tests? Are Integration stories covered by integration
-> tests or documented playtests? Are the GDD acceptance criteria each mapped to at
-> least one test? Are there untested edge cases from the GDD Edge Cases section?
-> Return ADEQUATE (coverage meets standards), GAPS [specific missing tests], or
-> INADEQUATE [critical logic is untested — do not advance]."
+**提示**：
+> "审查这些实现Story的测试覆盖。所有Logic Story都是否被通过的单元测试
+> 覆盖？Integration Story是否被集成测试或记录的游戏测试覆盖？GDD验收标准
+> 每个是否都映射到至少一个测试？GDD Edge Cases章节中是否有未测试的
+> 边界情况？返回 ADEQUATE（覆盖达到标准）、GAPS [具体缺失的测试]，或
+> INADEQUATE [关键逻辑未被测试 — 不要推进]。"
 
-**Verdicts**: ADEQUATE / GAPS / INADEQUATE
+**裁决**: ADEQUATE / GAPS / INADEQUATE
 
 ---
 
 ### ND-CONSISTENCY — Narrative Director Consistency Check
 
-**Trigger**: After writer deliverables (dialogue, lore, item descriptions) are
-authored, or when a design decision has narrative implications
+**触发时机**：在作家交付物（对话、背景设定、物品描述）
+编写完成后，或当设计决策有叙事影响时
 
-**Context to pass**:
-- Document or content file path(s)
-- Narrative bible or tone guide path (if exists)
-- Relevant world-building rules
-- Character or faction profiles affected
+**待传递上下文**：
+- 文档或内容文件路径
+- 叙事圣经或语气指南路径（如果存在）
+- 相关的世界构建规则
+- 受影响的角色或阵营档案
 
-**Prompt**:
-> "Review this narrative content for internal consistency and adherence to
-> established world rules. Are character voices consistent with their established
-> profiles? Does the lore contradict any established facts? Is the tone consistent
-> with the game's narrative direction? Return APPROVE, CONCERNS [specific
-> inconsistencies to fix], or REJECT [contradictions that break the narrative
-> foundation]."
+**提示**：
+> "审查此叙事内容的内部一致性和对已建立世界规则的遵守。角色声音
+> 是否与其已建立的档案一致？背景设定是否与任何已确定的事实矛盾？
+> 语气是否与游戏的叙事方向一致？返回 APPROVE、CONCERNS [需要修复的
+> 具体不一致之处]，或 REJECT [打破叙事基础的矛盾]。"
 
-**Verdicts**: APPROVE / CONCERNS / REJECT
+**裁决**: APPROVE / CONCERNS / REJECT
 
 ---
 
 ### AD-VISUAL — Art Director Visual Consistency Review
 
-**Trigger**: After art direction decisions are made, when new asset types are
-introduced, or when a tech art decision affects visual style
+**触发时机**：在美术方向决策做出后，当新资产类型被
+引入时，或当技术美术决策影响视觉风格时
 
-**Context to pass**:
-- Art bible path (if exists at `design/art-bible.md`)
-- The specific asset type, style decision, or visual direction being reviewed
-- Reference images or style descriptions
-- Platform and performance constraints
+**待传递上下文**：
+- Art Bible路径（如果在 `design/art-bible.md` 存在）
+- 正在审查的具体资产类型、风格决策或视觉方向
+- 参考图像或风格描述
+- 平台和性能约束
 
-**Prompt**:
-> "Review this visual direction decision for consistency with the established art
-> style and production constraints. Does it match the art bible? Is it achievable
-> within the platform's performance budget? Are there asset pipeline implications
-> that create technical risk? Return APPROVE, CONCERNS [specific adjustments], or
-> REJECT [style violation or production risk that must be resolved first]."
+**提示**：
+> "审查此视觉方向决策与已确立的美术风格和生产约束的一致性。它是否
+> 与Art Bible匹配？它在平台性能预算内是否可实现？是否有创造技术风险的
+> 资产管线流含义？返回 APPROVE、CONCERNS [具体调整]，或
+> REJECT [风格违规或生产风险必须先解决]。"
 
-**Verdicts**: APPROVE / CONCERNS / REJECT
+**裁决**: APPROVE / CONCERNS / REJECT
 
 ---
 
 ## Parallel Gate Protocol
 
-When a workflow requires multiple directors at the same checkpoint (most common
-at `/gate-check`), spawn all agents simultaneously:
+当工作流程需要多个总监在同一检查点（最常见于
+`/gate-check`），同时生成所有Agent：
 
 ```
 Spawn in parallel (issue all Task calls before waiting for any result):
@@ -778,25 +740,25 @@ Collect all four verdicts, then apply escalation rules:
 
 ## Adding New Gates
 
-When a new gate is needed for a new skill or workflow:
+当新技能或工作流程需要新门控时：
 
-1. Assign a gate ID: `[DIRECTOR-PREFIX]-[DESCRIPTIVE-SLUG]`
-   - Prefixes: `CD-` `TD-` `PR-` `LP-` `QL-` `ND-` `AD-`
-   - Add new prefixes for new agents: `AudioDirector` → `AU-`, `UX` → `UX-`
-2. Add the gate under the appropriate director section with all five fields:
-   Trigger, Context to pass, Prompt, Verdicts, and any special handling notes
-3. Reference it in skills by ID only — never copy the prompt text into the skill
+1. 分配门控ID：`[DIRECTOR-PREFIX]-[DESCRIPTIVE-SLUG]`
+   - 前缀：`CD-` `TD-` `PR-` `LP-` `QL-` `ND-` `AD-`
+   - 为新Agent添加新前缀：`AudioDirector` → `AU-`，`UX` → `UX-`
+2. 在适当的总监章节下添加门控，包含全部五个字段：
+   Trigger、Context to pass、Prompt、Verdicts 和任何特殊处理说明
+3. 在技能中仅按ID引用 — 永远不要把提示文本复制到技能中
 
 ---
 
 ## Gate Coverage by Stage
 
-| Stage | Required Gates | Optional Gates |
+| 阶段 | 必需门控 | 可选门控 |
 |-------|---------------|----------------|
-| **Concept** | CD-PILLARS, AD-CONCEPT-VISUAL | TD-FEASIBILITY, PR-SCOPE |
-| **Systems Design** | TD-SYSTEM-BOUNDARY, CD-SYSTEMS, PR-SCOPE, CD-GDD-ALIGN (per GDD) | ND-CONSISTENCY, AD-VISUAL |
-| **Technical Setup** | TD-ARCHITECTURE, TD-ADR (per ADR), LP-FEASIBILITY, AD-ART-BIBLE | TD-ENGINE-RISK |
-| **Pre-Production** | PR-EPIC, QL-STORY-READY (per story), PR-SPRINT, all four PHASE-GATEs (via gate-check) | CD-PLAYTEST |
-| **Production** | LP-CODE-REVIEW (per story), QL-STORY-READY, PR-SPRINT (per sprint) | PR-MILESTONE, QL-TEST-COVERAGE, AD-VISUAL |
-| **Polish** | QL-TEST-COVERAGE, CD-PLAYTEST, PR-MILESTONE | AD-VISUAL |
-| **Release** | All four PHASE-GATEs (via gate-check) | QL-TEST-COVERAGE |
+| **概念** | CD-PILLARS, AD-CONCEPT-VISUAL | TD-FEASIBILITY, PR-SCOPE |
+| **系统设计** | TD-SYSTEM-BOUNDARY, CD-SYSTEMS, PR-SCOPE, CD-GDD-ALIGN (每GDD) | ND-CONSISTENCY, AD-VISUAL |
+| **技术搭建** | TD-ARCHITECTURE, TD-ADR (每ADR), LP-FEASIBILITY, AD-ART-BIBLE | TD-ENGINE-RISK |
+| **预生产** | PR-EPIC, QL-STORY-READY (每Story), PR-SPRINT, 全部四个PHASE-GATEs (通过gate-check) | CD-PLAYTEST |
+| **生产** | LP-CODE-REVIEW (每Story), QL-STORY-READY, PR-SPRINT (每Sprint) | PR-MILESTONE, QL-TEST-COVERAGE, AD-VISUAL |
+| **抛光** | QL-TEST-COVERAGE, CD-PLAYTEST, PR-MILESTONE | AD-VISUAL |
+| **发布** | 全部四个PHASE-GATEs (通过gate-check) | QL-TEST-COVERAGE |

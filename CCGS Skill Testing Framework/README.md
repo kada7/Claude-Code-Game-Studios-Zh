@@ -1,4 +1,4 @@
-# CCGS Skill Testing Framework
+# CCGS Skill Testing Framework（技能测试框架）
 
 **Claude Code Game Studios** 框架的质量保证基础设施。
 测试 Skill 和 Agent 本身 —— 而非使用它们构建的任何游戏。

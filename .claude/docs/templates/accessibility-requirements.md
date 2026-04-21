@@ -5,327 +5,317 @@
 > **最后更新**: [日期]
 > **可访问性层级目标**: [基本 | 标准 | 全面 | 典范]
 > **平台**: [PC / Xbox / PlayStation 5 / Nintendo Switch / iOS / Android]
-> **External Standards Targeted**:
+> **外部标准目标**:
 > - WCAG 2.1 Level [A / AA / AAA]
 > - AbleGamers CVAA Guidelines
-> - Xbox Accessibility Guidelines (XAG) [Yes / No / Partial]
-> - PlayStation Accessibility (Sony Guidelines) [Yes / No / Partial]
-> - Apple / Google Accessibility Guidelines [Yes / No / N/A — mobile only]
-> **Accessibility Consultant**: [Name and organization, or "None engaged"]
-> **Linked Documents**: `design/gdd/systems-index.md`, `docs/ux/interaction-pattern-library.md`
+> - Xbox Accessibility Guidelines (XAG) [是 / 否 / 部分]
+> - PlayStation Accessibility (Sony Guidelines) [是 / 否 / 部分]
+> - Apple / Google Accessibility Guidelines [是 / 否 / 不适用 — 仅限移动端]
+> **可访问性顾问**: [姓名和组织，或 "未聘请"]
+> **关联文档**: `design/gdd/systems-index.md`, `docs/ux/interaction-pattern-library.md`
 
-> **Why this document exists**: Per-screen accessibility annotations belong in
-> UX specs. This document captures the project-wide accessibility commitments,
-> the feature matrix across all systems, the test plan, and the audit history.
-> It is created once during Technical Setup by the UX designer and producer,
-> then updated as features are added and audits are completed. If a feature
-> conflicts with a commitment made here, this document wins — change the feature,
-> not the commitment, unless the producer approves a formal revision.
+> **本文档存在的原因**: 每个屏幕的可访问性批注应放在UX规范中。
+> 本文档记录项目范围内的可访问性承诺、所有系统的功能矩阵、测试计划和审核历史。
+> 它在技术搭建阶段由UX设计师和制作人创建一次，
+> 随后随着功能添加和审核完成而更新。如果某个功能与本文档中的承诺冲突，
+> 本文档优先 —— 修改功能，而非承诺，除非制作人批准正式修订。
 >
-> **When to update**: After each `/gate-check` pass, after any accessibility
-> audit, and whenever a new game system is added to `systems-index.md`.
+> **何时更新**: 每次 `/gate-check` 通过后、任何可访问性审核后，
+> 以及每当新游戏系统被添加到 `systems-index.md` 时。
 
 ---
 
-## Accessibility Tier Definition
+## 可访问性层级定义
 
-> **Why define tiers**: Accessibility is not binary. Defining four tiers gives
-> the team a shared vocabulary, forces an explicit commitment at the start of
-> production, and prevents scope creep in both directions ("we'll add it later"
-> and "we have to support everything"). The tiers below are this project's
-> definitions — the industry uses similar but not identical language. Commit to
-> a tier with specific feature targets, not just the tier name.
+> **为何定义层级**: 可访问性不是二元的。定义四个层级为团队提供了共享词汇，
+> 迫使在生产开始时做出明确承诺，并防止双向范围蔓延（"以后再加"和"我们必须支持一切"）。
+> 下面的层级是本项目自定义的 —— 业界使用类似但不完全相同的术语。
+> 承诺时应针对具体功能目标，而非仅层级名称。
 
-### Tier Definitions
+### 层级定义
 
-| Tier | Core Commitment | Typical Effort |
-|------|----------------|----------------|
-| **Basic** | Critical player-facing text is readable at standard resolution. No feature requires color discrimination alone. Volume controls exist for music, SFX, and voice independently. The game is completable without photosensitivity risk. | Low — primarily design constraints |
-| **Standard** | All of Basic, plus: full input remapping on all platforms, subtitle support with speaker identification, adjustable text size, at least one colorblind mode, and no timed input that cannot be extended or toggled. | Medium — requires dedicated implementation work |
-| **Comprehensive** | All of Standard, plus: screen reader support for menus, mono audio option, difficulty assist modes, HUD element repositioning, reduced motion mode, and visual indicators for all gameplay-critical audio. | High — requires platform API integration and significant UI architecture |
-| **Exemplary** | All of Comprehensive, plus: full subtitle customization (font, size, color, background, position), high contrast mode, cognitive load assist tools, tactile/haptic alternatives for all audio-only cues, and external third-party accessibility audit. | Very High — requires dedicated accessibility budget and specialist consultation |
+| 层级 | 核心承诺 | 典型工作量 |
+|------|----------|------------|
+| **基本** | 关键面向玩家的文本在标准分辨率下可读。没有任何功能仅依赖颜色辨识。音乐、SFX和语音有独立的音量控制。游戏可在无光敏性风险的情况下完成。 | 低 —— 主要是设计约束 |
+| **标准** | 包含基本级别的所有内容，外加：所有平台的全输入重映射、带说话者识别的字幕支持、可调节文字大小、至少一种色盲模式，以及所有可延长或切换的限时输入。 | 中 —— 需要专门的实现工作 |
+| **全面** | 包含标准级别的所有内容，外加：菜单的屏幕阅读器支持、单声道音频选项、难度辅助模式、HUD元素重新定位、减少动态效果模式，以及所有游戏关键音频的视觉指示器。 | 高 —— 需要平台API集成和大量UI架构工作 |
+| **典范** | 包含全面级别的所有内容，外加：完整字幕自定义（字体、大小、颜色、背景、位置）、高对比度模式、认知负荷辅助工具、所有纯音频提示的触觉/振动替代方案，以及外部第三方可访问性审核。 | 非常高 —— 需要专门的可访问性预算和专家咨询 |
 
-### This Project's Commitment
+### 本项目承诺
 
-**Target Tier**: [Standard]
+**目标层级**: [标准]
 
-**Rationale**: [Write 3-5 sentences justifying the tier choice. Do not simply
-state the tier — explain the reasoning. Consider: What is the game's genre and
-how does it map to common accessibility barriers (e.g., fast-twitch games have
-motor barriers; reading-heavy games have visual barriers)? Who is the target
-player and what does the research say about disability prevalence in that group?
-What are the platform requirements (Xbox requires XAG compliance for ID@Xbox)?
-What is the team's capacity? What would dropping one tier cost the player base,
-in concrete terms?
+**理由**: [写3-5句话说明层级选择的合理性。不要仅
+陈述层级 —— 解释推理。考虑：游戏类型是什么，
+它如何映射到常见的可访问性障碍（例如，快节奏游戏有
+运动障碍；大量阅读的游戏有视觉障碍）？目标玩家是谁，
+关于该群体中残疾发生率的研究怎么说？
+平台要求是什么（Xbox要求ID@Xbox的XAG合规）？
+团队的能力如何？降低一个层级会在具体方面
+让玩家群体付出什么代价？
 
-Example: "This is a narrative RPG with turn-based combat targeted at players
-25-45. The turn-based structure eliminates the most severe motor barriers common
-in action games, but the reading-heavy design creates significant visual and
-cognitive barriers. Standard tier addresses all of these. Exemplary tier is not
-achievable without a dedicated accessibility engineer. Xbox ID@Xbox program
-requires XAG compliance for Game Pass consideration, which Standard meets.
-Dropping to Basic would exclude players who rely on colorblind modes or input
-remapping, estimated at 8-12% of the target audience based on AbleGamers data."]
+示例："这是一款面向25-45岁玩家的叙事RPG，带有回合制战斗。
+回合制结构消除了动作游戏中最严重的运动障碍，
+但大量阅读的设计造成了显著的视觉和认知障碍。
+标准层级解决了所有这些问题。典范层级没有
+专门的可访问性工程师是无法实现的。Xbox ID@Xbox项目
+要求Game Pass考虑的XAG合规，标准层级已满足。
+降至基本层级将排除依赖色盲模式或输入重映射的玩家，
+根据AbleGamers数据估计占目标受众的8-12%。"]
 
-**Features explicitly in scope (beyond tier baseline)**:
-- [e.g., "Full subtitle customization — elevated from Comprehensive because our
-  game is dialogue-heavy and subtitles are a primary channel"]
-- [e.g., "One-hand mode for controller — we have hold inputs critical to combat"]
+**明确在范围内的功能（超出层级基线）**:
+- [例如，"完整字幕自定义 —— 从全面层级提升，因为我们的
+  游戏对话量大，字幕是主要渠道"]
+- [例如，"控制器单手模式 —— 我们的战斗中按住输入至关重要"]
 
-**Features explicitly out of scope**:
-- [e.g., "Screen reader for in-game world (not menus) — requires engine work
-  beyond current capacity. Documented in Known Intentional Limitations."]
+**明确在范围外的功能**:
+- [例如，"游戏内世界（非菜单）的屏幕阅读器 —— 需要的引擎工作
+  超出当前能力。记录在已知故意限制中。"]
 
 ---
 
-## Visual Accessibility
+## 视觉可访问性
 
-> **Why this section comes first**: Visual impairments affect the largest
-> proportion of players who use accessibility features. Color vision deficiency
-> alone affects approximately 8% of men and 0.5% of women. Text legibility at
-> TV viewing distance is frequently the single largest accessibility failure
-> in shipped games. Document every visual feature before implementation begins,
-> because retrofitting minimum text sizes or color decisions after assets are
-> locked is expensive.
+> **为何此部分排在首位**: 视觉障碍影响使用可访问性功能的
+> 最大比例玩家。仅色觉缺陷就影响约8%的男性和0.5%的女性。
+> 电视观看距离下的文本可读性通常是已发行游戏中
+> 最大的可访问性失败。在实施开始前记录每个视觉功能，
+> 因为在资源锁定后改造最小文字大小或颜色决策成本高昂。
 
-| Feature | Target Tier | Scope | Status | Implementation Notes |
-|---------|-------------|-------|--------|---------------------|
-| Minimum text size — menu UI | Standard | All menu screens | Not Started | 24px minimum at 1080p. At 4K, scale proportionally. Reference: WCAG 2.1 SC 1.4.4 requires text resizable to 200% without loss of content. |
-| Minimum text size — subtitles | Standard | All voiced/captioned content | Not Started | 32px minimum at 1080p. Players viewing on TV at 3m are the constraint. |
-| Minimum text size — HUD | Standard | In-game HUD | Not Started | 20px minimum for critical information (health, ammo, objective). Non-critical HUD elements may be smaller. |
-| Text contrast — UI text on backgrounds | Standard | All UI text | Not Started | Minimum 4.5:1 ratio for body text (WCAG AA). 3:1 for large text (18px+ or 14px bold). Test with automated contrast checker on final color values. |
-| Text contrast — subtitles | Standard | Subtitle display | Not Started | Minimum 7:1 ratio (WCAG AAA) for subtitles — players read them quickly and cannot control background. Use drop shadow or opaque background box by default. |
-| Colorblind mode — Protanopia | Standard | All color-coded gameplay | Not Started | Red-green — affects ~6% of men. Primary concern: health bars, enemy indicators, map markers. Shift red signals to orange/yellow; shift green signals to teal. |
-| Colorblind mode — Deuteranopia | Standard | All color-coded gameplay | Not Started | Green-red — affects ~1% of men. Similar to Protanopia in practical impact. Often the same palette adjustment covers both. Verify with Coblis or Colour Blindness Simulator. |
-| Colorblind mode — Tritanopia | Standard | All color-coded gameplay | Not Started | Blue-yellow — rarer (~0.001%). Shift blue UI elements to purple; shift yellow to orange. |
-| Color-as-only-indicator audit | Basic | All UI and gameplay | Not Started | List every place color is the SOLE differentiator in the table below. Each must have a non-color backup (icon, shape, pattern, text label) before shipping. |
-| UI scaling | Standard | All UI elements | Not Started | Range: 75% to 150%. Default: 100%. Scaling must not break layout — test all screens at min and max. HUD scaling should be independent from menu scaling. |
-| High contrast mode | Comprehensive | Menus (minimum); HUD (preferred) | Not Started | Replace all semi-transparent backgrounds with fully opaque. Replace mid-tone UI colors with black/white/system-high-contrast colors. All interactive elements outlined. |
-| Brightness/gamma controls | Basic | Global | Not Started | Exposed in graphics settings. Include a reference calibration image (a gradient or symbol barely visible at correct calibration). Range: -50% to +50% from default. |
-| Screen flash / strobe warning | Basic | All cutscenes, VFX | Not Started | (1) Pre-launch warning screen with photosensitivity seizure notice. (2) Audit all flash-heavy VFX against Harding FPA standard (no more than 3 flashes per second above luminance threshold). (3) Optional: flash reduction mode that lowers flash amplitude by 80%. |
-| Motion/animation reduction mode | Standard | All UI transitions, camera shake, VFX | Not Started | Reduce or eliminate: screen shake, camera bob, motion blur, parallax scrolling in menus, looping background animations. Cannot fully eliminate: player movement animation (would break readability). Toggle in accessibility settings. |
-| Subtitles — on/off | Basic | All voiced content | Not Started | Default: OFF (industry standard — many players prefer immersion). Prominently offered at first launch. |
-| Subtitles — speaker identification | Standard | All voiced content | Not Started | Speaker name displayed before dialogue line. Color-coded by speaker IF colors differ by more than hue alone (test for colorblind compatibility). |
-| Subtitles — style customization | Comprehensive | Subtitle display | Not Started | Font size (4 sizes minimum), background opacity (0–100%), text color (white / yellow / custom), position (bottom / top / player-relative). |
-| Subtitles — sound effect captions | Comprehensive | Gameplay-critical SFX | Not Started | See Auditory Accessibility section for which SFX qualify. Format: [SOUND DESCRIPTION] in brackets, distinct from dialogue. |
+| 功能 | 目标层级 | 范围 | 状态 | 实现说明 |
+|------|----------|------|------|----------|
+| 最小文字大小 —— 菜单UI | 标准 | 所有菜单屏幕 | 未开始 | 1080p下最小24px。4K下按比例缩放。参考：WCAG 2.1 SC 1.4.4要求文本可缩放至200%而不丢失内容。 |
+| 最小文字大小 —— 字幕 | 标准 | 所有配音/带字幕内容 | 未开始 | 1080p下最小32px。在3米距离观看电视的玩家是约束条件。 |
+| 最小文字大小 —— HUD | 标准 | 游戏内HUD | 未开始 | 关键信息（生命值、弹药、目标）最小20px。非关键HUD元素可以更小。 |
+| 文本对比度 —— UI文本在背景上 | 标准 | 所有UI文本 | 未开始 | 正文文本最小4.5:1比例（WCAG AA）。大文本（18px+或14px粗体）3:1。使用自动化对比度检查器在最终颜色值上测试。 |
+| 文本对比度 —— 字幕 | 标准 | 字幕显示 | 未开始 | 字幕最小7:1比例（WCAG AAA）—— 玩家快速阅读且无法控制背景。默认使用投影或不透明背景框。 |
+| 色盲模式 —— Protanopia（红色盲） | 标准 | 所有颜色编码的游戏玩法 | 未开始 | 红绿色 —— 影响约6%男性。主要关注点：血条、敌人指示器、地图标记。将红色信号转为橙色/黄色；将绿色信号转为青色。 |
+| 色盲模式 —— Deuteranopia（绿色盲） | 标准 | 所有颜色编码的游戏玩法 | 未开始 | 绿红色 —— 影响约1%男性。实际影响与Protanopia类似。通常相同的调色板调整可同时覆盖两者。使用Coblis或Colour Blindness Simulator验证。 |
+| 色盲模式 —— Tritanopia（蓝色盲） | 标准 | 所有颜色编码的游戏玩法 | 未开始 | 蓝黄色 —— 较罕见（~0.001%）。将蓝色UI元素转为紫色；将黄色转为橙色。 |
+| 仅颜色指示器审核 | 基本 | 所有UI和游戏玩法 | 未开始 | 在下表中列出颜色是唯一区分符的每个位置。每个必须在发布前有非颜色备用（图标、形状、图案、文本标签）。 |
+| UI缩放 | 标准 | 所有UI元素 | 未开始 | 范围：75%到150%。默认：100%。缩放不得破坏布局 —— 在最小和最大下测试所有屏幕。HUD缩放应与菜单缩放独立。 |
+| 高对比度模式 | 全面 | 菜单（最低要求）；HUD（优先） | 未开始 | 将所有半透明背景替换为完全不透明。将中等色调UI颜色替换为黑/白/系统高对比度颜色。所有交互元素带轮廓。 |
+| 亮度/伽马控制 | 基本 | 全局 | 未开始 | 在图形设置中公开。包含参考校准图像（渐变或符号，在正确校准下勉强可见）。范围：从默认值-50%到+50%。 |
+| 屏幕闪烁/频闪警告 | 基本 | 所有过场动画、VFX | 未开始 | (1) 发布前警告屏幕，包含光敏性癫痫通知。(2) 审核所有闪烁量大的VFX是否符合Harding FPA标准（每秒不超过3次超过亮度阈值的闪烁）。(3) 可选：闪烁减少模式，将闪烁幅度降低80%。 |
+| 动态/动画减少模式 | 标准 | 所有UI过渡、镜头抖动、VFX | 未开始 | 减少或消除：屏幕抖动、镜头晃动、动态模糊、菜单中的视差滚动、循环背景动画。不能完全消除：玩家移动动画（会破坏可读性）。在可访问性设置中切换。 |
+| 字幕 —— 开/关 | 基本 | 所有配音内容 | 未开始 | 默认：关闭（行业标准 —— 许多玩家偏好沉浸感）。首次启动时显著提供。 |
+| 字幕 —— 说话者识别 | 标准 | 所有配音内容 | 未开始 | 对话行前显示说话者姓名。按说话者进行颜色编码，仅当颜色差异不仅限于色调时（测试色盲兼容性）。 |
+| 字幕 —— 样式自定义 | 全面 | 字幕显示 | 未开始 | 字体大小（至少4种尺寸）、背景不透明度（0–100%）、文本颜色（白色/黄色/自定义）、位置（底部/顶部/玩家相对）。 |
+| 字幕 —— 音效字幕 | 全面 | 游戏关键SFX | 未开始 | 参见听觉可访问性部分了解哪些SFX符合条件。格式：括号中的[声音描述]，与对话区分开。 |
 
-### Color-as-Only-Indicator Audit
+### 仅颜色指示器审核
 
-> Fill in every gameplay or UI element where color is currently the sole
-> differentiator. Resolve each before shipping. A resolved entry has a non-color
-> backup that works in all three colorblind modes above.
+> 填写每个游戏玩法或UI元素中颜色当前是唯一区分符的位置。
+> 在发布前解决每个问题。已解决的条目有一个在上述三种色盲模式下都有效的非颜色备用。
 
-| Location | Color Signal | What It Communicates | Non-Color Backup | Status |
-|----------|-------------|---------------------|-----------------|--------|
-| [Health bar] | [Red = low health] | [Player is near death] | [Bar also shows numeric value and flashes] | [Not Started] |
-| [Minimap markers] | [Red = enemy, green = ally] | [Unit allegiance] | [Enemy markers are triangles; ally markers are circles] | [Not Started] |
-| [Inventory item rarity] | [Color-coded border (grey/blue/purple/gold)] | [Item quality tier] | [Rarity name shown on hover/focus; icon star count] | [Not Started] |
-| [Add row for each color-coded element] | | | | |
+| 位置 | 颜色信号 | 传达的信息 | 非颜色备用 | 状态 |
+|------|----------|------------|------------|------|
+| [血条] | [红色 = 低生命值] | [玩家濒临死亡] | [血条同时显示数值并闪烁] | [未开始] |
+| [小地图标记] | [红色 = 敌人，绿色 = 盟友] | [单位阵营] | [敌人标记为三角形；盟友标记为圆形] | [未开始] |
+| [背包物品稀有度] | [颜色编码边框（灰/蓝/紫/金）] | [物品品质等级] | [悬停/聚焦时显示稀有度名称；图标星数] | [未开始] |
+| [为每个颜色编码元素添加行] | | | | |
 
 ---
 
-## Motor Accessibility
+## 运动可访问性
 
-> **Why motor accessibility matters for games**: Games are more motor-demanding
-> than most software. A web form requires precise clicks; a game may require
-> rapid simultaneous button combinations held for specific durations. Motor
-> impairments span a wide range — from tremor (affecting precision) to
-> hemiplegia (one functional hand) to RSI (affecting hold duration). The AbleGamers
-> Able Assistance program estimates 35 million gamers in the US have a disability
-> affecting their ability to play. Many of the features below cost very little
-> to implement if planned from the start, and are extremely expensive to add post-launch.
+> **为何运动可访问性对游戏很重要**: 游戏比大多数软件对运动要求更高。
+> 网页表单需要精确点击；游戏可能需要快速的同时按钮组合，
+> 并按住特定时长。运动障碍范围广泛 —— 从震颤（影响精度）到
+> 偏瘫（一只手功能正常）到RSI（影响按住时长）。AbleGamers
+> Able Assistance项目估计美国有3500万游戏玩家患有影响
+> 游戏能力的残疾。如果从一开始就规划，下面许多功能的实现成本很低，
+> 但发布后添加则极其昂贵。
 
-| Feature | Target Tier | Scope | Status | Implementation Notes |
-|---------|-------------|-------|--------|---------------------|
-| Full input remapping | Standard | All gameplay inputs, all platforms | Not Started | Every input bound by default must be rebindable. Remapping applies to keyboard, mouse, controller, and any supported peripheral independently. No two actions may be bound to the same input simultaneously (warn on conflict). Persist remapping to player profile. |
-| Input method switching | Standard | PC | Not Started | Player must be able to switch between keyboard/mouse and gamepad at any moment without restarting. UI must update prompts dynamically (show correct button icons for active input method). |
-| One-hand mode | [Tier] | [Identify which features require two simultaneous hands] | Not Started | Audit every multi-input action. For each: can it be executed with a single hand? If not, provide a toggle alternative or hold-to-toggle version. Specify here which features have a one-hand path and which do not. |
-| Hold-to-press alternatives | Standard | All hold inputs | Not Started | Every "hold [button] to [action]" must offer a toggle alternative. Toggle mode: first press activates, second press deactivates. Example: "Hold to sprint" becomes optional "toggle sprint" mode. List all hold inputs in the game here. |
-| Rapid input alternatives | Standard | Any button mashing / rapid input sequences | Not Started | Any input requiring more than 3 presses per second sustained must offer a single-press toggle alternative. Example: Hades' "Hold to dash repeatedly" solves this elegantly. |
-| Input timing adjustments | Standard | QTEs, timed button presses, rhythm inputs | Not Started | Provide a timing window multiplier in accessibility settings. Minimum range: 0.5x to 3.0x. Default: 1.0x. At 3.0x, a 500ms window becomes 1500ms. Document every timed input in this game and test at all multiplier values. |
-| Aim assist | Standard | All ranged combat / targeting | Not Started | Not just on/off — provide granularity: Assist Strength (0–100%), Assist Radius, Aim Magnetism (snap-to-target), and Aim Slowdown (near-target deceleration) as separate sliders. Default values should be tuned to feel helpful, not intrusive. |
-| Auto-sprint / movement assists | Standard | Movement systems | Not Started | "Hold to sprint" toggle (covered above). Additionally: auto-run option (hold direction, player continues without input). Specify any movement input that is held continuously in normal gameplay. |
-| Platforming / traversal assists | [Tier] | [If game has platforming] | Not Started | Evaluate whether auto-grab (generous ledge detection), coyote time extension, and jump height adjustment are appropriate for this game's design. If platforming is not a game system, mark N/A. |
-| HUD element repositioning | Comprehensive | All HUD elements | Not Started | Allow players to move health bars, minimaps, and quest trackers to their preferred screen position. Particularly important for players using head-tracking or eye-gaze hardware who may have reduced peripheral vision coverage. |
-
----
-
-## Cognitive Accessibility
-
-> **Why cognitive accessibility is often under-specced**: Cognitive accessibility
-> affects players with ADHD, dyslexia, autism spectrum conditions, acquired brain
-> injuries, and anxiety disorders — a larger combined population than many studios
-> realize. It also benefits all players in high-stress moments. The most common
-> failures are: no pause anywhere, tutorial information that can only be seen once,
-> and systems that require tracking too many simultaneous states. Games like
-> Hades and Celeste have demonstrated that cognitive assist options (god mode,
-> persistent reminders, extended text display) do not harm the experience for
-> players who don't use them.
-
-| Feature | Target Tier | Scope | Status | Implementation Notes |
-|---------|-------------|-------|--------|---------------------|
-| Difficulty options | Standard | All gameplay difficulty parameters | Not Started | Separate granular sliders where possible (damage dealt, damage received, enemy aggression, enemy speed) rather than a single Easy/Normal/Hard label. Document which parameters are adjustable and which are fixed. Fixed parameters require a design justification. |
-| Pause anywhere | Basic | All gameplay states | Not Started | Players must be able to pause during any gameplay state, including cutscenes, dialogue, and tutorial sequences. Document any state where pausing is currently prevented and the design justification for that restriction. Any restriction is a risk. |
-| Tutorial persistence | Standard | All tutorials and help text | Not Started | After dismissing a tutorial prompt, the player must be able to retrieve it from a Help section in the menu. Do not rely on players absorbing tutorials on first encounter — AbleGamers research shows many players dismiss prompts on reflex. |
-| Quest / objective clarity | Standard | Quest and objective systems | Not Started | The current active objective must be accessible within 2 button presses at all times during gameplay. Display the full objective text on demand, not just a truncated marker. Avoid objectives that require inference ("investigate the northern region" — where exactly?). |
-| Visual indicators for audio-only information | Standard | All SFX that carry gameplay information | Not Started | Audit every sound effect that communicates gameplay-critical state. For each: is there a visual equivalent? Directional audio (off-screen enemy) needs a screen-edge indicator. Critical warnings (boss phase transition, trap trigger) need visual cues. See Auditory Accessibility for full list. |
-| Reading time for UI | Standard | All auto-dismissing dialogs | Not Started | No dialog, notification, or tooltip that contains actionable information may auto-dismiss in less than 5 seconds. Preferred: do not auto-dismiss at all — require player confirmation. Document every auto-dismissing element here and its current duration. |
-| Cognitive load documentation | Comprehensive | Per game system | Not Started | For each system in systems-index.md, document the maximum number of things it asks the player to simultaneously track. Flag any system where the number exceeds 4. This is not a hard rule but a review trigger — high cognitive load systems need compensating UI clarity. See Per-Feature Accessibility Matrix below. |
-| Navigation assists | Standard | World navigation | Not Started | Fast travel (to previously visited locations), waypoint system for current objective, optional objective indicator always visible. Document which of these apply to this game's design and which are intentionally omitted. |
+| 功能 | 目标层级 | 范围 | 状态 | 实现说明 |
+|------|----------|------|------|----------|
+| 完整输入重映射 | 标准 | 所有游戏输入，所有平台 | 未开始 | 默认绑定的每个输入必须可重新绑定。重映射独立应用于键盘、鼠标、控制器和任何支持的外设。不允许两个操作同时绑定到同一输入（冲突时警告）。持久化到玩家配置文件。 |
+| 输入方法切换 | 标准 | PC | 未开始 | 玩家必须能够在不重启的情况下随时在键盘/鼠标和游戏手柄之间切换。UI必须动态更新提示（显示当前输入方法的正确按钮图标）。 |
+| 单手模式 | [层级] | [确定哪些功能需要双手同时操作] | 未开始 | 审核每个多输入操作。对于每个操作：能否用单手执行？如果不能，提供切换替代方案或按住切换版本。在此指定哪些功能有单手路径，哪些没有。 |
+| 按住转按下的替代方案 | 标准 | 所有按住输入 | 未开始 | 每个"按住[按钮]来[操作]"必须提供切换替代方案。切换模式：第一次按下激活，第二次按下取消激活。示例："按住冲刺"变为可选的"切换冲刺"模式。在此列出游戏中所有按住输入。 |
+| 快速输入替代方案 | 标准 | 任何按键连打/快速输入序列 | 未开始 | 任何需要每秒超过3次持续按下的输入必须提供单次按下切换替代方案。示例：Hades的"按住来重复冲刺"优雅地解决了这个问题。 |
+| 输入 timing 调整 | 标准 | QTE、限时按键、节奏输入 | 未开始 | 在可访问性设置中提供 timing 窗口倍率。最小范围：0.5x到3.0x。默认：1.0x。在3.0x下，500ms窗口变为1500ms。记录游戏中每个限时输入并在所有倍率值下测试。 |
+| 瞄准辅助 | 标准 | 所有远程战斗/瞄准 | 未开始 | 不仅仅是开/关 —— 提供粒度：辅助强度（0–100%）、辅助半径、瞄准磁性（吸附到目标）和瞄准减速（靠近目标时减速）作为独立滑块。默认值应调整得感觉有帮助而非侵入性。 |
+| 自动冲刺/移动辅助 | 标准 | 移动系统 | 未开始 | "按住冲刺"切换（上文已涵盖）。此外：自动奔跑选项（按住方向，玩家无需输入继续移动）。指定正常游戏玩法中持续按住的任何移动输入。 |
+| 平台跳跃/穿越辅助 | [层级] | [如果游戏有平台跳跃] | 未开始 | 评估自动抓取（宽松的边缘检测）、土狼时间延长和跳跃高度调整是否适合本游戏的设计。如果平台跳跃不是游戏系统，标记为不适用。 |
+| HUD元素重新定位 | 全面 | 所有HUD元素 | 未开始 | 允许玩家将血条、小地图和任务追踪器移动到其偏好的屏幕位置。对于使用头部追踪或眼动追踪硬件的玩家尤其重要，因为他们可能周边视觉覆盖范围减少。 |
 
 ---
 
-## Auditory Accessibility
+## 认知可访问性
 
-> **Why auditory accessibility matters even for players without hearing loss**:
-> 7% of players are deaf or hard of hearing. Additionally, a large portion of
-> players regularly play in environments where audio is reduced or absent (commute,
-> shared household, infant sleeping). Any gameplay-critical information delivered
-> only through audio is a design failure even before accessibility is considered.
-> The guiding principle: every sound that changes what the player should DO next
-> must have a visual equivalent.
+> **为何认知可访问性经常被低估规格**: 认知可访问性
+> 影响患有ADHD、阅读障碍、自闭症谱系障碍、获得性脑损伤
+> 和焦虑障碍的玩家 —— 这是比许多工作室意识到的更大的合并人口。
+> 它也使所有玩家在高压力时刻受益。最常见的
+> 失败是：无处暂停、教程信息只能看一次，
+> 以及需要同时跟踪太多状态的系统。像
+> Hades和Celeste这样的游戏已经证明认知辅助选项（上帝模式、
+> 持久提醒、延长文本显示）不会损害不使用的玩家的体验。
 
-| Feature | Target Tier | Scope | Status | Implementation Notes |
-|---------|-------------|-------|--------|---------------------|
-| Subtitles for all spoken dialogue | Basic | All voiced content | Not Started | 100% coverage — no exceptions. Include narration, in-engine dialogue, radio/environmental dialogue heard from a distance. Test subtitle sync against voice acting timing. |
-| Closed captions for gameplay-critical SFX | Comprehensive | Identified SFX list (below) | Not Started | Not all SFX need captions — only those that communicate state the player cannot infer visually. See the SFX audit table below. |
-| Mono audio option | Comprehensive | Global audio output | Not Started | Folds stereo/spatial audio to mono. Preserves volume balance between channels rather than summing to full volume on both sides. Essential for players with single-sided deafness. |
-| Independent volume controls | Basic | Music / SFX / Voice / UI audio buses | Not Started | Four independent sliders minimum. Persist to player profile. Range: 0–100%, default 80%. Expose in both main settings and the pause menu. |
-| Visual representations for directional audio | Comprehensive | All off-screen threats and audio events | Not Started | Screen-edge indicator pointing toward the audio source. Opacity scales with audio volume (closer = more opaque). Two variants: threat indicators (red) and information indicators (neutral). Example: The Last of Us Part II uses screen-edge indicators for off-screen enemy positions. |
-| Hearing aid compatibility mode | Standard | High-frequency audio cues | Not Started | Audit all audio cues for frequency range. Any cue that communicates critical information only through high-frequency sound (above 4kHz) must have a low-frequency or visual equivalent. Hearing aids often filter high frequencies. |
-
-### Gameplay-Critical SFX Audit
-
-> Identify every sound effect that communicates state the player needs to act on.
-> Each entry in this table requires either a confirmed visual backup or a caption.
-
-| Sound Effect | What It Communicates | Visual Backup | Caption Required | Status |
-|-------------|---------------------|--------------|-----------------|--------|
-| [Enemy attack windup sound] | [Incoming damage — player should dodge] | [Enemy animation telegraph visible from all camera angles] | [No — visual is sufficient] | [Not Started] |
-| [Trap trigger click] | [Trap is about to fire] | [Not always visible depending on camera angle] | [Yes — "[CLICK]" caption with directional indicator] | [Not Started] |
-| [Low health heartbeat] | [Player health critical] | [Health bar also shows critical state visually] | [No — visual is sufficient] | [Not Started] |
-| [Quest completion chime] | [Objective completed] | [Quest tracker updates visually] | [No — visual is sufficient] | [Not Started] |
-| [Add each SFX that changes what the player should do] | | | | |
+| 功能 | 目标层级 | 范围 | 状态 | 实现说明 |
+|------|----------|------|------|----------|
+| 难度选项 | 标准 | 所有游戏难度参数 | 未开始 | 尽可能使用独立的粒度滑块（造成伤害、受到伤害、敌人攻击性、敌人速度）而非单一的简单/普通/困难标签。记录哪些参数可调，哪些固定。固定参数需要设计理由。 |
+| 随处暂停 | 基本 | 所有游戏状态 | 未开始 | 玩家必须能够在任何游戏状态下暂停，包括过场动画、对话和教程序列。记录当前阻止暂停的任何状态及该限制的设计理由。任何限制都是风险。 |
+| 教程持久化 | 标准 | 所有教程和帮助文本 | 未开始 | 关闭教程提示后，玩家必须能够从菜单的帮助部分检索它。不要依赖玩家在首次遇到时吸收教程 —— AbleGamers研究表明许多玩家会反射性地关闭提示。 |
+| 任务/目标清晰度 | 标准 | 任务和目标系统 | 未开始 | 当前活动目标必须在游戏过程中始终可通过2次按键访问。按需显示完整目标文本，而非仅截断标记。避免需要推断的目标（"调查北部区域" —— 到底哪里？）。 |
+| 纯音频信息的视觉指示器 | 标准 | 所有传达游戏信息的SFX | 未开始 | 审核每个传达游戏关键状态的音效。对于每个：是否有视觉等价物？定向音频（屏幕外敌人）需要屏幕边缘指示器。关键警告（Boss阶段转换、陷阱触发）需要视觉提示。参见听觉可访问性获取完整列表。 |
+| UI阅读时间 | 标准 | 所有自动关闭的对话框 | 未开始 | 任何包含可操作信息的对话框、通知或工具提示不得在少于5秒内自动关闭。优先：完全不自动关闭 —— 要求玩家确认。在此记录每个自动关闭的元素及其当前持续时间。 |
+| 认知负荷文档 | 全面 | 每个游戏系统 | 未开始 | 对于systems-index.md中的每个系统，记录它要求玩家同时跟踪的最大事物数量。标记任何数量超过4的系统。这不是硬性规则而是审核触发器 —— 高认知负荷系统需要补偿性的UI清晰度。参见下方的每功能可访问性矩阵。 |
+| 导航辅助 | 标准 | 世界导航 | 未开始 | 快速旅行（到之前访问过的位置）、当前目标的路径点系统、始终可见的可选目标指示器。记录这些中哪些适用于本游戏的设计，哪些被有意省略。 |
 
 ---
 
-## Platform Accessibility API Integration
+## 听觉可访问性
 
-> **Why this section exists**: Each platform provides native accessibility APIs
-> that, when used, allow OS-level features (system screen readers, display
-> accommodations, motor accessibility services) to work with your game. Ignoring
-> these APIs does not break the game, but it means players who rely on OS-level
-> accessibility tools get no benefit from them inside your game. Xbox in particular
-> requires XAG compliance for certification. Verify platform requirements before
-> committing to a tier — platform requirements set a floor, not a ceiling.
+> **为何听觉可访问性即使对没有听力损失的玩家也很重要**:
+> 7%的玩家是聋人或听力障碍。此外，很大一部分
+> 玩家经常在音频降低或缺失的环境中玩游戏（通勤、
+> 共享家庭、婴儿睡觉）。任何仅通过音频传达的游戏关键信息
+> 即使在考虑可访问性之前也是设计失败。
+> 指导原则：每个改变玩家接下来应该做什么的声音
+> 必须有视觉等价物。
 
-| Platform | API / Standard | Features Planned | Status | Notes |
-|----------|---------------|-----------------|--------|-------|
-| Xbox (GDK) | Xbox Game Core Accessibility / XAG | [Input remapping via Xbox Ease of Access, high contrast support, narrator integration for menus] | Not Started | XAG compliance is required for ID@Xbox Game Pass consideration. Review XAG checklist at https://docs.microsoft.com/gaming/accessibility/guidelines |
-| PlayStation 5 | Sony Accessibility Guidelines / AccessibilityNode API | [Screen reader passthrough for menus, mono audio, high contrast] | Not Started | PS5 natively supports system-level audio description and mono audio if the game exposes AccessibilityNode data on UI elements. |
-| Steam (PC) | Steam Accessibility Features / SDL | [Controller input remapping via Steam Input, subtitle support] | Not Started | Steam Input allows system-level remapping independent of in-game remapping. In-game remapping still required for keyboard/mouse. |
-| iOS | UIAccessibility / VoiceOver | [VoiceOver support for menus if mobile port planned] | N/A | Only required if mobile release is in scope. |
-| Android | AccessibilityService / TalkBack | [TalkBack support for menus if mobile port planned] | N/A | Only required if mobile release is in scope. |
-| PC (Screen Reader) | JAWS / NVDA / Windows Narrator | [Menu navigation announcements] | Not Started | Requires UI elements to expose accessible names and roles via platform UI layer. Godot 4.5+ AccessKit integration covers this for supported control types. Verify against engine-reference/godot/ docs. |
+| 功能 | 目标层级 | 范围 | 状态 | 实现说明 |
+|------|----------|------|------|----------|
+| 所有对话的字幕 | 基本 | 所有配音内容 | 未开始 | 100%覆盖 —— 无例外。包括旁白、引擎内对话、从远处听到的无线电/环境对话。测试字幕同步与配音 timing。 |
+| 游戏关键SFX的隐藏式字幕 | 全面 | 识别的SFX列表（下方） | 未开始 | 并非所有SFX都需要字幕 —— 仅那些传达玩家无法从视觉上推断的状态的。参见下方的SFX审核表。 |
+| 单声道音频选项 | 全面 | 全局音频输出 | 未开始 | 将立体声/空间音频折叠为单声道。保留声道之间的音量平衡，而非在两側都以全音量混合。对单侧耳聋的玩家至关重要。 |
+| 独立音量控制 | 基本 | 音乐 / SFX / 语音 / UI音频总线 | 未开始 | 最少四个独立滑块。持久化到玩家配置文件。范围：0–100%，默认80%。在主设置和暂停菜单中都公开。 |
+| 定向音频的视觉表示 | 全面 | 所有屏幕外的威胁和音频事件 | 未开始 | 指向音频源的屏幕边缘指示器。不透明度随音频音量缩放（越近 = 越不透明）。两种变体：威胁指示器（红色）和信息指示器（中性）。示例：The Last of Us Part II对屏幕外敌人位置使用屏幕边缘指示器。 |
+| 助听器兼容模式 | 标准 | 高频音频提示 | 未开始 | 审核所有音频提示的频率范围。任何仅通过高频声音（高于4kHz）传达关键信息的提示必须有低频或视觉等价物。助听器经常过滤高频。 |
 
----
+### 游戏关键SFX审核
 
-## Per-Feature Accessibility Matrix
+> 识别每个传达玩家需要行动的状态的音效。
+> 此表中的每个条目需要确认的视觉备用或字幕。
 
-> **Why this matrix exists**: Accessibility is not a list of settings — it is a
-> property of every game system. This matrix creates the "accessibility impact"
-> view of the game: which systems have which barriers, and whether those barriers
-> are addressed. When a new system is added to systems-index.md, a row must be
-> added here. If a system has an unaddressed accessibility concern, it cannot be
-> marked Approved in the systems index.
-
-| System | Visual Concerns | Motor Concerns | Cognitive Concerns | Auditory Concerns | Addressed | Notes |
-|--------|----------------|---------------|-------------------|------------------|-----------|-------|
-| [Combat System] | [Enemy health bars are color-coded; attack animations may cause motion sickness] | [Rapid input required for combos; hold inputs for guard] | [Track enemy patterns + cooldowns + player resources simultaneously] | [Audio cues for off-screen attacks; critical damage warning sounds] | [Partial] | [Colorblind palette applied; hold-to-block toggle needed] |
-| [Inventory / Equipment] | [Item rarity conveyed by border color] | [No motor concerns — turn-based] | [Item stats comparison requires reading multiple values] | [None — no critical audio in this system] | [Partial] | [Non-color rarity indicators in progress] |
-| [Dialogue System] | [Subtitle display depends on contrast settings] | [No motor concerns] | [Long dialogue trees with time pressure on dialogue choices] | [All dialogue must be subtitled] | [Not Started] | [Timed dialogue choices must support extended timer option] |
-| [Navigation / World Map] | [Map marker colors] | [No motor concerns] | [Quest objective clarity; waypoint visibility] | [Audio pings for objectives have no visual equivalent] | [Not Started] | |
-| [Add system from systems-index.md] | | | | | | |
+| 音效 | 传达的信息 | 视觉备用 | 需要字幕 | 状态 |
+|------|------------|----------|----------|------|
+| [敌人攻击蓄力声] | [即将到来的伤害 —— 玩家应该闪避] | [敌人动画预告从所有相机角度可见] | [否 —— 视觉已足够] | [未开始] |
+| [陷阱触发咔哒声] | [陷阱即将发射] | [根据相机角度不一定可见] | [是 —— "[咔哒]"字幕带定向指示器] | [未开始] |
+| [低生命值心跳声] | [玩家生命值危急] | [血条也以视觉方式显示危急状态] | [否 —— 视觉已足够] | [未开始] |
+| [任务完成提示音] | [目标已完成] | [任务追踪器以视觉方式更新] | [否 —— 视觉已足够] | [未开始] |
+| [添加每个改变玩家应该做什么的SFX] | | | | |
 
 ---
 
-## Accessibility Test Plan
+## 平台可访问性API集成
 
-> **Why testing accessibility separately from QA**: Standard QA tests whether
-> features work. Accessibility testing tests whether features work for players
-> who use them. These are different tests. A subtitle system can pass QA (it
-> displays text) and fail accessibility testing (the text is unreadable at TV
-> distance by a player with low vision). Plan for three test types: automated
-> (contrast ratios, text sizes), manual internal (team members simulating
-> impairments using accessibility simulators), and user testing (players who
-> actually use these features).
+> **为何存在此部分**: 每个平台都提供原生可访问性API，
+> 使用时允许操作系统级功能（系统屏幕阅读器、显示
+> 辅助工具、运动可访问性服务）与您的游戏协同工作。忽略
+> 这些API不会破坏游戏，但意味着依赖操作系统级
+> 可访问性工具的玩家在游戏中无法从它们受益。Xbox尤其
+> 需要XAG认证合规。在承诺层级前验证平台要求 ——
+> 平台要求设定的是底线，而非上限。
 
-| Feature | Test Method | Test Cases | Pass Criteria | Responsible | Status |
-|---------|------------|------------|--------------|-------------|--------|
-| Text contrast ratios | Automated — contrast analyzer tool on all UI screenshots | All text/background combinations at all game states | All body text ≥ 4.5:1; all large text ≥ 3:1; subtitle backgrounds ≥ 7:1 | ux-designer | Not Started |
-| Colorblind modes | Manual — Coblis simulator on all game screenshots with modes enabled | Gameplay screenshots in exploration, combat, inventory in each mode | No essential information is lost in any mode; player can complete all objectives without color discrimination | ux-designer | Not Started |
-| Input remapping | Manual — remap all inputs to non-default bindings, complete tutorial and first level | All default inputs rebound; gameplay functions correctly; no binding conflict possible | All actions accessible after remapping; conflict prevention works; bindings persist across restart | qa-tester | Not Started |
-| Subtitle accuracy | Manual — verify against voice script, check all lines | All voiced content; subtitle timing; speaker identification | 100% of voiced lines subtitled; speaker identified for all multi-character scenes; no subtitle display for more than 3 seconds after line ends | qa-tester | Not Started |
-| Hold input toggles | Manual — enable all toggle alternatives, complete all combat and traversal sequences | All hold inputs in toggle mode | All hold actions completable in toggle mode; no gameplay state requires sustained hold when toggle is enabled | qa-tester | Not Started |
-| Reduced motion mode | Manual — enable mode, navigate all menus and complete first hour of gameplay | All menu transitions; all HUD animations; all camera shake events | No looping animations in menus; no camera shake above threshold; all screen transitions are cross-fade or cut | ux-designer | Not Started |
-| Platform screen reader (menu) | Manual — enable OS screen reader, navigate all menus | Main menu, settings, pause menu, inventory, map | All interactive menu elements have screen reader announcements; navigation order is logical; no element unreachable by keyboard/D-pad | ux-designer | Not Started |
-| User testing — colorblind | User testing with colorblind participants | Full game session with each colorblind mode | Participants complete all content without requesting color clarification; no session-stopping confusion | producer | Not Started |
-| User testing — motor impairment | User testing with participants using one hand or adaptive controllers | Full game session with toggle and extended timing modes enabled | Participants complete all MVP content within tolerance of able-bodied completion time | producer | Not Started |
+| 平台 | API / 标准 | 计划功能 | 状态 | 说明 |
+|------|------------|----------|------|------|
+| Xbox (GDK) | Xbox Game Core Accessibility / XAG | [通过Xbox轻松使用进行输入重映射，高对比度支持，菜单旁白集成] | 未开始 | XAG合规是ID@Xbox Game Pass考虑的要求。在 https://docs.microsoft.com/gaming/accessibility/guidelines 查看XAG检查清单 |
+| PlayStation 5 | Sony Accessibility Guidelines / AccessibilityNode API | [菜单屏幕阅读器透传，单声道音频，高对比度] | 未开始 | 如果游戏在UI元素上暴露AccessibilityNode数据，PS5原生支持系统级音频描述和单声道音频。 |
+| Steam (PC) | Steam Accessibility Features / SDL | [通过Steam Input进行控制器输入重映射，字幕支持] | 未开始 | Steam Input允许系统级重映射，独立于游戏内重映射。游戏内重映射仍然需要用于键盘/鼠标。 |
+| iOS | UIAccessibility / VoiceOver | [如果计划移动端口，菜单的VoiceOver支持] | 不适用 | 仅当移动版本在范围内时才需要。 |
+| Android | AccessibilityService / TalkBack | [如果计划移动端口，菜单的TalkBack支持] | 不适用 | 仅当移动版本在范围内时才需要。 |
+| PC (Screen Reader) | JAWS / NVDA / Windows Narrator | [菜单导航播报] | 未开始 | 需要UI元素通过平台UI层暴露可访问名称和角色。Godot 4.5+ AccessKit集成涵盖受支持的控制类型。对照 engine-reference/godot/ 文档验证。 |
 
 ---
 
-## Known Intentional Limitations
+## 每功能可访问性矩阵
 
-> **Why document what is NOT included**: Omissions left undocumented become
-> surprises at certification or in community feedback. Documenting a limitation
-> with a rationale demonstrates that it was a deliberate choice, not an oversight.
-> It also identifies which players are not served and what the mitigation is.
-> Every entry here is a risk — assess it honestly.
+> **为何存在此矩阵**: 可访问性不是设置列表 —— 它是
+> 每个游戏系统的属性。此矩阵创建了游戏的"可访问性影响"
+> 视图：哪些系统有哪些障碍，以及这些障碍是否
+> 得到解决。当新系统添加到systems-index.md时，必须
+> 在此处添加一行。如果某个系统有未解决的可访问性顾虑，则不能在系统索引中标记为已批准。
 
-| Feature | Tier Required | Why Not Included | Risk / Impact | Mitigation |
-|---------|--------------|-----------------|--------------|------------|
-| [Screen reader support for in-game world (NPCs, objects, environmental text)] | Exemplary | Engine (Godot 4.6) AccessKit integration covers menus only; extending to the game world requires a custom spatial audio description system beyond current scope | Affects blind and low-vision players who can navigate menus but cannot independently explore the game world | Ensure all critical world information is duplicated in accessible menu systems (quest log, map); evaluate for post-launch DLC |
-| [Full subtitle customization (font/color/background)] | Comprehensive | Scope reduction — targeting Standard tier. Custom font rendering in Godot requires additional asset pipeline work | Affects deaf and hard-of-hearing players with specific legibility needs; particularly affects players with dyslexia who use custom fonts | Provide two preset subtitle styles (default and high-readability) as a partial mitigation; log for post-launch update |
-| [Tactile/haptic alternatives for all audio cues] | Exemplary | Platform rumble API integration for non-Xbox platforms is out of scope for v1.0 | Affects deaf players relying on haptic feedback; PC players with non-Xbox controllers get no haptic response | Xbox controller haptic integration is in scope; evaluate PlayStation DualSense haptic API for a post-launch patch |
-| [Add any other intentionally excluded accessibility feature] | | | | |
-
----
-
-## Audit History
-
-> **Why track audit history**: Accessibility is not certified once and done.
-> Platform requirements change. New features may introduce new barriers. Legal
-> standards evolve. An audit history demonstrates due diligence and helps identify
-> regressions between audits.
-
-| Date | Auditor | Type | Scope | Findings Summary | Status |
-|------|---------|------|-------|-----------------|--------|
-| [Date] | [Internal — ux-designer] | Internal review | [Pre-submission checklist against committed tier] | [e.g., "12 items verified, 3 open issues: subtitle contrast below target in 2 scenes, color-only indicator on minimap not resolved"] | [In Progress] |
-| [Date] | [External — AbleGamers Player Panel] | User testing | [Motor accessibility — one-hand mode and timing adjustments] | [e.g., "Toggle modes functional. Timed QTE window at 3x still failed for one participant — recommend 5x option."] | [Findings addressed] |
-| [Add row for each audit] | | | | | |
+| 系统 | 视觉顾虑 | 运动顾虑 | 认知顾虑 | 听觉顾虑 | 已解决 | 说明 |
+|------|----------|----------|----------|----------|--------|------|
+| [战斗系统] | [敌人血条颜色编码；攻击动画可能引起晕动症] | [连击需要快速输入；格挡需要按住] | [同时追踪敌人模式 + 冷却 + 玩家资源] | [屏幕外攻击的音频提示；关键伤害警告声] | [部分] | [色盲调色板已应用；按住格挡切换需要] |
+| [背包/装备] | [物品稀有度通过边框颜色传达] | [无运动顾虑 —— 回合制] | [物品属性对比需要阅读多个数值] | [无 —— 此系统无关键音频] | [部分] | [非颜色稀有度指示器进行中] |
+| [对话系统] | [字幕显示依赖对比度设置] | [无运动顾虑] | [带时间压力的对话树的长对话] | [所有对话必须带字幕] | [未开始] | [限时对话选择必须支持延长计时器选项] |
+| [导航/世界地图] | [地图标记颜色] | [无运动顾虑] | [任务目标清晰度；路径点可见性] | [目标的音频提示没有视觉等价物] | [未开始] | |
+| [从systems-index.md添加系统] | | | | | | |
 
 ---
 
-## External Resources
+## 可访问性测试计划
 
-| Resource | URL | Relevance |
-|----------|-----|-----------|
-| WCAG 2.1 (Web Content Accessibility Guidelines) | https://www.w3.org/TR/WCAG21/ | Foundational accessibility standard — contrast ratios, text sizing, input requirements |
-| Game Accessibility Guidelines | https://gameaccessibilityguidelines.com | Comprehensive game-specific checklist organized by category and cost |
-| AbleGamers Player Panel | https://ablegamers.org/player-panel/ | User testing service and consulting with disabled gamers |
-| Xbox Accessibility Guidelines (XAG) | https://docs.microsoft.com/gaming/accessibility/guidelines | Required reading for Xbox certification; well-structured feature checklist |
-| PlayStation Accessibility Guidelines | https://www.playstation.com/en-us/accessibility/ | Sony platform requirements; also contains well-written design guidance |
-| Colour Blindness Simulator (Coblis) | https://www.color-blindness.com/coblis-color-blindness-simulator/ | Free tool for simulating colorblind modes on screenshots |
-| Accessible Games Database | https://accessible.games | Research and examples of accessible game design decisions |
-| CVAA (21st Century Communications and Video Accessibility Act) | https://www.fcc.gov/consumers/guides/21st-century-communications-and-video-accessibility-act-cvaa | US legal requirement for games with communication features (voice chat, messaging) |
+> **为何将可访问性测试与QA分开**: 标准QA测试功能
+> 是否工作。可访问性测试测试功能是否对使用它们的
+> 玩家有效。这些是不同的测试。字幕系统可以通过QA（它
+> 显示文本）但未能通过可访问性测试（电视距离下低视力玩家
+> 无法阅读文本）。规划三种测试类型：自动化
+> （对比度比例、文本大小）、手动内部（团队成员使用
+> 可访问性模拟器模拟障碍）、和用户测试（实际使用这些功能的
+> 玩家）。
+
+| 功能 | 测试方法 | 测试用例 | 通过标准 | 负责人 | 状态 |
+|------|----------|----------|----------|--------|------|
+| 文本对比度比例 | 自动化 —— 所有UI截图的对比度分析工具 | 所有游戏状态下所有文本/背景组合 | 所有正文文本 ≥ 4.5:1；所有大文本 ≥ 3:1；字幕背景 ≥ 7:1 | ux-designer | 未开始 |
+| 色盲模式 | 手动 —— 启用模式下所有游戏截图的Coblis模拟器 | 每种模式下探索、战斗、背包的游戏玩法截图 | 任何模式下不丢失必要信息；玩家无需颜色辨识即可完成所有目标 | ux-designer | 未开始 |
+| 输入重映射 | 手动 —— 将所有输入重映射到非默认绑定，完成教程和第一关 | 所有默认输入重新绑定；游戏玩法功能正常；不可能有绑定冲突 | 重映射后所有操作可访问；冲突预防有效；绑定在重启后持久化 | qa-tester | 未开始 |
+| 字幕准确性 | 手动 —— 对照配音脚本验证，检查所有台词 | 所有配音内容；字幕 timing；说话者识别 | 100%的配音台词有字幕；所有多角色场景识别说话者；台词结束后字幕显示不超过3秒 | qa-tester | 未开始 |
+| 按住输入切换 | 手动 —— 启用所有切换替代方案，完成所有战斗和穿越序列 | 切换模式下的所有按住输入 | 切换模式下所有按住动作可完成；启用切换时没有游戏状态需要持续按住 | qa-tester | 未开始 |
+| 减少动态模式 | 手动 —— 启用模式，浏览所有菜单并完成游戏第一小时 | 所有菜单过渡；所有HUD动画；所有镜头抖动事件 | 菜单中无循环动画；无超过阈值的镜头抖动；所有屏幕过渡为交叉淡化或直接切换 | ux-designer | 未开始 |
+| 平台屏幕阅读器（菜单） | 手动 —— 启用操作系统屏幕阅读器，浏览所有菜单 | 主菜单、设置、暂停菜单、背包、地图 | 所有交互菜单元素有屏幕阅读器播报；导航顺序逻辑；没有键盘/D-pad无法到达的元素 | ux-designer | 未开始 |
+| 用户测试 —— 色盲 | 与色盲参与者进行用户测试 | 每种色盲模式的完整游戏会话 | 参与者完成所有内容而不请求颜色澄清；无会话停止的困惑 | producer | 未开始 |
+| 用户测试 —— 运动障碍 | 与使用单手或自适应控制器的参与者进行用户测试 | 启用切换和延长时间模式的完整游戏会话 | 参与者在健全玩家完成时间的容差范围内完成所有MVP内容 | producer | 未开始 |
 
 ---
 
-## Open Questions
+## 已知故意限制
 
-| Question | Owner | Deadline | Resolution |
-|----------|-------|----------|-----------|
-| [Does Godot 4.6 AccessKit support dynamic accessibility node updates for HUD elements, or only static menus?] | [ux-designer] | [Before Technical Setup gate] | [Unresolved — check engine-reference/godot/ docs] |
-| [What is the Xbox ID@Xbox minimum XAG compliance requirement for our release window?] | [producer] | [Before Pre-Production gate] | [Unresolved] |
-| [Will the dialogue system support timed choice extensions without a full architecture change?] | [lead-programmer] | [During Technical Design] | [Unresolved] |
-| [Add question] | [Owner] | [Deadline] | [Resolution] |
+> **为何记录未包含的内容**: 未记录的遗漏会在
+> 认证时或社区反馈中变成意外。记录限制
+> 并说明理由表明这是深思熟虑的选择，而非疏忽。
+> 它还识别了哪些玩家未被服务以及缓解措施是什么。
+> 此处的每个条目都是风险 —— 诚实地评估它。
+
+| 功能 | 所需层级 | 为何未包含 | 风险/影响 | 缓解措施 |
+|------|----------|------------|-----------|----------|
+| [游戏内世界的屏幕阅读器支持（NPC、物体、环境文本）] | 典范 | 引擎（Godot 4.6）AccessKit集成仅涵盖菜单；扩展到游戏世界需要当前范围之外自定义空间音频描述系统 | 影响可以导航菜单但无法独立探索游戏世界的盲人和低视力玩家 | 确保所有关键世界信息在可访问菜单系统中重复（任务日志、地图）；评估用于发布后DLC |
+| [完整字幕自定义（字体/颜色/背景）] | 全面 | 范围缩减 —— 目标标准层级。Godot中的自定义字体渲染需要额外的资源管线工作 | 影响有特定可读性需求的聋人和听力障碍玩家；尤其影响使用自定义字体的阅读障碍玩家 | 提供两种预设字幕样式（默认和高可读性）作为部分缓解；记录用于发布后更新 |
+| [所有音频提示的触觉/振动替代方案] | 典范 | 非Xbox平台的平台振动API集成超出v1.0范围 | 影响依赖触觉反馈的聋人玩家；使用非Xbox控制器的PC玩家没有触觉响应 | Xbox控制器触觉集成在范围内；评估PlayStation DualSense触觉API用于发布后补丁 |
+| [添加任何其他有意排除的可访问性功能] | | | | |
+
+---
+
+## 审核历史
+
+> **为何追踪审核历史**: 可访问性不是一次认证就完成。
+> 平台要求会变化。新功能可能引入新障碍。法律
+> 标准会演变。审核历史记录展示了尽职调查，并帮助识别
+> 审核之间的回归。
+
+| 日期 | 审核员 | 类型 | 范围 | 发现摘要 | 状态 |
+|------|--------|------|------|----------|------|
+| [日期] | [内部 —— ux-designer] | 内部审核 | [对照承诺层级进行提交前检查清单] | [例如，"12项已验证，3个未解决问题：2个场景中字幕对比度低于目标，小地图上的仅颜色指示器未解决"] | [进行中] |
+| [日期] | [外部 —— AbleGamers Player Panel] | 用户测试 | [运动可访问性 —— 单手模式和时间调整] | [例如，"切换模式功能正常。3倍限时QTE窗口对一名参与者仍然失败 —— 建议5倍选项。"] | [发现已解决] |
+| [添加每次审核的行] | | | | | |
+
+---
+
+## 外部资源
+
+| 资源 | URL | 相关性 |
+|------|-----|--------|
+| WCAG 2.1 (Web Content Accessibility Guidelines) | https://www.w3.org/TR/WCAG21/ | 基础可访问性标准 —— 对比度比例、文本大小、输入要求 |
+| Game Accessibility Guidelines | https://gameaccessibilityguidelines.com | 按类别和成本组织的全面游戏专用检查清单 |
+| AbleGamers Player Panel | https://ablegamers.org/player-panel/ | 与残疾游戏玩家的用户测试服务和咨询 |
+| Xbox Accessibility Guidelines (XAG) | https://docs.microsoft.com/gaming/accessibility/guidelines | Xbox认证的必读书目；结构良好的功能检查清单 |
+| PlayStation Accessibility Guidelines | https://www.playstation.com/en-us/accessibility/ | Sony平台要求；也包含写得很好的设计指南 |
+| Colour Blindness Simulator (Coblis) | https://www.color-blindness.com/coblis-color-blindness-simulator/ | 在截图上模拟色盲模式的免费工具 |
+| Accessible Games Database | https://accessible.games | 可访问游戏设计决策的研究和示例 |
+| CVAA (21st Century Communications and Video Accessibility Act) | https://www.fcc.gov/consumers/guides/21st-century-communications-and-video-accessibility-act-cvaa | 美国对有通信功能（语音聊天、消息传递）游戏的法律要求 |
+
+---
+
+## 未解决问题
+
+| 问题 | 负责人 | 截止日期 | 解决方案 |
+|------|--------|----------|----------|
+| [Godot 4.6 AccessKit是否支持HUD元素的动态可访问性节点更新，还是仅支持静态菜单？] | [ux-designer] | [技术搭建关卡前] | [未解决 —— 检查 engine-reference/godot/ 文档] |
+| [我们发布窗口的Xbox ID@Xbox最低XAG合规要求是什么？] | [producer] | [预生产关卡前] | [未解决] |
+| [对话系统是否支持限时选择扩展而不需要完整的架构变更？] | [lead-programmer] | [技术设计期间] | [未解决] |
+| [添加问题] | [负责人] | [截止日期] | [解决方案] |

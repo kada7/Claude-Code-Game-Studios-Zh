@@ -1,4 +1,4 @@
-# CCGS Skill Testing Framework — Claude 使用说明
+# CCGS Skill Testing Framework（技能测试框架）— Claude 使用说明
 
 本文件夹是 Claude Code Game Studios skill/agent 框架的质量保证层。它是自包含的，与任何游戏项目分离。
 

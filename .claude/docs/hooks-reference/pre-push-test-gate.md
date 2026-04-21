@@ -12,12 +12,12 @@
 
 ```bash
 #!/bin/bash
-# Pre-push hook: Build and test gate
+# 推送前钩子：构建和测试门槛
 
 REMOTE="$1"
 URL="$2"
 
-# Only enforce full gate for develop and main
+# 仅对 develop 和 main 强制完整门槛
 PROTECTED_BRANCHES="develop main"
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
@@ -31,34 +31,34 @@ done
 
 echo "=== Pre-Push Quality Gate ==="
 
-# Step 1: Build
+# 步骤 1：构建
 echo "Building..."
-# Adapt to your build system:
+# 适配你的构建系统：
 # make build || exit 1
 # dotnet build || exit 1
 # cargo build || exit 1
 echo "Build: PASS"
 
-# Step 2: Unit tests
+# 步骤 2：单元测试
 echo "Running unit tests..."
-# Adapt to your test framework:
+# 适配你的测试框架：
 # python -m pytest tests/unit/ -x || exit 1
 # dotnet test tests/unit/ || exit 1
 # cargo test || exit 1
 echo "Unit tests: PASS"
 
 if [ "$FULL_GATE" = true ]; then
-    # Step 3: Integration tests (only for protected branches)
+    # 步骤 3：集成测试（仅用于受保护分支）
     echo "Running integration tests..."
     # python -m pytest tests/integration/ -x || exit 1
     echo "Integration tests: PASS"
 
-    # Step 4: Smoke tests
+    # 步骤 4：冒烟测试
     echo "Running smoke tests..."
     # python -m pytest tests/playtest/smoke/ -x || exit 1
     echo "Smoke tests: PASS"
 
-    # Step 5: Performance regression check
+    # 步骤 5：性能回归检查
     echo "Checking performance baselines..."
     # python tools/ci/perf_check.py || exit 1
     echo "Performance: PASS"

@@ -12,8 +12,8 @@
 
 ```bash
 #!/bin/bash
-# Post-merge hook: Asset validation
-# Checks merged assets against project standards
+# 合并后钩子：资产验证
+# 根据项目标准检查合并的资产
 
 MERGED_ASSETS=$(git diff --name-only HEAD@{1} HEAD | grep -E '^assets/')
 
@@ -27,47 +27,47 @@ WARNINGS=""
 for file in $MERGED_ASSETS; do
     filename=$(basename "$file")
 
-    # Check naming convention (lowercase with underscores)
+    # 检查命名约定（小写，下划线）
     if echo "$filename" | grep -qE '[A-Z[:space:]-]'; then
-        WARNINGS="$WARNINGS\nNAMING: $file -- must be lowercase with underscores"
+        WARNINGS="$WARNINGS\n命名: $file -- 必须为小写下划线格式"
         EXIT_CODE=1
     fi
 
-    # Check texture sizes (must be power of 2)
+    # 检查纹理尺寸（必须是 2 的幂）
     if [[ "$file" == *.png || "$file" == *.jpg ]]; then
-        # Requires ImageMagick
+        # 需要 ImageMagick
         if command -v identify &> /dev/null; then
             dims=$(identify -format "%w %h" "$file" 2>/dev/null)
             if [ -n "$dims" ]; then
                 w=$(echo "$dims" | cut -d' ' -f1)
                 h=$(echo "$dims" | cut -d' ' -f2)
                 if (( (w & (w-1)) != 0 || (h & (h-1)) != 0 )); then
-                    WARNINGS="$WARNINGS\nSIZE: $file -- dimensions ${w}x${h} not power-of-2"
+                    WARNINGS="$WARNINGS\n尺寸: $file -- 尺寸 ${w}x${h} 不是2的幂"
                 fi
             fi
         fi
     fi
 
-    # Check file size budgets
+    # 检查文件大小预算
     size=$(stat -f%z "$file" 2>/dev/null || stat -c%s "$file" 2>/dev/null)
     if [ -n "$size" ]; then
-        # Textures: max 4MB
+        # 纹理：最大 4MB
         if [[ "$file" == assets/art/* ]] && [ "$size" -gt 4194304 ]; then
-            WARNINGS="$WARNINGS\nBUDGET: $file -- ${size} bytes exceeds 4MB texture budget"
+            WARNINGS="$WARNINGS\n预算: $file -- ${size} 字节超出 4MB 纹理预算"
             EXIT_CODE=1
         fi
-        # Audio: max 10MB for music, 512KB for SFX
+        # 音频：音乐最大 10MB，SFX 最大 512KB
         if [[ "$file" == assets/audio/sfx* ]] && [ "$size" -gt 524288 ]; then
-            WARNINGS="$WARNINGS\nBUDGET: $file -- ${size} bytes exceeds 512KB SFX budget"
+            WARNINGS="$WARNINGS\n预算: $file -- ${size} 字节超出 512KB SFX 预算"
         fi
     fi
 done
 
 if [ -n "$WARNINGS" ]; then
-    echo "=== Asset Validation Report ==="
+    echo "=== 资产验证报告 ==="
     echo -e "$WARNINGS"
     echo "================================"
-    echo "Run /asset-audit for a full report."
+    echo "运行 /asset-audit 获取完整报告。"
 fi
 
 exit $EXIT_CODE

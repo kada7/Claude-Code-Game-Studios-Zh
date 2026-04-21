@@ -6,7 +6,7 @@ user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Task, AskUserQuestion
 ---
 
-## Phase 0: Parse Arguments
+## 阶段 0：解析参数
 
 提取里程碑名称（`current` 或特定名称）并解析审查模式（一次，存储用于此运行的所有关卡生成）：
 1. 如果传入了 `--review [full|lean|solo]` → 使用它
@@ -17,7 +17,7 @@ allowed-tools: Read, Glob, Grep, Write, Task, AskUserQuestion
 
 ---
 
-## Phase 1: Load Milestone Data
+## 阶段 1：加载里程碑数据
 
 从 `production/milestones/` 读取里程碑定义。如果参数是 `current`，使用最近修改的里程碑文件。
 
@@ -25,14 +25,14 @@ allowed-tools: Read, Glob, Grep, Write, Task, AskUserQuestion
 
 ---
 
-## Phase 2: Scan Codebase Health
+## 阶段 2：扫描代码库健康度
 
 - 扫描表示未完成工作的 `TODO`, `FIXME`, `HACK` 标记
 - 检查 `production/risk-register/` 中的风险登记册
 
 ---
 
-## Phase 3: Generate the Milestone Review
+## 阶段 3：生成里程碑审查
 
 ```markdown
 # Milestone Review: [Milestone Name]
@@ -106,7 +106,7 @@ allowed-tools: Read, Glob, Grep, Write, Task, AskUserQuestion
 
 ---
 
-## Phase 3b: Producer Risk Assessment
+## 阶段 3b：制作人风险评估
 
 **审查模式检查** — 在生成 PR-MILESTONE 之前应用：
 - `solo` → 跳过。注意："PR-MILESTONE skipped — Solo mode。" 呈现没有 producer verdict 的 Go/No-Go 部分。
@@ -121,7 +121,7 @@ allowed-tools: Read, Glob, Grep, Write, Task, AskUserQuestion
 
 ---
 
-## Phase 4: Save Review
+## 阶段 4：保存审查
 
 向用户呈现审查。
 
@@ -133,7 +133,7 @@ allowed-tools: Read, Glob, Grep, Write, Task, AskUserQuestion
 
 ---
 
-## Phase 5: Next Steps
+## 阶段 5：后续步骤
 
 - 如果此里程碑标记开发阶段边界，运行 `/gate-check` 获得正式的阶段关卡裁决。
 - 运行 `/sprint-plan` 根据上面的范围推荐调整下一个冲刺。

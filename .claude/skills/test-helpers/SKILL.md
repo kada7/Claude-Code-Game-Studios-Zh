@@ -6,7 +6,7 @@ user-invocable: true
 allowed-tools: Read, Glob, Grep, Write
 ---
 
-# Test Helpers
+# 测试辅助函数
 
 编写测试用例在常见设置、拆卸和断言模式被抽象到辅助函数中时更快更一致。此 skill 生成针对项目实际引擎、语言和系统量身定制的 `tests/helpers/` 库 — 这样每个开发人员编写的样板代码更少，断言更多。
 
@@ -75,18 +75,18 @@ Glob pattern="tests/**/*_test.*" (所有测试文件)
 **基础辅助函数** (`tests/helpers/game_assertions.gd`)：
 
 ```gdscript
-## Game-specific assertion utilities for [Project Name] tests.
-## Extends GdUnitAssertions with domain-specific helpers.
+## 针对 [项目名称] 测试的游戏专用断言工具。
+## 使用领域特定的辅助函数扩展 GdUnitAssertions。
 ##
-## Usage:
+## 用法：
 ##   var assert = GameAssertions.new()
 ##   assert.health_in_range(entity, 0, entity.max_health)
 
 class_name GameAssertions
 extends RefCounted
 
-## Assert a value is within the inclusive range [min_val, max_val].
-## Use for any formula output that has defined bounds in a GDD.
+## 断言值在包含范围 [min_val, max_val] 内。
+## 用于 GDD 中定义了边界的任何公式输出。
 static func assert_in_range(
     value: float,
     min_val: float,
@@ -98,8 +98,8 @@ static func assert_in_range(
         "%s %.2f is outside expected range [%.2f, %.2f]" % [label, value, min_val, max_val]
     )
 
-## Assert a signal was emitted during a callable block.
-## Usage: assert_signal_emitted(entity, "health_changed", func(): entity.take_damage(10))
+## 断言在可调用块期间发出了信号。
+## 用法：assert_signal_emitted(entity, "health_changed", func(): entity.take_damage(10))
 static func assert_signal_emitted(
     obj: Object,
     signal_name: String,
@@ -110,7 +110,7 @@ static func assert_signal_emitted(
     action.call()
     assert(emitted, "Expected signal '%s' to be emitted, but it was not." % signal_name)
 
-## Assert that a callable does NOT emit a signal.
+## 断言可调用块未发出信号。
 static func assert_signal_not_emitted(
     obj: Object,
     signal_name: String,
@@ -121,7 +121,7 @@ static func assert_signal_not_emitted(
     action.call()
     assert(not emitted, "Expected signal '%s' NOT to be emitted, but it was." % signal_name)
 
-## Assert a node exists at path within a parent.
+## 断言父节点内指定路径存在节点。
 static func assert_node_exists(parent: Node, path: NodePath) -> void:
     assert(
         parent.has_node(path),
@@ -132,16 +132,16 @@ static func assert_node_exists(parent: Node, path: NodePath) -> void:
 **工厂辅助函数** (`tests/helpers/game_factory.gd`)：
 
 ```gdscript
-## Factory functions for creating test game objects.
-## Returns minimal objects configured for unit testing (no scene tree required).
+## 创建测试游戏对象的工厂函数。
+## 返回为单元测试配置的最小对象（不需要场景树）。
 ##
-## Usage: var player = GameFactory.make_player(health: 100)
+## 用法：var player = GameFactory.make_player(health: 100)
 
 class_name GameFactory
 extends RefCounted
 
-## Create a minimal player-like object for testing.
-## Override fields as needed.
+## 创建最小化的玩家对象用于测试。
+## 根据需要覆盖字段。
 static func make_player(health: int = 100) -> Node:
     var player = Node.new()
     player.set_meta("health", health)
@@ -152,13 +152,13 @@ static func make_player(health: int = 100) -> Node:
 **场景辅助函数** (`tests/helpers/scene_runner_helper.gd`)：
 
 ```gdscript
-## Utilities for scene-based integration tests.
-## Wraps GdUnitSceneRunner for common patterns.
+## 基于场景的集成测试工具。
+## 封装 GdUnitSceneRunner 的常见模式。
 
 class_name SceneRunnerHelper
 extends GdUnitTestSuite
 
-## Load a scene and wait one frame for _ready() to complete.
+## 加载场景并等待一帧以完成 _ready()。
 func load_scene_and_wait(scene_path: String) -> Node:
     var scene = load(scene_path).instantiate()
     add_child(scene)
@@ -177,14 +177,14 @@ using NUnit.Framework;
 using UnityEngine;
 
 /// <summary>
-/// Game-specific assertion utilities for [Project Name] tests.
-/// Extends NUnit's Assert with domain-specific helpers.
+/// 针对 [项目名称] 测试的游戏专用断言工具。
+/// 使用领域特定的辅助函数扩展 NUnit 的 Assert。
 /// </summary>
 public static class GameAssertions
 {
     /// <summary>
-    /// Assert a value is within an inclusive range [min, max].
-    /// Use for any formula output defined in GDD Formulas sections.
+    /// 断言值在包含范围 [min, max] 内。
+    /// 用于 GDD Formulas 部分定义的任何公式输出。
     /// </summary>
     public static void AssertInRange(float value, float min, float max, string label = "value")
     {
@@ -192,7 +192,7 @@ public static class GameAssertions
             $"{label} ({value:F2}) is outside expected range [{min:F2}, {max:F2}]");
     }
 
-    /// <summary>Assert a UnityEvent or C# event was raised during an action.</summary>
+    /// <summary>断言在操作期间触发了 UnityEvent 或 C# 事件。</summary>
     public static void AssertEventRaised(ref bool wasCalled, System.Action action, string eventName)
     {
         wasCalled = false;
@@ -200,7 +200,7 @@ public static class GameAssertions
         Assert.IsTrue(wasCalled, $"Expected event '{eventName}' to be raised, but it was not.");
     }
 
-    /// <summary>Assert a component exists on a GameObject.</summary>
+    /// <summary>断言 GameObject 上存在组件。</summary>
     public static void AssertHasComponent<T>(GameObject obj) where T : Component
     {
         var component = obj.GetComponent<T>();
@@ -216,11 +216,11 @@ public static class GameAssertions
 using UnityEngine;
 
 /// <summary>
-/// Factory methods for creating minimal test objects without loading scenes.
+/// 用于创建不加载场景的最小测试对象的工厂方法。
 /// </summary>
 public static class GameFactory
 {
-    /// <summary>Create a minimal GameObject with a named component for testing.</summary>
+    /// <summary>创建带有命名组件的最小 GameObject 用于测试。</summary>
     public static GameObject MakeGameObject(string name = "TestObject")
     {
         var go = new GameObject(name);
@@ -228,8 +228,8 @@ public static class GameFactory
     }
 
     /// <summary>
-    /// Create a ScriptableObject of type T for data-driven tests.
-    /// Dispose with Object.DestroyImmediate after test.
+    /// 创建类型为 T 的 ScriptableObject 用于数据驱动测试。
+    /// 测试后使用 Object.DestroyImmediate 销毁。
     /// </summary>
     public static T MakeScriptableObject<T>() where T : ScriptableObject
     {
@@ -251,28 +251,28 @@ public static class GameFactory
 #include "Misc/AutomationTest.h"
 
 /**
- * Game-specific assertion macros and helpers for [Project Name] automation tests.
- * Include in any test file that needs domain-specific assertions.
+ * 针对 [项目名称] 自动化测试的游戏专用断言宏和辅助函数。
+ * 包含在任何需要领域特定断言的测试文件中。
  *
- * Usage:
+ * 用法：
  *   GAME_TEST_ASSERT_IN_RANGE(TestName, DamageValue, 10.0f, 50.0f, TEXT("Damage"));
  */
 
-// Assert a float value is within inclusive range [Min, Max]
+// 断言浮点值在包含范围 [Min, Max] 内
 #define GAME_TEST_ASSERT_IN_RANGE(TestName, Value, Min, Max, Label) \
     TestTrue( \
         FString::Printf(TEXT("%s (%.2f) in range [%.2f, %.2f]"), Label, Value, Min, Max), \
         (Value) >= (Min) && (Value) <= (Max) \
     )
 
-// Assert a UObject pointer is valid (not null, not garbage collected)
+// 断言 UObject 指针有效（非空，未被垃圾回收）
 #define GAME_TEST_ASSERT_VALID(TestName, Ptr, Label) \
     TestTrue( \
         FString::Printf(TEXT("%s is valid"), Label), \
         IsValid(Ptr) \
     )
 
-// Assert an Actor is in the world (spawned successfully)
+// 断言 Actor 存在于世界中（生成成功）
 #define GAME_TEST_ASSERT_SPAWNED(TestName, ActorPtr, ClassName) \
     TestNotNull( \
         FString::Printf(TEXT("Spawned actor of class %s"), TEXT(#ClassName)), \
@@ -280,8 +280,8 @@ public static class GameFactory
     )
 
 /**
- * Helper to create a minimal test world.
- * Remember to call World->DestroyWorld(false) in teardown.
+ * 创建最小化测试世界的辅助函数。
+ * 记得在拆卸时调用 World->DestroyWorld(false)。
  */
 namespace GameTestHelpers
 {
@@ -312,9 +312,9 @@ namespace GameTestHelpers
 `combat` 系统的示例模式（Godot/GDScript）：
 
 ```gdscript
-## Factory and assertion helpers for Combat system tests.
-## Generated by /test-helpers combat on [date].
-## Based on: design/gdd/combat.md
+## Combat 系统测试的工厂和断言辅助函数。
+## 由 /test-helpers combat 于 [日期] 生成。
+## 基于：design/gdd/combat.md
 
 class_name CombatTestFactory
 extends RefCounted
@@ -322,14 +322,14 @@ extends RefCounted
 const DAMAGE_MIN := 0
 const DAMAGE_MAX := 999  # From GDD: damage formula upper bound
 
-## Create a minimal attacker object for damage formula tests.
+## 创建最小化的攻击者对象用于伤害公式测试。
 static func make_attacker(attack: float = 10.0, crit_chance: float = 0.0) -> Node:
     var attacker = Node.new()
     attacker.set_meta("attack", attack)
     attacker.set_meta("crit_chance", crit_chance)
     return attacker
 
-## Create a minimal target object for damage receive tests.
+## 创建最小化的目标对象用于承受伤害测试。
 static func make_target(defense: float = 0.0, health: float = 100.0) -> Node:
     var target = Node.new()
     target.set_meta("defense", defense)
@@ -337,7 +337,7 @@ static func make_target(defense: float = 0.0, health: float = 100.0) -> Node:
     target.set_meta("max_health", health)
     return target
 
-## Assert damage output is within GDD-specified bounds.
+## 断言伤害输出在 GDD 指定的边界内。
 static func assert_damage_in_bounds(damage: float) -> void:
     GameAssertions.assert_in_range(damage, DAMAGE_MIN, DAMAGE_MAX, "damage")
 ```
@@ -349,39 +349,39 @@ static func assert_damage_in_bounds(damage: float) -> void:
 展示将要创建的内容摘要：
 
 ```
-## Test Helpers to Create
+## 待创建的测试辅助函数
 
-Base helpers (engine: [engine]):
+基础辅助函数（引擎：[engine]）：
 - tests/helpers/game_assertions.[ext]
 - tests/helpers/game_factory.[ext]
-[engine-specific extras]
+[引擎特定的额外辅助函数]
 
-System helpers ([mode]):
-- tests/helpers/[system]_factory.[ext]  ← from [system] GDD
+系统辅助函数（[mode]）：
+- tests/helpers/[system]_factory.[ext]  ← 来自 [system] GDD
 ```
 
 询问："我可以将这些辅助文件写入 `tests/helpers/` 吗？"
 
 **永远不要覆盖现有文件。** 如果文件已存在，报告："跳过 `[path]` — 已存在。如果要重新生成，请手动删除该文件。"
 
-写入后：裁决：**COMPLETE** — helper files created。
+写入后：裁决：**COMPLETE** — 辅助文件已创建。
 
 "辅助文件已创建。要在测试中使用它们：
 
 - Godot: `class_name` 自动导入 — 不需要显式 import
 - Unity: 添加 `using` 指令或引用测试程序集
-- Unreal: `#include \"tests/helpers/GameTestHelpers.h\"`"
+- Unreal: `#include "tests/helpers/GameTestHelpers.h"`"
 
 ---
 
-## Collaborative Protocol
+## 协作协议
 
 - **永远不要覆盖现有辅助函数** — 它们可能包含手写自定义。只生成尚不存在的新文件
 - **生成的代码是起点** — 生成的工厂函数使用元数据模式以简化；一旦代码存在，请适应实际的类结构
 - **辅助函数应反映 GDD** — 辅助函数中的边界和常量应追溯到 GDD Formulas 部分，而不是虚构的值
 - **写入前询问** — 始终在 `tests/` 中创建文件前确认
 
-## Next Steps
+## 后续步骤
 
 - 如果测试框架尚未脚手架，运行 `/test-setup`。
 - 使用 `/dev-story` 实现 stories — 辅助函数减少新测试文件中的样板代码。

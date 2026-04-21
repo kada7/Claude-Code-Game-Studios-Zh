@@ -8,15 +8,15 @@
 ## 完整流程概览（从零到发布）
 
 ```
-PHASE 1: CONCEPT（概念）
+阶段 1：概念
   /start ──────────────────────────────────────────────────────► 路由到 A/B/C/D
   /brainstorm ──────────────────────────────────────────────────► design/gdd/game-concept.md
   /setup-engine ────────────────────────────────────────────────► CLAUDE.md + technical-preferences.md
   /design-review [game-concept.md] ────────────────────────────► 概念已验证
-  /gate-check ─────────────────────────────────────────────────► PASS → 推进到 systems-design
+  /gate-check ─────────────────────────────────────────────────► 通过 → 推进到 systems-design
         │
         ▼
-PHASE 2: SYSTEMS DESIGN（系统设计）
+阶段 2：系统设计
   /map-systems ────────────────────────────────────────────────► design/gdd/systems-index.md
         │
         ▼（按依赖顺序逐个系统）
@@ -25,18 +25,18 @@ PHASE 2: SYSTEMS DESIGN（系统设计）
         │
         ▼（所有 MVP GDD 完成后）
   /review-all-gdds ────────────────────────────────────────────► design/gdd/gdd-cross-review-[date].md
-  /gate-check ─────────────────────────────────────────────────► PASS → 推进到 technical-setup
+  /gate-check ─────────────────────────────────────────────────► 通过 → 推进到 technical-setup
         │
         ▼
-PHASE 3: TECHNICAL SETUP（技术设置）
+阶段 3：技术设置
   /create-architecture ────────────────────────────────────────► docs/architecture/master.md
   /architecture-decision（×N）────────────────────────────────► docs/architecture/[adr-nnn].md
   /architecture-review ────────────────────────────────────────► 评审报告 + docs/architecture/tr-registry.yaml
   /create-control-manifest ────────────────────────────────────► docs/architecture/control-manifest.md
-  /gate-check ─────────────────────────────────────────────────► PASS → 推进到 pre-production
+  /gate-check ─────────────────────────────────────────────────► 通过 → 推进到 pre-production
         │
         ▼
-PHASE 4: PRE-PRODUCTION（预生产）
+阶段 4：预生产
   [UX — 在 epics 之前，以便 story 编写时规格已存在]
   /ux-design [screen/hud/patterns] ────────────────────────────► design/ux/*.md
   /ux-review ──────────────────────────────────────────────────► UX 规格已批准（/team-ui 的硬门槛）
@@ -51,12 +51,12 @@ PHASE 4: PRE-PRODUCTION（预生产）
   /prototype [core-mechanic] ──────────────────────────────────► prototypes/[name]/
   /playtest-report ────────────────────────────────────────────► tests/playtest/vertical-slice.md
   /sprint-plan new ────────────────────────────────────────────► production/sprints/sprint-01.md
-  /gate-check ─────────────────────────────────────────────────► PASS → 推进到 production
+  /gate-check ─────────────────────────────────────────────────► 通过 → 推进到 production
         │
         ▼
-PHASE 5: PRODUCTION（生产，重复的冲刺循环）
+阶段 5：生产（重复的冲刺循环）
   /sprint-status ──────────────────────────────────────────────► 冲刺快照
-  /story-readiness [story] ────────────────────────────────────► story 已验证为 READY
+  /story-readiness [story] ────────────────────────────────────► story 已验证为 就绪
         │
         ▼（选取并实现）
   /dev-story [story] ──────────────────────────────────────────► 路由到正确的程序员 Agent
@@ -84,10 +84,10 @@ PHASE 5: PRODUCTION（生产，重复的冲刺循环）
         │
         ▼（Production 里程碑后）
   /milestone-review ───────────────────────────────────────────► 里程碑报告
-  /gate-check ─────────────────────────────────────────────────► PASS → 推进到 polish
+  /gate-check ─────────────────────────────────────────────────► 通过 → 推进到 polish
         │
         ▼
-PHASE 6: POLISH（打磨）
+阶段 6：打磨
   /perf-profile ───────────────────────────────────────────────► 性能报告 + 修复
   /balance-check ──────────────────────────────────────────────► 平衡报告 + 修复
   /asset-audit ────────────────────────────────────────────────► 资产合规报告
@@ -96,10 +96,10 @@ PHASE 6: POLISH（打磨）
   /localize ───────────────────────────────────────────────────► 本地化就绪报告
   /team-polish ────────────────────────────────────────────────► 打磨冲刺编排
   /team-qa ────────────────────────────────────────────────────► 完整 QA 周期签核
-  /gate-check ─────────────────────────────────────────────────► PASS → 推进到 release
+  /gate-check ─────────────────────────────────────────────────► 通过 → 推进到 release
         │
         ▼
-PHASE 7: RELEASE（发布）
+阶段 7：发布
   /launch-checklist ───────────────────────────────────────────► 发布就绪报告
   /release-checklist ──────────────────────────────────────────► 平台特定检查清单
   /changelog ──────────────────────────────────────────────────► CHANGELOG.md
@@ -128,7 +128,7 @@ game-concept.md（输入）
         ├── 预检查：可行性表 + 引擎风险标记
         │
         ├── 章节循环 × 8：
-        │     question → options → decision → draft → approval → WRITE
+        │     提问 → 选项 → 决策 → 草稿 → 批准 → 写入
         │     [每节在批准后立即写入文件]
         │
         └── 输出：design/gdd/[system].md（完整，全部 8 节）
@@ -136,9 +136,9 @@ game-concept.md（输入）
                 ▼
         /design-review design/gdd/[system].md
                 │
-                ├── APPROVED → 在 systems-index 中标记 DONE，进入下一个系统
-                ├── NEEDS REVISION → Agent 展示具体问题，重新进入章节循环
-                └── MAJOR REVISION → 需要重大重新设计，然后才能进入下一个系统
+        ├── 已通过 → 在 systems-index 中标记 DONE，进入下一个系统
+        ├── 需修订 → Agent 展示具体问题，重新进入章节循环
+        └── 重大修订 → 需要重大重新设计，然后才能进入下一个系统
                         │
                         ▼（所有 MVP GDD + 交叉评审后）
                 /review-all-gdds
@@ -164,11 +164,11 @@ design/player-journey.md（情感弧线，如果已编写）
         ▼
 /ux-review design/ux/
         │
-        ├── APPROVED → UX 规格就绪，进入 /create-epics
-        ├── NEEDS REVISION → 列出阻塞问题 → 修复 → 重新运行评审
-        └── MAJOR REVISION → 根本性 UX 问题 → 在 epics 前重新设计
+        ├── 已通过 → UX 规格就绪，进入 /create-epics
+        ├── 需修订 → 列出阻塞问题 → 修复 → 重新运行评审
+        └── 重大修订 → 根本性 UX 问题 → 在 epics 前重新设计
                 │
-                ▼（APPROVED 后 — Phase 5 实现 UI 功能时）
+▷（已通过后 — 阶段 5 实现 UI 功能时）
         /team-ui
                 │
                 ├── Phase 1：/ux-design（如果还有缺失规格）+ /ux-review
@@ -190,11 +190,11 @@ Story 如何从待办到关闭：
 ```
 /story-readiness [story]
         │
-        ├── READY → 状态：ready-for-dev → 选取进行实现
-        ├── NEEDS WORK → Agent 展示具体差距 → 解决 → 重新运行 readiness
-        └── BLOCKED → ADR 仍为 Proposed，或上游 story 不完整
+        ├── 就绪 → 状态：ready-for-dev → 选取进行实现
+        ├── 需完善 → Agent 展示具体差距 → 解决 → 重新运行 readiness
+        └── 阻塞 → ADR 仍为 Proposed，或上游 story 不完整
                 │
-                ▼（READY 后）
+                ▼（就绪 后）
         /dev-story [story]
                 │
                 ├── 读取：story 文件、链接的 GDD 需求、ADR 决策、控制清单
@@ -210,9 +210,9 @@ Story 如何从待办到关闭：
                         ▼
                 /story-done [story]
                         │
-                        ├── COMPLETE → 状态：Complete，sprint-status.yaml 已更新，下一个 story 已呈现
-                        ├── COMPLETE WITH NOTES → 已完成，但部分标准已延期（已记录）
-                        └── BLOCKED → 验收标准无法验证 → 调查阻塞原因
+                        ├── 已完成 → 状态：Complete，sprint-status.yaml 已更新，下一个 story 已呈现
+                        ├── 已完成（附注） → 已完成，但部分标准已延期（已记录）
+                        └── 阻塞 → 验收标准无法验证 → 调查阻塞原因
 ```
 
 ---
@@ -235,9 +235,9 @@ Story 如何从待办到关闭（摘要视图）：
                 ▼
         /story-readiness [story]
                 │
-                ├── READY → /dev-story → 实现 → /story-done
-                ├── NEEDS WORK → 解决差距 → 重新运行
-                └── BLOCKED → 先修复上游依赖
+        ├── 就绪 → /dev-story → 实现 → /story-done
+        ├── 需完善 → 解决差距 → 重新运行 readiness
+        └── 阻塞 → 先修复上游依赖
 ```
 
 ---
@@ -254,18 +254,18 @@ Story 如何从待办到关闭（摘要视图）：
         │
         ├── 读取：story 文件、GDD、验收标准
         ├── 按测试类型分类每个 story：
-        │     Logic → 自动化单元测试（BLOCKING）
-        │     Integration → 集成测试或记录的游戏测试（BLOCKING）
-        │     Visual/Feel → 截图 + 主管签核（ADVISORY）
-        │     UI → 手动走查或交互测试（ADVISORY）
-        │     Config/Data → 冒烟测试（ADVISORY）
+        │     逻辑 → 自动化单元测试（阻塞级）
+        │     集成 → 集成测试或记录的游戏测试（阻塞级）
+        │     视觉/手感 → 截图 + 主管签核（建议级）
+        │     UI → 手动走查或交互测试（建议级）
+        │     配置/数据 → 冒烟测试（建议级）
         └── 输出：production/qa/qa-plan-sprint-NN.md
                 │
                 ▼
         /smoke-check
                 │
-                ├── PASS → QA 交接已清除
-                └── FAIL → 阻止冲刺关闭 → 先修复关键路径
+        ├── 通过 → QA 交接已清除
+        └── 失败 → 阻止冲刺关闭 → 先修复关键路径
                         │
                         ▼
                 /regression-suite
@@ -310,11 +310,11 @@ design/player-journey.md（情感弧线）
         ▼
 /ux-review design/ux/
         │
-        ├── APPROVED → 所有规格已准备好交给 /team-ui
-        ├── NEEDS REVISION → 列出阻塞问题 → 修复 → 重新运行评审
-        └── MAJOR REVISION → 根本性 UX 问题 → 重大重新设计
+        ├── 已通过 → 所有规格已准备好交给 /team-ui
+        ├── 需修订 → 列出阻塞问题 → 修复 → 重新运行评审
+        └── 重大修订 → 根本性 UX 问题 → 重大重新设计
                 │
-                ▼（APPROVED 后）
+▷（已通过后）
         /team-ui
                 │
                 ├── Phase 1：上下文加载 + /ux-design（如果规格缺失）
@@ -359,9 +359,9 @@ design/player-journey.md（情感弧线）
 | `│ ▼` | 流入下一步 |
 | `├──` | 分支（多种可能结果） |
 | `×N` | 运行 N 次（每个系统、story 等一次） |
-| `(input)` | 被技能读取但不在此处产生 |
-| `[optional]` | 门槛通过不需要 |
-| `WRITE`（大写） | 立即写入磁盘 |
+|| `(input)` | 被技能读取但不在此处产生 |
+|| `[optional]` | 门槛通过不需要 |
+|| `写入`（大写） | 立即写入磁盘 |
 
 ---
 
